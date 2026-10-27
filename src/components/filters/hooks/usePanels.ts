@@ -2,8 +2,8 @@ import { useFilterContext } from '@/context/filters'
 import { useEffect, useState } from 'react'
 
 export enum MarketplaceFiltersPanel {
-  'All',
-  'Categories',
+  All,
+  Categories,
 }
 
 export const usePanels = () => {

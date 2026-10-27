@@ -1,5 +1,6 @@
 'use client'
 
+import { activeChain } from '@/constants/web3/chain'
 import Image from 'next/image'
 import React, { useState } from 'react'
 import LoadingCell from '@/components/ui/loadingCell'
@@ -34,11 +35,6 @@ import OPENSEA_LOGO from 'public/logos/opensea.svg'
 import ENSVISION_LOGO from 'public/logos/ensvision.svg'
 import ETHERSCAN_LOGO from 'public/logos/etherscan.svg'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
-import {
-  ENS_HOLIDAY_REFERRER_ADDRESS_SHORT,
-  ENS_NAME_WRAPPER_ADDRESS,
-  ENS_REGISTRAR_ADDRESS,
-} from '@/constants/web3/contracts'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
@@ -48,6 +44,7 @@ import useCartDomains from '@/hooks/useCartDomains'
 import RefreshIcon from 'public/icons/refresh.svg'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
 import { markImageForRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
+import { config } from '@/lib/config'
 
 interface NameDetailsProps {
   name: string
@@ -116,6 +113,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
         {
           name: nameDetails.name,
           tokenId: nameDetails.token_id,
+          version: nameDetails.version,
           owner: nameDetails.owner,
           expiry_date: nameDetails.expiry_date,
         },
@@ -152,6 +150,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           <NameImage
             name={nameDetails.name}
             tokenId={nameDetails.token_id}
+            version={nameDetails.version}
             expiryDate={nameDetails.expiry_date}
             forceRefreshKey={pendingRefreshKey}
             className='bg-tertiary mx-auto aspect-square w-full max-w-lg'
@@ -332,7 +331,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           <button
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
-              window.open(`https://app.ens.domains/${name}?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
+              window.open(`https://app.ens.domains/${name}?referrer=${config.ensReferrerAddress}`, '_blank')
             }}
           >
             <Image
@@ -347,7 +346,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
-                `https://opensea.io/item/ethereum/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}/${nameDetails?.token_id}`,
+                `https://opensea.io/item/ethereum/${isWrapped ? config.ensNameWrapper.toLowerCase() : config.ensRegistrar.toLowerCase()}/${nameDetails?.token_id}`,
                 '_blank'
               )
             }}
@@ -378,7 +377,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
-                `https://etherscan.io/token/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
+                `${activeChain.blockExplorers.default.url}/token/${isWrapped ? config.ensNameWrapper.toLowerCase() : config.ensRegistrar.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
                 '_blank'
               )
             }}

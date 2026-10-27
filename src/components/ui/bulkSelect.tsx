@@ -231,6 +231,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     const transferDomains = namesTransfer.map((domain) => ({
       name: domain.name,
       tokenId: domain.token_id,
+      version: domain.version,
       owner: domain.owner,
       expiry_date: domain.expiry_date,
     }))
@@ -239,7 +240,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   }
 
   const handleEditRecordsAction = () => {
-    dispatch(setBulkEditRecordsModalNames(namesTransfer.map((d) => d.name)))
+    dispatch(setBulkEditRecordsModalNames(namesTransfer.map(({ name, version }) => ({ name, version }))))
     dispatch(setBulkEditRecordsModalOpen(true))
   }
 

@@ -13,8 +13,8 @@ import { messagePreview } from '@/utils/chat/message'
 import { cn } from '@/utils/tailwind'
 import ContextMenu, { type ContextMenuItem } from './contextMenu'
 import type { Chat, ChatParticipant } from '@/types/chat'
-import { ENS_METADATA_URL } from '@/constants/ens'
 import { Address } from 'viem'
+import { config } from '@/lib/config'
 
 interface Props {
   chat: Chat
@@ -88,7 +88,7 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
           {peerProfile?.records['header'] && (
             <HeaderImage
               name={peerProfile?.ensName ?? undefined}
-              src={`${ENS_METADATA_URL}/mainnet/header/${peerProfile?.ensName}`}
+              src={`${config.ensMetadataUrl}/mainnet/header/${peerProfile?.ensName}`}
               isLoading={false}
               style={{
                 width: '100%',
@@ -106,7 +106,7 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
           <Avatar
             key={`${peer.address}-avatar`}
             address={peer.address}
-            src={`${ENS_METADATA_URL}/mainnet/avatar/${peerProfile?.ensName}`}
+            src={`${config.ensMetadataUrl}/mainnet/avatar/${peerProfile?.ensName}`}
             name={peerProfile?.ensName ?? undefined}
             style={{ width: '40px', height: '40px', zIndex: 10 }}
           />

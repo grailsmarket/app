@@ -1,6 +1,7 @@
 'use client'
 
 import React, { Suspense, useEffect } from 'react'
+import { AnimatePresence } from 'motion/react'
 import CreateListingModal from '@/components/modal/listing/createListingModal'
 import BuyNowModal from '@/components/modal/purchase/buyNowModal'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -20,8 +21,6 @@ import NotificationModal from '@/components/modal/notifications'
 import { selectNotificationModal, setNotificationModalOpen } from '@/state/reducers/modals/notificationModal'
 import ExtendModal from '@/components/modal/renewal/extendModal'
 import { selectBulkRenewalModal, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
-import SettingsModal from '@/components/modal/settings/settingsModal'
-import { useUserContext } from '@/context/user'
 import TransferModal from '@/components/modal/transfer/transferModal'
 import { selectTransferModal, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import RegistrationModal from '@/components/modal/registration'
@@ -86,10 +85,10 @@ const Modals: React.FC = () => {
   const {
     open: editRecordsModalOpen,
     name: editRecordsModalName,
+    version: editRecordsModalVersion,
     metadata: editRecordsModalMetadata,
     defaultTab: editRecordsModalDefaultTab,
   } = useAppSelector(selectEditRecordsModal)
-  const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
   const { open: bulkEditRecordsModalOpen, names: bulkEditRecordsModalNames } =
     useAppSelector(selectBulkEditRecordsModal)
   const {
@@ -112,7 +111,6 @@ const Modals: React.FC = () => {
     transferModalOpen ||
     shareModalOpen ||
     editRecordsModalOpen ||
-    isSettingsOpen ||
     listSettingsModalOpen ||
     registrationModalOpen
 
@@ -132,58 +130,86 @@ const Modals: React.FC = () => {
       <Suspense fallback={null}>
         <OpenSettingsFromUrl />
       </Suspense>
-      {makeOfferModalOpen && (
-        <CreateOfferModal onClose={() => dispatch(setMakeOfferModalOpen(false))} domain={makeOfferModalDomain} />
-      )}
-      {cancelOfferModalOpen && (
-        <CancelOfferModal
-          onClose={() => dispatch(setCancelOfferModalOpen(false))}
-          name={cancelOfferModalName ?? ''}
-          offer={cancelOfferModalOffer}
-        />
-      )}
-      {createListingModalOpen && (
-        <CreateListingModal
-          onClose={() => dispatch(setMakeListingModalOpen(false))}
-          domains={createListingModalDomains}
-          previousListings={previousListings}
-        />
-      )}
-      {cancelListingModalOpen && (
-        <CancelListingModal
-          onClose={() => dispatch(setCancelListingModalOpen(false))}
-          listings={cancelListingModalListings}
-        />
-      )}
-      {buyNowModalOpen && (
-        <BuyNowModal
-          onClose={() => dispatch(setBuyNowModalOpen(false))}
-          listing={buyNowModalListing}
-          domain={buyNowModalDomain}
-        />
-      )}
-      {acceptOfferModalOpen && (
-        <AcceptOfferModal
-          onClose={() => dispatch(setAcceptOfferModalOpen(false))}
-          offer={acceptOfferModalOffer}
-          domain={acceptOfferModalDomain}
-        />
-      )}
+      <AnimatePresence>
+        {makeOfferModalOpen && (
+          <CreateOfferModal
+            key='make-offer-modal'
+            onClose={() => dispatch(setMakeOfferModalOpen(false))}
+            domain={makeOfferModalDomain}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {cancelOfferModalOpen && (
+          <CancelOfferModal
+            key='cancel-offer-modal'
+            onClose={() => dispatch(setCancelOfferModalOpen(false))}
+            name={cancelOfferModalName ?? ''}
+            offer={cancelOfferModalOffer}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {createListingModalOpen && (
+          <CreateListingModal
+            key='create-listing-modal'
+            onClose={() => dispatch(setMakeListingModalOpen(false))}
+            domains={createListingModalDomains}
+            previousListings={previousListings}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {cancelListingModalOpen && (
+          <CancelListingModal
+            key='cancel-listing-modal'
+            onClose={() => dispatch(setCancelListingModalOpen(false))}
+            listings={cancelListingModalListings}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {buyNowModalOpen && (
+          <BuyNowModal
+            key='buy-now-modal'
+            onClose={() => dispatch(setBuyNowModalOpen(false))}
+            listing={buyNowModalListing}
+            domain={buyNowModalDomain}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {acceptOfferModalOpen && (
+          <AcceptOfferModal
+            key='accept-offer-modal'
+            onClose={() => dispatch(setAcceptOfferModalOpen(false))}
+            offer={acceptOfferModalOffer}
+            domain={acceptOfferModalDomain}
+          />
+        )}
+      </AnimatePresence>
       <GlobalSearchModal
         isOpen={searchModalOpen}
         onClose={() => dispatch(setSearchModalOpen(false))}
         initialQuery={searchModalQuery}
       />
       <NotificationModal isOpen={notificationModalOpen} onClose={() => dispatch(setNotificationModalOpen(false))} />
-      {bulkRenewalModalOpen && <ExtendModal onClose={() => dispatch(setBulkRenewalModalOpen(false))} />}
-      {transferModalOpen && (
-        <TransferModal
-          domains={transferModalDomains}
-          onClose={() => {
-            dispatch(setTransferModalOpen(false))
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {bulkRenewalModalOpen && (
+          <ExtendModal key='extend-modal' onClose={() => dispatch(setBulkRenewalModalOpen(false))} />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {transferModalOpen && (
+          <TransferModal
+            key='transfer-modal'
+            domains={transferModalDomains}
+            onClose={() => {
+              dispatch(setTransferModalOpen(false))
+            }}
+          />
+        )}
+      </AnimatePresence>
       <RegistrationModal />
       {shareModalOpen && (
         <ShareModal
@@ -196,21 +222,27 @@ const Modals: React.FC = () => {
           categories={shareModalCategories}
         />
       )}
-      {editRecordsModalOpen && editRecordsModalName && (
-        <EditRecordsModal
-          name={editRecordsModalName}
-          metadata={editRecordsModalMetadata}
-          defaultTab={editRecordsModalDefaultTab}
-          onClose={() => dispatch(setEditRecordsModalOpen(false))}
-        />
-      )}
-      {bulkEditRecordsModalOpen && bulkEditRecordsModalNames.length > 0 && (
-        <BulkEditRecordsModal
-          names={bulkEditRecordsModalNames}
-          onClose={() => dispatch(setBulkEditRecordsModalOpen(false))}
-        />
-      )}
-      {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
+      <AnimatePresence>
+        {editRecordsModalOpen && editRecordsModalName && (
+          <EditRecordsModal
+            key='edit-records-modal'
+            name={editRecordsModalName}
+            version={editRecordsModalVersion}
+            metadata={editRecordsModalMetadata}
+            defaultTab={editRecordsModalDefaultTab}
+            onClose={() => dispatch(setEditRecordsModalOpen(false))}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {bulkEditRecordsModalOpen && bulkEditRecordsModalNames.length > 0 && (
+          <BulkEditRecordsModal
+            key='bulk-edit-records-modal'
+            names={bulkEditRecordsModalNames}
+            onClose={() => dispatch(setBulkEditRecordsModalOpen(false))}
+          />
+        )}
+      </AnimatePresence>
       {listSettingsModalOpen && listSettingsModalUser && listSettingsModalList && (
         <ListSettings
           onClose={() => dispatch(setListSettingsModalOpen(false))}

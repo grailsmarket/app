@@ -24,6 +24,7 @@ export type APIResponseType<T> = {
 export type AuthUserType = {
   id: number
   address: string
+  preferredResolver?: Address | null
   email: string | null
   emailVerified: boolean
   telegram: string | null
@@ -143,6 +144,7 @@ export type FeedItemCommon = {
   id: number
   ens_name_id: number
   name: string
+  version: number
   clubs: string[]
   owner_address: Address
   created_at: string

@@ -1,193 +1,172 @@
-import Image from 'next/image'
 import { AccountResponseType } from 'ethereum-identity-kit'
-import Dropdown from '@/components/ui/dropdown'
-import Input from '@/components/ui/input'
+import { Address } from 'viem'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-import DatePicker from '@/components/ui/datepicker'
+import { modalActionClassName, modalPrimaryActionClassName } from '@/components/ui/modal/modalShell'
+import DurationField from '@/components/ui/modal/durationField'
+import Segmented from '@/components/ui/modal/segmented'
+import Notice from '@/components/ui/modal/notice'
 import { beautifyName } from '@/lib/ens'
-import type { NameRegistrationEntry, TimeUnit, CalculationResults } from '@/types/registration'
-import { timeUnitOptions } from '@/constants/registration'
+import type {
+  NameRegistrationEntry,
+  TimeUnit,
+  CalculationResults,
+  SufficientBalanceResults,
+} from '@/types/registration'
 import PerNameDurationEditor from './per-name-duration-editor'
 import CustomOwnerSection from './custom-owner-section'
+import ResolverSection from './resolver-section'
 import CostSummary from './cost-summary'
-import Calendar from 'public/icons/calendar.svg'
-// import ReverseRecordSection from './reverse-record'
+import { registrationAssets } from '@/constants/web3/tokens'
+import type { Resolver } from '@/types/ens'
 
 interface ReviewFormProps {
   isBulk: boolean
-  firstName: string | null
   entries: NameRegistrationEntry[]
   availableEntries: NameRegistrationEntry[]
+  unavailableEntries: NameRegistrationEntry[]
   registrationMode: string
   timeUnit: TimeUnit
   quantity: number
   customDuration: number
   entryDurations: (number | null)[]
-  allDurationsValid: boolean
-  showDatePicker: boolean
+  asset: Address
+  setAsset: (newasset: Address) => void
   setShowDatePicker: (show: boolean) => void
-  perNameDatePickerIndex: number | null
   setPerNameDatePickerIndex: (index: number | null) => void
-  showPerNameDurations: boolean
-  setShowPerNameDurations: (show: boolean) => void
-  perNamePrices: (bigint | null)[] | null | undefined
+  perNamePrices: readonly bigint[] | null | undefined
   showCustomOwner: boolean
   setShowCustomOwner: (show: boolean) => void
   customOwner: string
   setCustomOwner: (value: string) => void
-  debouncedCustomOwner: string
   account: AccountResponseType | null | undefined
-  reverseRecord: boolean
-  setReverseRecord: (reverseRecord: boolean) => void
   isResolving: boolean
+  resolver: string
+  setResolver: (value: string) => void
+  resolverError: string | null
+  resolverOptions: Resolver[]
+  resolverWarning: string | null
+  isCheckingResolver: boolean
+  hasRegistrationParameters: boolean
   calculationResults: CalculationResults | null
-  hasSufficientBalance: boolean
+  hasSufficientBalance: SufficientBalanceResults
   allNamesValid: boolean
-  allAvailabilityChecked: boolean
-  totalBatches: number
   gasEstimate: bigint | null
   gasPrice: bigint | undefined
+  totalBatches: number
   onTimeUnitChange: (value: string) => void
   onQuantityChange: (value: number) => void
-  onCustomDateSelect: (timestamp: number) => void
   onSelectCustomDate: () => void
   onEntryDurationChange: (index: number, value: string) => void
   onEntryQuantityChange: (index: number, value: number) => void
-  onEntryDateSelect: (timestamp: number) => void
-  handleCommit: () => void
-  handleClose: () => void
+  onEntryDurationReset: (index: number) => void
 }
 
 const ReviewForm: React.FC<ReviewFormProps> = ({
   isBulk,
-  firstName,
   entries,
   availableEntries,
+  unavailableEntries,
   registrationMode,
   timeUnit,
   quantity,
   customDuration,
   entryDurations,
-  allDurationsValid,
-  showDatePicker,
+  asset,
+  setAsset,
   setShowDatePicker,
-  perNameDatePickerIndex,
   setPerNameDatePickerIndex,
-  showPerNameDurations,
-  setShowPerNameDurations,
   perNamePrices,
   showCustomOwner,
   setShowCustomOwner,
   customOwner,
   setCustomOwner,
-  debouncedCustomOwner,
   account,
   isResolving,
-  // reverseRecord,
-  // setReverseRecord,
+  resolver,
+  setResolver,
+  resolverError,
+  resolverOptions,
+  resolverWarning,
+  isCheckingResolver,
+  hasRegistrationParameters,
   calculationResults,
   hasSufficientBalance,
   allNamesValid,
-  allAvailabilityChecked,
-  totalBatches,
   gasEstimate,
   gasPrice,
+  totalBatches,
   onTimeUnitChange,
   onQuantityChange,
-  onCustomDateSelect,
   onSelectCustomDate,
   onEntryDurationChange,
   onEntryQuantityChange,
-  onEntryDateSelect,
-  handleCommit,
-  handleClose,
+  onEntryDurationReset,
 }) => {
   return (
-    <div className='flex w-full flex-col gap-2 sm:gap-2'>
-      <div className='flex w-full flex-row gap-2'>
-        <Dropdown
-          label='Unit'
-          hideLabel={true}
-          options={timeUnitOptions}
-          value={timeUnit}
-          onSelect={(value) => onTimeUnitChange(String(value))}
-          className='h-12! w-2/5'
-        />
-        {registrationMode === 'register_for' ? (
-          <Input
-            type='number'
-            label='Quantity'
-            placeholder='Number'
-            min={1}
-            hideLabel={true}
-            className='w-3/5'
-            value={quantity || ''}
-            onChange={(e) => onQuantityChange(Number(e.target.value))}
-          />
-        ) : (
-          <>
-            <PrimaryButton onClick={() => setShowDatePicker(true)} className='h-12! w-full'>
-              {customDuration
-                ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
-                : 'Select Date'}
-            </PrimaryButton>
-            {showDatePicker && (
-              <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-center justify-center bg-black/40 p-3 backdrop-blur-sm md:p-6'>
-                <DatePicker
-                  onSelect={onCustomDateSelect}
-                  onClose={() => setShowDatePicker(false)}
-                  className='w-full max-w-sm'
-                />
-              </div>
-            )}
-          </>
-        )}
-      </div>
-      <button
-        onClick={onSelectCustomDate}
-        className='text-primary mx-auto flex cursor-pointer flex-row items-center gap-2 transition-opacity hover:opacity-80'
-      >
-        <p>Select a custom date</p>
-        <Image src={Calendar} alt='calendar' width={18} height={18} />
-      </button>
-      {isBulk && (
-        <PerNameDurationEditor
-          entries={entries}
-          availableEntries={availableEntries}
-          entryDurations={entryDurations}
-          perNamePrices={perNamePrices}
-          timeUnit={timeUnit}
+    <>
+      {hasRegistrationParameters && (
+        <Notice tone='info'>These settings are fixed for your pending registration.</Notice>
+      )}
+      {unavailableEntries.length > 0 && (
+        <Notice tone='warning'>
+          {unavailableEntries.length} name{unavailableEntries.length > 1 ? 's are' : ' is'} not available and will be
+          excluded: {unavailableEntries.map((e) => beautifyName(e.name)).join(', ')}
+        </Notice>
+      )}
+      <fieldset disabled={hasRegistrationParameters} className='flex min-w-0 flex-col gap-2 disabled:opacity-70'>
+        <DurationField
           quantity={quantity}
-          customDuration={customDuration}
-          showPerNameDurations={showPerNameDurations}
-          setShowPerNameDurations={setShowPerNameDurations}
-          setPerNameDatePickerIndex={setPerNameDatePickerIndex}
-          onEntryDurationChange={onEntryDurationChange}
-          onEntryQuantityChange={onEntryQuantityChange}
+          unit={timeUnit}
+          isCustom={registrationMode !== 'register_for'}
+          customDateLabel={
+            customDuration
+              ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : null
+          }
+          onQuantityChange={onQuantityChange}
+          onUnitChange={onTimeUnitChange}
+          onPickDate={() => setShowDatePicker(true)}
+          onSelectCustomDate={onSelectCustomDate}
+          hint={isBulk ? 'Applies to every name. Change a single name in the list below.' : undefined}
         />
-      )}
-      {perNameDatePickerIndex !== null && (
-        <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-center justify-center bg-black/40 p-3 backdrop-blur-sm md:p-6'>
-          <DatePicker
-            onSelect={onEntryDateSelect}
-            onClose={() => setPerNameDatePickerIndex(null)}
-            className='w-full max-w-sm'
+        {isBulk && (
+          <PerNameDurationEditor
+            entries={entries}
+            availableEntries={availableEntries}
+            entryDurations={entryDurations}
+            perNamePrices={perNamePrices}
+            asset={asset}
+            timeUnit={timeUnit}
+            quantity={quantity}
+            customDuration={customDuration}
+            setPerNameDatePickerIndex={setPerNameDatePickerIndex}
+            onEntryDurationChange={onEntryDurationChange}
+            onEntryQuantityChange={onEntryQuantityChange}
+            onEntryDurationReset={onEntryDurationReset}
           />
-        </div>
-      )}
-      <CustomOwnerSection
-        showCustomOwner={showCustomOwner}
-        setShowCustomOwner={setShowCustomOwner}
-        customOwner={customOwner}
-        setCustomOwner={setCustomOwner}
-        debouncedCustomOwner={debouncedCustomOwner}
-        account={account}
-        isResolving={isResolving}
-      />
+        )}
+        <Segmented options={registrationAssets} value={asset} onChange={setAsset} />
+        <CustomOwnerSection
+          showCustomOwner={showCustomOwner}
+          setShowCustomOwner={setShowCustomOwner}
+          customOwner={customOwner}
+          setCustomOwner={setCustomOwner}
+          account={account}
+          isResolving={isResolving}
+        />
+        <ResolverSection
+          resolver={resolver}
+          setResolver={setResolver}
+          isLoading={isCheckingResolver}
+          error={resolverError}
+          options={resolverOptions}
+          warning={resolverWarning}
+        />
+      </fieldset>
       <CostSummary
         calculationResults={calculationResults}
         isBulk={isBulk}
@@ -197,27 +176,72 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         allNamesValid={allNamesValid}
         gasEstimate={gasEstimate}
         gasPrice={gasPrice}
+        asset={asset}
       />
-      {/* <ReverseRecordSection reverseRecord={reverseRecord} setReverseRecord={setReverseRecord} /> */}
-      <div className='flex flex-col gap-2'>
-        <PrimaryButton
-          onClick={handleCommit}
-          disabled={
-            !calculationResults ||
-            !hasSufficientBalance ||
-            !allNamesValid ||
-            !allDurationsValid ||
-            (registrationMode === 'register_to' && customDuration === 0) ||
-            !allAvailabilityChecked ||
-            availableEntries.length === 0 ||
-            calculationResults?.isBelowMinimum
-          }
-          className='w-full'
-        >
-          {!allNamesValid
-            ? 'Invalid Name'
-            : !hasSufficientBalance
-              ? 'Insufficient ETH Balance'
+    </>
+  )
+}
+
+interface ReviewActionsProps {
+  isBulk: boolean
+  firstName: string | null
+  availableEntries: NameRegistrationEntry[]
+  registrationMode: string
+  customDuration: number
+  allDurationsValid: boolean
+  resolver: string
+  resolverError: string | null
+  isCheckingResolver: boolean
+  calculationResults: CalculationResults | null
+  hasSufficientBalance: SufficientBalanceResults
+  allNamesValid: boolean
+  allAvailabilityChecked: boolean
+  handleCommit: () => void
+  handleClose: () => void
+}
+
+export const ReviewActions: React.FC<ReviewActionsProps> = ({
+  isBulk,
+  firstName,
+  availableEntries,
+  registrationMode,
+  customDuration,
+  allDurationsValid,
+  resolver,
+  resolverError,
+  isCheckingResolver,
+  calculationResults,
+  hasSufficientBalance,
+  allNamesValid,
+  allAvailabilityChecked,
+  handleCommit,
+  handleClose,
+}) => {
+  return (
+    <>
+      <PrimaryButton
+        onClick={handleCommit}
+        disabled={
+          !calculationResults ||
+          isCheckingResolver ||
+          (!!resolver.trim() && !!resolverError) ||
+          !hasSufficientBalance.hasSufficientEth ||
+          !hasSufficientBalance.hasSufficientAssets ||
+          !allNamesValid ||
+          !allDurationsValid ||
+          (registrationMode === 'register_to' && customDuration === 0) ||
+          !allAvailabilityChecked ||
+          availableEntries.length === 0 ||
+          calculationResults?.isBelowMinimum
+        }
+        className={modalPrimaryActionClassName}
+      >
+        {!allNamesValid
+          ? 'Invalid Name'
+          : !hasSufficientBalance.hasSufficientEth
+            ? 'Insufficient ETH Balance'
+            : !hasSufficientBalance.hasSufficientAssets
+              ? 'Insufficient Token Balance'
               : calculationResults?.isBelowMinimum
                 ? 'Duration Too Short (28 days minimum)'
                 : !allAvailabilityChecked
@@ -225,12 +249,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                   : isBulk
                     ? `Register ${availableEntries.length} Names`
                     : `Register ${beautifyName(firstName!)}`}
-        </PrimaryButton>
-        <SecondaryButton onClick={handleClose} className='w-full'>
-          Close
-        </SecondaryButton>
-      </div>
-    </div>
+      </PrimaryButton>
+      <SecondaryButton onClick={handleClose} className={modalActionClassName}>
+        Close
+      </SecondaryButton>
+    </>
   )
 }
 

@@ -2,6 +2,7 @@ import XLogo from 'public/logos/x.svg'
 import GithubLogo from 'public/logos/github.svg'
 import TelegramLogo from 'public/logos/telegram.svg'
 import DiscordLogo from 'public/logos/discord.svg'
+import { V2RecordField } from '@/types/records'
 
 export const TEXT_RECORD_KEYS = [
   'description',
@@ -18,6 +19,12 @@ export const TEXT_RECORD_KEYS = [
 ] as const
 
 export const ADDRESS_RECORD_KEYS = ['btc'] as const
+
+export const DEFAULT_V2_FIELDS: V2RecordField[] = [
+  { kind: 'address', key: '60' },
+  ...TEXT_RECORD_KEYS.map((key) => ({ kind: 'text' as const, key })),
+  { kind: 'contenthash', key: '' },
+]
 
 export const COIN_TYPES: Record<string, number> = {
   btc: 0,

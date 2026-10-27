@@ -9,6 +9,7 @@ import Link from 'next/link'
 import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import Price from '@/components/ui/price'
 import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
+import { NOTIFICATION_CATEGORY_TO_MESSAGE } from '@/constants/notifications'
 // Icons
 import Listed from 'public/icons/listed.svg'
 import OfferMade from 'public/icons/bid.svg'
@@ -67,6 +68,13 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
         return 'Price changed'
       case 'comment-received':
         return 'New Comment'
+      case 'listing_cancelled':
+      case 'offer_cancelled':
+      case 'listing_unfunded':
+      case 'offer_unfunded':
+      case 'listing_refunded':
+      case 'offer_refunded':
+        return NOTIFICATION_CATEGORY_TO_MESSAGE[type]
       default:
         return type
     }
@@ -129,17 +137,17 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
       <div className='flex min-h-16 w-full flex-col gap-3'>
         <div className='flex w-full items-center gap-2 sm:gap-3'>
           {/* {!notification.isRead && <div className='bg-primary mt-2 h-2 w-2 flex-shrink-0 rounded-full' />} */}
-          <div className='mt-0.5 flex-shrink-0'>
+          <div className='mt-0.5 shrink-0'>
             <Image src={Bell} alt='Announcement' width={26} height={26} className='h-5 w-5 sm:h-6 sm:w-6' />
           </div>
           <div className='flex w-full justify-between gap-px'>
-            <p className='text-foreground text-md font-medium break-words sm:text-lg'>{title}</p>
+            <p className='text-foreground text-md font-medium wrap-break-word sm:text-lg'>{title}</p>
             <div className='sm:text-md text-neutral text-sm font-medium'>{timeAgo}</div>
           </div>
         </div>
         <div className='px-sm py-md flex w-full min-w-0 flex-1 items-stretch justify-between gap-3'>
           <div className='flex flex-col gap-2'>
-            <p className='sm:text-md text-neutral text-sm break-words whitespace-pre-wrap'>{body}</p>
+            <p className='sm:text-md text-neutral text-sm wrap-break-word whitespace-pre-wrap'>{body}</p>
             {linkUrl && imageUrl && (
               <Link
                 href={linkUrl}
@@ -225,6 +233,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
       <div className='flex w-2/5 items-center gap-1.5 sm:gap-2'>
         <NameImage
           name={notification.ensName ?? ''}
+          version={notification.version}
           tokenId={notification.ensTokenId ?? ''}
           expiryDate={new Date().toISOString()}
           height={32}

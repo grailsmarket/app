@@ -1,7 +1,6 @@
+import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
-import { APP_ENS_ADDRESS } from '@/constants'
-import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { labelhash, namehash } from 'viem'
 
 const size = {
@@ -9,13 +8,10 @@ const size = {
   height: 418,
 }
 
-const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
-const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const name = decodeURIComponent(searchParams.get('name') || '')
+  const tokenId = decodeURIComponent(searchParams.get('tokenId') || '')
 
   if (name === '') {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 })
@@ -28,8 +24,9 @@ export async function GET(req: NextRequest) {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 
+  const v2ImageUrl = `${DOMAIN_IMAGE_URL_V2}/${tokenId}/image/png`
   const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-  const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
+  const unwrappedImageUrl = `${DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 
   try {
     return new ImageResponse(
@@ -74,11 +71,27 @@ export async function GET(req: NextRequest) {
               height: '100%',
               borderRadius: 16,
               marginRight: 16,
-              zIndex: '2',
+              zIndex: '3',
             }}
           />
           <img
             src={unwrappedImageUrl}
+            alt='ens'
+            width={281}
+            height={281}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              borderRadius: 16,
+              marginRight: 16,
+              zIndex: '2',
+            }}
+          />
+          <img
+            src={v2ImageUrl}
             alt='ens'
             width={281}
             height={281}

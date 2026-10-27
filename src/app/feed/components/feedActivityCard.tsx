@@ -1,5 +1,6 @@
 'use client'
 
+import { activeChain } from '@/constants/web3/chain'
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -142,7 +143,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
                 <User
                   address={activity.actor_address}
                   wrapperClassName='justify-start'
-                  className='max-w-full py-[3px] @[40rem]/app:py-1'
+                  className='py-0.75] max-w-full @[40rem]/app:py-1'
                   avatarSize={width && width < 768 ? '20px' : '24px'}
                   alignTooltip='left'
                 />
@@ -156,6 +157,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
             >
               <NameImage
                 name={normalizedName}
+                version={activity.version}
                 tokenId={tokenId}
                 expiryDate={null}
                 forceRegStatus={REGISTERED}
@@ -210,7 +212,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
               <>
                 <span className='text-neutral'>·</span>
                 <Link
-                  href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+                  href={`${activeChain.blockExplorers.default.url}/tx/${activity.transaction_hash}`}
                   target='_blank'
                   onClick={(e) => e.stopPropagation()}
                   className='text-neutral hover:text-foreground flex items-center gap-1 transition-colors'

@@ -44,6 +44,7 @@ const DomainSearchResult: React.FC<DomainSearchResultProps> = ({ domain, categor
       <div className='flex w-full flex-row items-center gap-2'>
         <NameImage
           name={domain.name}
+          version={domain.version}
           tokenId={domain.token_id}
           expiryDate={domain.expiry_date}
           className='h-9 w-9 rounded-sm sm:h-[34px] sm:w-[34px]'

@@ -10,6 +10,13 @@ export type NotificationType =
   | 'admin-broadcast'
   | 'chat_reply'
   | 'chat_mention'
+  // Listing/offer status changes from the backend's order validation
+  | 'listing_cancelled'
+  | 'offer_cancelled'
+  | 'listing_unfunded'
+  | 'offer_unfunded'
+  | 'listing_refunded'
+  | 'offer_refunded'
 
 export interface NotificationMetadata {
   title?: string
@@ -36,6 +43,7 @@ export interface Notification {
   type: NotificationType
   ensName: string | null
   ensTokenId: string | null
+  version: number
   metadata: NotificationMetadata
   sentAt: string
   readAt: string | null

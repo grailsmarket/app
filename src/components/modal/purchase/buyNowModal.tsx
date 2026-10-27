@@ -4,39 +4,48 @@ import { useState, useEffect, useMemo } from 'react'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
 import { useAccount, usePublicClient, useBalance, useGasPrice } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import {
-  SEAPORT_ADDRESS,
-  MARKETPLACE_CONDUIT_ADDRESS,
-  MARKETPLACE_CONDUIT_KEY,
-  OPENSEA_CONDUIT_ADDRESS,
-  OPENSEA_CONDUIT_KEY,
-} from '@/constants/web3/contracts'
 import { USDC_ADDRESS, ETH_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
+import {
+  estimateGasWithFallback,
+  withGasBuffer,
+  FILL_GAS_FALLBACK_ERC20,
+  FILL_GAS_FALLBACK_ETH,
+} from '@/lib/seaport/gas'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import Price from '@/components/ui/price'
 import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
-import { Check } from 'ethereum-identity-kit'
+import ModalShell, { modalActionClassName, modalPrimaryActionClassName } from '@/components/ui/modal/modalShell'
+import AssetSummary from '@/components/ui/modal/assetSummary'
+import DetailList from '@/components/ui/modal/detailList'
+import Notice from '@/components/ui/modal/notice'
+import TxStatus from '@/components/ui/modal/txStatus'
+import TxSteps, { type TxStep } from '@/components/ui/modal/txSteps'
+import TxLink from '@/components/ui/modal/txLink'
+import NameImage from '@/components/ui/nameImage'
+import { beautifyName } from '@/lib/ens'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import useModifyCart from '@/hooks/useModifyCart'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
-import { CAN_CLAIM_POAP } from '@/constants'
 import { fetchNameMetadata, formatNameMetadataRecord } from '@/api/name/metadata'
 import Image from 'next/image'
 import {
   setEditRecordsModalMetadata,
   setEditRecordsModalName,
+  setEditRecordsModalVersion,
   setEditRecordsModalOpen,
 } from '@/state/reducers/modals/editRecordsModal'
 import PencilIcon from 'public/icons/pencil-primary.svg'
 import { track } from '@/lib/analytics'
+import { config } from '@/lib/config'
 import { useUserContext } from '@/context/user'
 import { fetchListingOrderData } from '@/api/listings/fetchListing'
 import useMaliciousApprovals from '@/hooks/useMaliciousApprovals'
@@ -78,24 +87,24 @@ const ERC20_ABI = [
 /**
  * Determine the correct approval target based on the order's conduitKey
  */
-function getApprovalTarget(conduitKey: string | undefined): string {
+const getApprovalTarget = (conduitKey: string | undefined): string => {
   if (!conduitKey || conduitKey === '0x0000000000000000000000000000000000000000000000000000000000000000') {
     // No conduit key or zero hash means approve Seaport directly
-    return SEAPORT_ADDRESS
+    return config.seaportAddress
   }
 
   // Match against known conduit keys
-  if (conduitKey.toLowerCase() === OPENSEA_CONDUIT_KEY.toLowerCase()) {
-    return OPENSEA_CONDUIT_ADDRESS
+  if (conduitKey.toLowerCase() === config.openseaConduitKey.toLowerCase()) {
+    return config.openseaConduitAddress
   }
 
-  if (conduitKey.toLowerCase() === MARKETPLACE_CONDUIT_KEY.toLowerCase()) {
-    return MARKETPLACE_CONDUIT_ADDRESS
+  if (conduitKey.toLowerCase() === config.conduitKey.toLowerCase()) {
+    return config.conduitAddress
   }
 
   // Default to Seaport if unknown conduit key
   console.warn('Unknown conduit key:', conduitKey, '- defaulting to Seaport')
-  return SEAPORT_ADDRESS
+  return config.seaportAddress
 }
 
 const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) => {
@@ -103,7 +112,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
   const { modifyCart } = useModifyCart()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const { data: gasPrice } = useGasPrice()
   const getWalletClient = useGetWalletClient()
   const orderBuilder = new SeaportOrderBuilder()
@@ -112,6 +121,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
   const [step, setStep] = useState<TransactionStep>('review')
   const [error, setError] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
   const [gasEstimate, setGasEstimate] = useState<bigint | null>(null)
   const [needsApproval, setNeedsApproval] = useState(false)
@@ -136,13 +146,13 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   // Get balances
   const { data: ethBalance } = useBalance({
     address,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   const { data: usdcBalance } = useBalance({
     address,
     token: USDC_ADDRESS as `0x${string}`,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   // Check if listing uses ETH or USDC
@@ -170,12 +180,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
     return false
   }, [listing, isETHListing, isUSDCListing, ethBalance, usdcBalance, gasEstimate, gasPrice])
-
-  useEffect(() => {
-    // Estimate gas and check approval when modal opens
-    estimateGas()
-    checkApproval()
-  }, [])
 
   const formattedGasEstimate = useMemo(() => {
     if (!gasPrice || !gasEstimate) return null
@@ -205,12 +209,15 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const isOrderUnavailable = isCompromiseBlocked || !orderListing?.order_data
 
   useEffect(() => {
-    // Re-run once the authenticated order data arrives
-    if (fetchedOrderData) {
+    // Recheck for the connected wallet once the listing's order data is available.
+    if (listing && domain && !isOrderUnavailable) {
       estimateGas()
       checkApproval()
+    } else {
+      setGasEstimate(null)
+      setNeedsApproval(false)
     }
-  }, [fetchedOrderData])
+  }, [orderListing, address, publicClient, isOrderUnavailable])
 
   if (!listing || !domain || !orderListing) return null
 
@@ -239,7 +246,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           const advancedOrder = orderBuilder.buildAdvancedOrder(order)
 
           estimatedGas = await publicClient.estimateContractGas({
-            address: SEAPORT_ADDRESS as `0x${string}`,
+            address: config.seaportAddress,
             abi: SEAPORT_ABI,
             functionName: 'fulfillAdvancedOrder',
             args: [
@@ -256,7 +263,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           const basicOrderParams = orderBuilder.buildBasicOrderParameters(order)
 
           estimatedGas = await publicClient.estimateContractGas({
-            address: SEAPORT_ADDRESS as `0x${string}`,
+            address: config.seaportAddress,
             abi: SEAPORT_ABI,
             functionName: 'fulfillBasicOrder_efficient_6GL6yc',
             args: [basicOrderParams],
@@ -265,18 +272,15 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           })
         }
 
-        // Add 20% buffer to the estimated gas to ensure transaction success
-        const gasWithBuffer = (estimatedGas * BigInt(120)) / BigInt(100)
-        setGasEstimate(gasWithBuffer)
+        setGasEstimate(withGasBuffer(estimatedGas))
       } catch (estimateError) {
+        // Usually means the USDC approval isn't in place yet; handlePurchase re-estimates before sending
         console.warn('Failed to estimate gas, using fallback:', estimateError)
-        // Fallback to reasonable defaults if estimation fails
-        setGasEstimate(isERC20Order ? BigInt(400000) : BigInt(250000))
+        setGasEstimate(isERC20Order ? FILL_GAS_FALLBACK_ERC20 : FILL_GAS_FALLBACK_ETH)
       }
     } catch (err) {
       console.error('Failed to estimate gas:', err)
-      // Set a reasonable fallback
-      setGasEstimate(BigInt(300000))
+      setGasEstimate(FILL_GAS_FALLBACK_ERC20)
     }
   }
 
@@ -324,9 +328,32 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
     }
   }
 
+  const showError = (err: any, fallback: string) => {
+    const message: string = err?.message || fallback
+    // viem errors carry a one-line shortMessage; the full message goes behind "Error details"
+    const shortMessage: string = err?.shortMessage || message
+    setError(shortMessage)
+    setErrorDetails(message !== shortMessage ? message : null)
+    setStep('error')
+  }
+
+  const checkPurchaseAllowed = () => {
+    if (isCompromiseBlocked) throw new Error(COMPROMISED_LISTING_TOOLTIP)
+    if (isOrderUnavailable) throw new Error('This listing is not available.')
+    if (approvalCheck.blocksTrading) {
+      throw new Error(
+        approvalCheck.hasMaliciousApprovals
+          ? 'Revoke the unsafe ENS approval before purchasing'
+          : 'Wallet approval check has not completed'
+      )
+    }
+  }
+
   const handleApprove = async () => {
     try {
+      checkPurchaseAllowed()
       setError(null)
+      setApproveTxHash(null)
       setStep('approving')
 
       if (!address || !publicClient) {
@@ -351,8 +378,8 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         amount: listing.price,
       })
 
-      // Ensure we're on mainnet before approving
-      await ensureChain(walletClient, mainnet.id)
+      // Ensure we're on the ENS chain before approving
+      await ensureChain(walletClient, activeChain.id)
 
       // Approve the conduit (or Seaport) to spend USDC
       const approveTx = await walletClient.writeContract({
@@ -360,7 +387,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [approvalTarget as `0x${string}`, BigInt(listing.price)],
-        chain: mainnet,
+        chain: activeChain,
       })
 
       setApproveTxHash(approveTx)
@@ -378,35 +405,19 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       }
     } catch (err: any) {
       console.error('Approval failed:', err)
-      setError(err.message || 'Approval failed')
-      setStep('error')
+      showError(err, 'Approval failed')
     }
-  }
-
-  const refetchDomainQueries = () => {
-    queryClient.refetchQueries({ queryKey: ['name', 'details'] })
-    queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
-    queryClient.refetchQueries({ queryKey: ['sent_offers'] })
   }
 
   const handlePurchase = async () => {
     try {
+      checkPurchaseAllowed()
       setError(null)
+      setTxHash(null)
       setStep('confirming')
 
       if (!address || !publicClient) {
         throw new Error('Wallet not connected')
-      }
-
-      if (isCompromiseBlocked) {
-        throw new Error(COMPROMISED_LISTING_TOOLTIP)
-      }
-      if (approvalCheck.blocksTrading) {
-        throw new Error(
-          approvalCheck.hasMaliciousApprovals
-            ? 'Revoke the unsafe ENS approval before purchasing'
-            : 'Wallet approval check has not completed'
-        )
       }
 
       const walletClient = await getWalletClient()
@@ -447,7 +458,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         // Simulate with fulfillAdvancedOrder
         try {
           await publicClient.simulateContract({
-            address: SEAPORT_ADDRESS as `0x${string}`,
+            address: config.seaportAddress,
             abi: SEAPORT_ABI,
             functionName: 'fulfillAdvancedOrder',
             args: [
@@ -464,14 +475,29 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           throw new Error(`Transaction would fail: ${simulateError.shortMessage || simulateError.message}`)
         }
 
+        // Re-estimate now that any USDC approval has landed; the estimate from when the
+        // modal opened may have failed and fallen back to a fixed limit.
+        const gas = await estimateGasWithFallback(
+          () =>
+            publicClient.estimateContractGas({
+              address: config.seaportAddress,
+              abi: SEAPORT_ABI,
+              functionName: 'fulfillAdvancedOrder',
+              args: [advancedOrder, [], fulfillerConduitKey, address],
+              value: usesETH ? totalPayment : BigInt(0),
+              account: address,
+            }),
+          FILL_GAS_FALLBACK_ERC20
+        )
+
         setStep('processing')
 
-        // Ensure we're on mainnet before executing the transaction
-        await ensureChain(walletClient, mainnet.id)
+        // Ensure we're on the ENS chain before executing the transaction
+        await ensureChain(walletClient, activeChain.id)
 
         // Execute with fulfillAdvancedOrder
         tx = await walletClient.writeContract({
-          address: SEAPORT_ADDRESS as `0x${string}`,
+          address: config.seaportAddress,
           abi: SEAPORT_ABI,
           functionName: 'fulfillAdvancedOrder',
           args: [
@@ -481,8 +507,8 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             address, // recipient
           ],
           value: usesETH ? totalPayment : BigInt(0),
-          gas: gasEstimate || undefined, // Use estimated gas if available
-          chain: mainnet,
+          gas,
+          chain: activeChain,
         })
 
         setTxHash(tx)
@@ -494,7 +520,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         // ETH orders use the efficient basic route
         try {
           await publicClient.simulateContract({
-            address: SEAPORT_ADDRESS as `0x${string}`,
+            address: config.seaportAddress,
             abi: SEAPORT_ABI,
             functionName: 'fulfillBasicOrder_efficient_6GL6yc',
             args: [basicOrderParams],
@@ -506,19 +532,32 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           throw new Error(`Transaction would fail: ${simulateError.shortMessage || simulateError.message}`)
         }
 
+        const gas = await estimateGasWithFallback(
+          () =>
+            publicClient.estimateContractGas({
+              address: config.seaportAddress,
+              abi: SEAPORT_ABI,
+              functionName: 'fulfillBasicOrder_efficient_6GL6yc',
+              args: [basicOrderParams],
+              value: totalPayment,
+              account: address,
+            }),
+          FILL_GAS_FALLBACK_ETH
+        )
+
         setStep('processing')
 
-        // Ensure we're on mainnet before executing the transaction
-        await ensureChain(walletClient, mainnet.id)
+        // Ensure we're on the ENS chain before executing the transaction
+        await ensureChain(walletClient, activeChain.id)
 
         tx = await walletClient.writeContract({
-          address: SEAPORT_ADDRESS as `0x${string}`,
+          address: config.seaportAddress,
           abi: SEAPORT_ABI,
           functionName: 'fulfillBasicOrder_efficient_6GL6yc',
           args: [basicOrderParams],
           value: totalPayment,
-          gas: gasEstimate || undefined, // Use estimated gas if available
-          chain: mainnet,
+          gas,
+          chain: activeChain,
         })
 
         setTxHash(tx)
@@ -537,7 +576,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           tx_hash: tx,
         })
         refetchNameMetadata()
-        refetchDomainQueries()
+        refreshEnsQueries(queryClient, receipt)
         const cartDomain =
           cartRegisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id) ||
           cartUnregisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id)
@@ -549,241 +588,277 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       }
     } catch (err: any) {
       console.error('Purchase failed:', err)
-      setError(err.message || 'Transaction failed')
-      setStep('error')
+      showError(err, 'Transaction failed')
     }
+  }
+
+  const ensName = domain.name ? beautifyName(domain.name) : `Token #${domain.token_id}`
+  const isBusy = step === 'approving' || step === 'confirming' || step === 'processing'
+  const showPoapClaim = config.canClaimPoap && !poapClaimed && step === 'success'
+  const gasLabel =
+    gasEstimate && gasPrice ? `~${formattedGasEstimate ? formattedGasEstimate.toString() : '<0.001'} ETH` : null
+  const showInsufficientBalance = !hasSufficientBalance && !needsApproval && !!gasEstimate && !!gasPrice
+  const canEditRecords =
+    !isNameMetadataLoading &&
+    !isNameMetadataRefetching &&
+    !isNameMetadataError &&
+    nameMetadata &&
+    Object.keys(nameMetadata).length > 0
+  const listingSource = listing.source === 'grails' ? 'Grails' : listing.source === 'opensea' ? 'OpenSea' : null
+
+  // Only shown while a transaction is in flight (approving, confirming, processing).
+  const getPurchaseSteps = (): TxStep[] => {
+    const purchaseSubmitted = step === 'processing' && !!txHash
+    const confirmStatus: TxStep['status'] = step === 'approving' ? 'upcoming' : purchaseSubmitted ? 'done' : 'active'
+    const onchainStatus: TxStep['status'] = purchaseSubmitted ? 'active' : 'upcoming'
+
+    const steps: TxStep[] = [
+      {
+        key: 'confirm',
+        label: 'Confirm Purchase',
+        status: confirmStatus,
+        detail: confirmStatus === 'active' ? 'Waiting for your signature' : undefined,
+      },
+      {
+        key: 'onchain',
+        label: 'Onchain Confirmation',
+        status: onchainStatus,
+        detail: onchainStatus === 'active' ? 'Transaction submitted' : undefined,
+        hash: onchainStatus === 'active' ? txHash : null,
+      },
+    ]
+
+    if (needsApproval || approveTxHash) {
+      const isApproving = step === 'approving'
+
+      steps.unshift({
+        key: 'approve',
+        label: 'Approve USDC',
+        status: isApproving ? 'active' : 'done',
+        detail: isApproving ? (approveTxHash ? 'Approving USDC for Seaport' : 'Waiting for your signature') : undefined,
+        hash: approveTxHash,
+      })
+    }
+
+    return steps
+  }
+
+  const getProgressStatus = () => {
+    if (step === 'approving') {
+      return approveTxHash
+        ? { state: 'pending' as const, title: 'Approve USDC', message: 'Approving USDC for Seaport' }
+        : { state: 'wallet' as const, title: 'Approve USDC', message: 'Please confirm the approval in your wallet' }
+    }
+
+    if (step === 'processing' && txHash) {
+      return { state: 'pending' as const, title: 'Processing Transaction', message: 'Transaction submitted' }
+    }
+
+    return {
+      state: 'wallet' as const,
+      title: 'Confirm in Wallet',
+      message: 'Please confirm the transaction in your wallet',
+    }
+  }
+
+  const openEditRecords = () => {
+    if (!nameMetadata || !domain?.name) return
+    dispatch(setEditRecordsModalName(domain.name))
+    dispatch(setEditRecordsModalVersion(domain.version))
+    dispatch(setEditRecordsModalMetadata(nameMetadata))
+    dispatch(setEditRecordsModalOpen(true))
   }
 
   const getModalContent = () => {
     switch (step) {
       case 'review':
         return (
-          <div className='flex flex-col gap-3'>
-            <div className='space-y-4'>
-              <div className='flex flex-row items-center justify-between rounded-lg'>
-                <p className='font-sedan-sc text-xl'>Name</p>
-                <p className='text-right text-xl font-semibold'>{domain.name || `Token #${domain.token_id}`}</p>
-              </div>
-
-              <div className='flex flex-row items-center justify-between rounded-lg'>
-                <p className='font-sedan-sc text-xl'>Total Price</p>
-                <Price
-                  price={listing.price}
-                  currencyAddress={listing.currency_address}
-                  fontSize='text-xl font-semibold'
-                  iconSize='16px'
-                />
-              </div>
-
-              {gasEstimate && gasPrice && (
-                <div className='flex flex-row items-center justify-between rounded-lg'>
-                  <p className='font-sedan-sc text-xl'>Estimated Gas</p>
-                  <div className='text-right'>
-                    <p className='text-xl font-semibold'>
-                      ~{formattedGasEstimate ? formattedGasEstimate.toString() : '<0.001'} ETH
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* <div className='flex flex-row items-center justify-between rounded-lg'>
-                <p className='font-sedan-sc text-xl'>Your Balance</p>
-                <p className={`text-xl font-semibold ${!hasSufficientBalance ? 'text-red-400' : ''}`}>
-                  {currentBalanceFormatted}
-                </p>
-              </div> */}
-            </div>
+          <>
+            <DetailList
+              rows={[
+                {
+                  key: 'price',
+                  label: 'Total Price',
+                  value: (
+                    <Price
+                      price={listing.price}
+                      currencyAddress={listing.currency_address}
+                      fontSize='text-lg font-semibold'
+                      iconSize='14px'
+                      alignTooltip='right'
+                    />
+                  ),
+                },
+                ...(gasLabel ? [{ key: 'gas', label: 'Estimated Gas', value: gasLabel }] : []),
+              ]}
+            />
 
             {isOrderUnavailable && (
-              <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
-                <p className='text-md text-red-400'>
-                  {isCompromiseBlocked
-                    ? COMPROMISED_LISTING_TOOLTIP
-                    : isOrderDataLoading
-                      ? 'Loading order…'
-                      : domain.compromised
-                        ? isAuthenticated
-                          ? 'This listing is not available.'
-                          : 'Sign in with the original owner wallet to buy this name back.'
-                        : 'This listing is not available.'}
-                </p>
-              </div>
+              <Notice tone={isOrderDataLoading && !isCompromiseBlocked ? 'info' : 'danger'}>
+                {isCompromiseBlocked
+                  ? COMPROMISED_LISTING_TOOLTIP
+                  : isOrderDataLoading
+                    ? 'Loading order…'
+                    : domain.compromised && !isAuthenticated
+                      ? 'Sign in with the original owner wallet to buy this name back.'
+                      : 'This listing is not available.'}
+              </Notice>
             )}
 
             {!isOrderUnavailable && <RevokeApprovalsNotice approvalCheck={approvalCheck} />}
 
             {needsApproval && (
-              <div className='bg-secondary border-tertiary mt-4 rounded-lg border p-3'>
-                <p className='text-sm'>
-                  You need to approve USDC spending before purchasing. This is a one-time approval.
-                </p>
-              </div>
+              <Notice tone='info'>
+                You need to approve USDC spending before purchasing. This is a one-time approval.
+              </Notice>
             )}
 
-            {!hasSufficientBalance && !needsApproval && gasEstimate && gasPrice && (
-              <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
-                <p className='text-md text-red-400'>
-                  Insufficient balance. You need{' '}
-                  {isETHListing
-                    ? `${(Number((BigInt(listing.price) + (gasEstimate || BigInt(0)) * (gasPrice || BigInt(0))) / BigInt(10 ** 16)) / 100).toString()} ETH`
-                    : `${(Number(listing.price) / Math.pow(10, TOKEN_DECIMALS.USDC)).toFixed(2)} USDC`}{' '}
-                  to complete this purchase.
-                </p>
-              </div>
+            {showInsufficientBalance && (
+              <Notice tone='danger' title='Insufficient balance'>
+                You need{' '}
+                {isETHListing
+                  ? `${(Number((BigInt(listing.price) + (gasEstimate || BigInt(0)) * (gasPrice || BigInt(0))) / BigInt(10 ** 16)) / 100).toString()} ETH`
+                  : `${(Number(listing.price) / Math.pow(10, TOKEN_DECIMALS.USDC)).toFixed(2)} USDC`}{' '}
+                to complete this purchase.
+              </Notice>
             )}
-
-            <div className='flex w-full flex-col gap-2'>
-              <PrimaryButton
-                onClick={needsApproval ? handleApprove : handlePurchase}
-                className='w-full'
-                disabled={
-                  (!hasSufficientBalance && !needsApproval) || isOrderUnavailable || approvalCheck.blocksTrading
-                }
-              >
-                {!hasSufficientBalance && !needsApproval
-                  ? `Insufficient ${isETHListing ? 'ETH' : 'USDC'} Balance`
-                  : needsApproval
-                    ? 'Approve USDC'
-                    : 'Confirm Purchase'}
-              </PrimaryButton>
-              <SecondaryButton onClick={onClose} className='w-full'>
-                Close
-              </SecondaryButton>
-            </div>
-          </div>
+          </>
         )
 
       case 'approving':
-        return (
-          <>
-            <h2 className='mb-6 text-2xl font-bold text-white'>Approve USDC</h2>
-            <div className='py-8 text-center'>
-              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='mt-4 text-gray-400'>Approving USDC for Seaport</p>
-              {approveTxHash && (
-                <a
-                  href={`https://etherscan.io/tx/${approveTxHash}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-primary hover:text-primary/80 text-lg underline transition-colors'
-                >
-                  View on Etherscan
-                </a>
-              )}
-            </div>
-          </>
-        )
-
       case 'confirming':
-        return (
-          <>
-            <h2 className='mt-4 text-center text-xl font-bold'>Confirm in Wallet</h2>
-            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
-              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-neutral text-lg'>Please confirm the transaction in your wallet</p>
-            </div>
-          </>
-        )
-
       case 'processing':
         return (
           <>
-            <h2 className='mt-4 text-center text-xl font-bold'>Processing Transaction</h2>
-            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
-              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-neutral text-lg'>Transaction submitted</p>
-              {txHash && (
-                <a
-                  href={`https://etherscan.io/tx/${txHash}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-primary hover:text-primary/80 text-lg underline transition-colors'
-                >
-                  View on Etherscan
-                </a>
-              )}
-            </div>
+            <TxStatus {...getProgressStatus()} />
+            <TxSteps steps={getPurchaseSteps()} />
           </>
         )
 
       case 'success':
+        if (showPoapClaim) return <ClaimPoap />
+
         return (
           <>
-            <div className='flex flex-col items-center justify-between gap-2 py-4 text-center'>
-              <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
-                <Check className='text-background h-6 w-6' />
-              </div>
-              <div className='mb-2 text-xl font-bold'>Purchase Successful!</div>
-            </div>
-            {!isNameMetadataLoading &&
-              !isNameMetadataRefetching &&
-              !isNameMetadataError &&
-              nameMetadata &&
-              Object.keys(nameMetadata).length > 0 && (
-                <div
-                  onClick={() => {
-                    if (!nameMetadata || !domain?.name) return
-                    dispatch(setEditRecordsModalName(domain.name))
-                    dispatch(setEditRecordsModalMetadata(nameMetadata))
-                    dispatch(setEditRecordsModalOpen(true))
-                  }}
-                  className='mx-auto flex cursor-pointer flex-row items-center gap-2 pb-4 transition-opacity hover:opacity-80'
-                >
-                  <p className='text-primary text-lg font-bold'>Edit roles records</p>
-                  <Image src={PencilIcon} alt='Pencil' width={22} height={22} />
-                </div>
-              )}
-            <SecondaryButton onClick={onClose} className='w-full'>
-              <p className='text-label text-lg font-bold'>Close</p>
-            </SecondaryButton>
+            <TxStatus state='success' title='Purchase Successful' message={`${ensName} is now in your wallet.`}>
+              {txHash && <TxLink hash={txHash} label='Etherscan' />}
+            </TxStatus>
+            {canEditRecords && (
+              <button
+                type='button'
+                onClick={openEditRecords}
+                className='text-primary hover:bg-secondary mx-auto flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-lg font-bold transition-colors'
+              >
+                Edit roles records
+                <Image src={PencilIcon} alt='' width={18} height={18} />
+              </button>
+            )}
           </>
         )
 
       case 'error':
         return (
           <>
-            <div className='mb-4 rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
-              <h2 className='mb-4 text-2xl font-bold text-red-400'>Transaction Failed</h2>
-              <p className='line-clamp-6 text-red-400'>{error || 'An unknown error occurred'}</p>
-            </div>
-            <div className='flex w-full flex-col gap-2'>
-              <PrimaryButton onClick={() => setStep('review')} className='w-full'>
-                Try Again
-              </PrimaryButton>
-              <SecondaryButton onClick={onClose} className='w-full'>
-                Close
-              </SecondaryButton>
-            </div>
+            <TxStatus state='error' title='Transaction Failed' message='Review the details below and try again.' />
+            <Notice tone='danger' details={errorDetails}>
+              {error || 'An unknown error occurred'}
+            </Notice>
           </>
         )
     }
   }
 
-  return (
-    <div
-      onClick={() => {
-        if (step === 'review' || step === 'error') {
-          onClose()
-        }
-      }}
-      className='fixed inset-0 z-50 flex h-dvh w-screen items-end justify-end bg-black/40 backdrop-blur-sm md:items-center md:justify-center md:p-4'
-    >
-      <div
-        onClick={(e) => {
-          e.stopPropagation()
-        }}
-        className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-auto border-t p-6 transition-all duration-300 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
-      >
-        {CAN_CLAIM_POAP && !poapClaimed && step === 'success' ? (
-          <ClaimPoap />
-        ) : (
+  const getFooter = () => {
+    switch (step) {
+      case 'review':
+        return (
           <>
-            <h2 className='font-sedan-sc mb-6 min-h-6 text-center text-3xl'>Purchase Name</h2>
-            {getModalContent()}
+            <PrimaryButton
+              onClick={needsApproval ? handleApprove : handlePurchase}
+              className={modalPrimaryActionClassName}
+              disabled={(!hasSufficientBalance && !needsApproval) || isOrderUnavailable || approvalCheck.blocksTrading}
+            >
+              {!hasSufficientBalance && !needsApproval
+                ? `Insufficient ${isETHListing ? 'ETH' : 'USDC'} Balance`
+                : needsApproval
+                  ? 'Approve USDC'
+                  : 'Confirm Purchase'}
+            </PrimaryButton>
+            <SecondaryButton onClick={onClose} className={modalActionClassName}>
+              Close
+            </SecondaryButton>
           </>
-        )}
-      </div>
-    </div>
+        )
+
+      case 'success':
+        if (showPoapClaim) return null
+
+        return (
+          <SecondaryButton onClick={onClose} className={modalActionClassName}>
+            Close
+          </SecondaryButton>
+        )
+
+      case 'error':
+        return (
+          <>
+            <PrimaryButton onClick={() => setStep('review')} className={modalPrimaryActionClassName}>
+              Try Again
+            </PrimaryButton>
+            <SecondaryButton onClick={onClose} className={modalActionClassName}>
+              Close
+            </SecondaryButton>
+          </>
+        )
+
+      default:
+        return null
+    }
+  }
+
+  return (
+    <ModalShell
+      title={showPoapClaim ? undefined : 'Purchase Name'}
+      onClose={onClose}
+      locked={isBusy}
+      dismissible={step === 'review' || step === 'error'}
+      stageKey={isBusy ? 'progress' : showPoapClaim ? 'poap' : step}
+      subject={
+        showPoapClaim ? null : (
+          <AssetSummary
+            name={ensName}
+            compact={isBusy}
+            meta={step !== 'success' && listingSource ? `Listed on ${listingSource}` : undefined}
+            image={
+              domain.name ? (
+                <NameImage
+                  name={domain.name}
+                  tokenId={domain.token_id}
+                  version={domain.version}
+                  expiryDate={domain.expiry_date}
+                  className='h-full w-full'
+                  height={48}
+                  width={48}
+                />
+              ) : undefined
+            }
+            price={
+              <Price
+                price={listing.price}
+                currencyAddress={listing.currency_address}
+                fontSize='text-xl font-bold'
+                iconSize='16px'
+                alignTooltip='right'
+              />
+            }
+          />
+        )
+      }
+      footer={getFooter()}
+      footerHint={isBusy ? 'Keep this window open until the transaction confirms.' : undefined}
+    >
+      {getModalContent()}
+    </ModalShell>
   )
 }
 

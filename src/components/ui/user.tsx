@@ -16,7 +16,7 @@ import { cn } from '@/utils/tailwind'
 import LoadingCell from './loadingCell'
 import { useUserContext } from '@/context/user'
 import { beautifyName } from '@/lib/ens'
-import { ENS_METADATA_URL } from '@/constants/ens'
+import { config } from '@/lib/config'
 import { accountQueryKey } from '@/utils/queryKeys'
 
 interface UserProps {
@@ -73,9 +73,11 @@ const User: React.FC<UserProps> = ({
     : profile
 
   if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />
-  const avatarSrc = profileData?.ens?.name ? `${ENS_METADATA_URL}/mainnet/avatar/${profileData.ens.name}` : undefined
+  const avatarSrc = profileData?.ens?.name
+    ? `${config.ensMetadataUrl}/mainnet/avatar/${profileData.ens.name}`
+    : undefined
   const headerImageSrc = profileData?.ens?.name
-    ? `${ENS_METADATA_URL}/mainnet/header/${profileData.ens.name}`
+    ? `${config.ensMetadataUrl}/mainnet/header/${profileData.ens.name}`
     : undefined
 
   return (

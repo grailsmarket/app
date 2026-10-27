@@ -2,14 +2,14 @@ import { useState } from 'react'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { Address } from 'viem'
-import { mainnet } from 'viem/chains'
-import { ENS_NAME_WRAPPER_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import { activeChain } from '@/constants/web3/chain'
+import { config } from '@/lib/config'
 import { fetchCompromiseIncidents } from '@/api/compromised/incidents'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 
-// Same signature on the ENS registrar (ERC-721) and NameWrapper (ERC-1155)
+// Same signature on the V1 registrar, NameWrapper, and V2 registry.
 const APPROVAL_ABI = [
   {
     inputs: [
@@ -34,8 +34,9 @@ const APPROVAL_ABI = [
 ] as const
 
 const ENS_CONTRACTS = [
-  { address: ENS_REGISTRAR_ADDRESS as Address, label: 'ENS Registrar' },
-  { address: ENS_NAME_WRAPPER_ADDRESS as Address, label: 'ENS Name Wrapper' },
+  { address: config.ensRegistrar, label: 'ENS Registrar' },
+  { address: config.ensNameWrapper, label: 'ENS Name Wrapper' },
+  { address: config.ensV2Registry, label: 'ENS V2 Registry' },
 ]
 
 export type MaliciousApproval = {
@@ -54,7 +55,7 @@ export type MaliciousApproval = {
 const useMaliciousApprovals = () => {
   const account = useAccount()
   const { address } = account
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const [isRevoking, setIsRevoking] = useState(false)
   const [revokeError, setRevokeError] = useState<string | null>(null)
@@ -70,7 +71,7 @@ const useMaliciousApprovals = () => {
   )
 
   const approvalsQuery = useQuery({
-    queryKey: ['compromise', 'approvals', address, operators.map((o) => o.operator).join(',')],
+    queryKey: ['compromise', 'approvals', activeChain.id, address, operators.map((o) => o.operator).join(',')],
     queryFn: async (): Promise<MaliciousApproval[]> => {
       if (!address || !publicClient) return []
       const checks = ENS_CONTRACTS.flatMap((contract) =>
@@ -108,14 +109,14 @@ const useMaliciousApprovals = () => {
     setIsRevoking(true)
     try {
       const walletClient = await getWalletClient()
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
       for (const approval of approvals) {
         const tx = await walletClient.writeContract({
           address: approval.contract,
           abi: APPROVAL_ABI,
           functionName: 'setApprovalForAll',
           args: [approval.operator, false],
-          chain: mainnet,
+          chain: activeChain,
         })
         const receipt = await waitForTransaction(publicClient, tx, account)
         if (receipt.status !== 'success') throw new Error(`Revoking approval on ${approval.contractLabel} failed`)

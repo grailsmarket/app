@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@/constants/analytics'
+import { API_URL } from '@/constants/api'
 import { LeaderboardResponse, LeaderboardSortBy, LeaderboardSortOrder } from '@/types/leaderboard'
 
 interface FetchLeaderboardParams {
@@ -28,7 +28,7 @@ export const fetchLeaderboard = async ({
     params.append('clubs[]', club)
   })
 
-  const response = await fetch(`${API_BASE_URL}/leaderboard?${params}`)
+  const response = await fetch(`${API_URL}/leaderboard?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch leaderboard')

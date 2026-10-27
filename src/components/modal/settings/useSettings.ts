@@ -60,6 +60,10 @@ export const useSettings = () => {
       return result
     },
     onSuccess: (result) => {
+      setEmailAddress(result.data.email)
+      setOfferNotificationThresholdValue(
+        result.data.minOfferThreshold == null ? null : String(result.data.minOfferThreshold)
+      )
       dispatch(setUserId(result.data.id))
       dispatch(setUserEmail({ address: result.data.email, verified: result.data.emailVerified }))
       dispatch(setUserDiscord(result.data.discord))

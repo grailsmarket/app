@@ -20,6 +20,7 @@ export type ActivityType = {
   id: number
   name: string
   ens_name_id: number
+  version: number
   event_type: ProfileActivityEventType
   actor_address: Address | null
   counterparty_address: Address | null

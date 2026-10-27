@@ -5,6 +5,7 @@ export type MarketplaceDomainType = {
   id: number
   name: string
   token_id: string
+  version: number
   owner: Address | null
   expiry_date: string | null
   registration_date: string | null
@@ -58,6 +59,7 @@ export type DomainListingType = {
 export type DomainOfferType = {
   id: number
   ens_name_id: number
+  version: number
   buyer_address: Address
   offer_amount_wei: string
   currency_address: Address
@@ -340,6 +342,7 @@ export type CategoryType = {
 export type NameActivityType = {
   id: number
   name: string
+  version: number
   event_type: ProfileActivityEventType
   actor_address: Address | null
   counterparty_address: Address | null

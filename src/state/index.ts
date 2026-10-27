@@ -17,5 +17,6 @@ export const persistor = persistStore(store)
 export type RootState = ReturnType<typeof store.getState>
 export type AppState = ReturnType<typeof persistedReducer>
 export type AppDispatch = typeof store.dispatch
+export type AppStore = typeof store
 
 export default store

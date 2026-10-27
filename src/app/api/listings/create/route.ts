@@ -5,9 +5,11 @@ import { API_URL } from '@/constants/api'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 import { APIResponseType, CreateListingsResultType } from '@/types/api'
 import { captureListingCreated } from '@/lib/posthog-server'
+import { config } from '@/lib/config'
+import { serverConfig } from '@/lib/serverConfig'
+import { activeChain } from '@/constants/web3/chain'
+import { getListingTokenId } from '@/lib/seaport/ensv2'
 
-const OPENSEA_API_URL = process.env.OPENSEA_API_URL || 'https://api.opensea.io'
-const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export async function POST(request: NextRequest) {
@@ -100,7 +102,8 @@ export async function POST(request: NextRequest) {
 
             return {
               type,
-              token_id: domains[index * CREATE_BATCH_SIZE + orderIndex].token_id,
+              // ENSv2 names: the token ID the order was signed for (the name's current one)
+              token_id: getListingTokenId(order, domains[index * CREATE_BATCH_SIZE + orderIndex].token_id),
               price_wei: priceInSmallestUnit,
               currency_address: currencyAddress.toLowerCase(),
               order_data: JSON.stringify(order),
@@ -172,7 +175,24 @@ export async function POST(request: NextRequest) {
           )
         }
       }
-      return NextResponse.json({ grails: responses })
+      // Listings the backend refused (e.g. an ENSv2 name that isn't approved or can't be transferred)
+      const failures: string[] = []
+      for (let batchIdx = 0; batchIdx < responses.length; batchIdx++) {
+        const r = responses[batchIdx]
+        if (r instanceof Response) continue
+        for (const item of r?.data?.results ?? []) {
+          if (item?.status !== 'failed') continue
+          const domain = domains[batchIdx * CREATE_BATCH_SIZE + (typeof item.index === 'number' ? item.index : 0)]
+          failures.push(`${domain?.name ?? item.token_id}: ${item.error?.message ?? 'not created'}`)
+        }
+      }
+
+      return NextResponse.json({
+        grails: responses,
+        ...(failures.length > 0 && {
+          warning: `${failures.length} listing${failures.length === 1 ? ' was' : 's were'} not created. ${failures.join('; ')}`,
+        }),
+      })
     } catch (error: any) {
       console.error('Error creating orders on Grails marketplace:', error)
       return NextResponse.json(
@@ -189,8 +209,8 @@ export async function POST(request: NextRequest) {
 /**
  * Submit a Seaport order to OpenSea's API
  */
-async function submitOrderToOpenSea(order_data: any) {
-  if (!OPENSEA_API_KEY) {
+const submitOrderToOpenSea = async (order_data: any) => {
+  if (!serverConfig.openseaApiKey) {
     throw new Error('OPENSEA_API_KEY not configured')
   }
 
@@ -222,10 +242,11 @@ async function submitOrderToOpenSea(order_data: any) {
       counter: orderParameters.counter?.toString(),
     },
     signature: orderSignature,
-    protocol_address: process.env.NEXT_PUBLIC_SEAPORT_ADDRESS || '0x0000000000000068F116a894984e2DB1123eB395',
+    protocol_address: config.seaportAddress,
   }
 
-  const url = `${OPENSEA_API_URL}/v2/orders/ethereum/seaport/listings`
+  const chain = activeChain.id === 1 ? 'ethereum' : 'sepolia'
+  const url = `${config.openseaApiUrl}/v2/orders/${chain}/seaport/listings`
   console.log('Submitting order to OpenSea:', {
     url,
     offerer: payload.parameters.offerer,
@@ -239,7 +260,7 @@ async function submitOrderToOpenSea(order_data: any) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': OPENSEA_API_KEY,
+      'X-API-KEY': serverConfig.openseaApiKey,
     },
     body: JSON.stringify(payload),
   })

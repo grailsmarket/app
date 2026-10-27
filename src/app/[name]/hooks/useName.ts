@@ -7,6 +7,7 @@ import { useAppDispatch } from '@/state/hooks'
 import {
   setEditRecordsModalMetadata,
   setEditRecordsModalName,
+  setEditRecordsModalVersion,
   setEditRecordsModalOpen,
 } from '@/state/reducers/modals/editRecordsModal'
 import { useQuery } from '@tanstack/react-query'
@@ -59,8 +60,7 @@ export const useName = (name: string) => {
 
   const dispatch = useAppDispatch()
   const openEditMetadataModal = () => {
-    if (!metadata) return
-    const metadataRecord = metadata.reduce(
+    const metadataRecord = (metadata ?? []).reduce(
       (acc, row) => {
         acc[row.label] = row.value
         return acc
@@ -68,6 +68,7 @@ export const useName = (name: string) => {
       {} as Record<string, string>
     )
     dispatch(setEditRecordsModalName(name))
+    dispatch(setEditRecordsModalVersion(nameDetails?.version ?? null))
     dispatch(setEditRecordsModalMetadata(metadataRecord))
     dispatch(setEditRecordsModalOpen(true))
   }

@@ -61,6 +61,7 @@ const CommentsPanel: React.FC<Props> = ({ category }) => {
                 id: item.id,
                 ens_name_id: item.ens_name_id,
                 name: item.name,
+                version: item.version,
                 body: item.comment.body,
                 created_at: item.created_at,
                 author_address: item.comment.author_address,

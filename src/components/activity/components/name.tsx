@@ -10,11 +10,12 @@ import { REGISTERED } from '@/constants/domains/registrationStatuses'
 
 interface NameProps {
   name: string
+  version: number
   tokenId: string
   clubs: string[]
 }
 
-const Name: React.FC<NameProps> = ({ name, tokenId, clubs }) => {
+const Name: React.FC<NameProps> = ({ name, version, tokenId, clubs }) => {
   const { categories } = useCategories()
   const category = clubs && clubs.length > 0 ? categories?.find((c) => c.name === clubs?.[0]) : null
   const categoryDetails = clubs && clubs.length > 0 ? getCategoryDetails(clubs?.[0]) : null
@@ -27,6 +28,7 @@ const Name: React.FC<NameProps> = ({ name, tokenId, clubs }) => {
       <div className='flex w-full max-w-full flex-row items-center justify-start gap-2'>
         <NameImage
           name={name}
+          version={version}
           tokenId={tokenId}
           expiryDate={null}
           forceRegStatus={REGISTERED}

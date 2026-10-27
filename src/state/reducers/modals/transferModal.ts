@@ -4,6 +4,7 @@ import { RootState } from '../../index'
 export type TransferDomainType = {
   name: string
   tokenId: string
+  version: number
   owner?: string | null
   expiry_date?: string | null
 }

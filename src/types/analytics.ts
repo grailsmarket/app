@@ -40,6 +40,7 @@ export type AnalyticsSource = 'all' | 'grails' | 'opensea'
 export interface AnalyticsListing {
   id: number
   name: string
+  version: number
   price_wei: string
   currency_address: string
   seller_address: string
@@ -51,6 +52,7 @@ export interface AnalyticsListing {
 export interface AnalyticsOffer {
   id: number
   name: string
+  version: number
   offer_amount_wei: string
   currency_address: string
   buyer_address: string
@@ -62,6 +64,7 @@ export interface AnalyticsOffer {
 export interface AnalyticsSale {
   id: number
   name: string
+  version: number
   sale_price_wei: string
   currency_address: string
   seller_address: string
@@ -74,6 +77,7 @@ export interface AnalyticsSale {
 export interface AnalyticsRegistration {
   id: number
   name: string
+  version: number
   registrant_address: string
   owner_address: string
   base_cost_wei: string

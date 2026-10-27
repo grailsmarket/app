@@ -14,14 +14,14 @@ import { openRegistrationModal, selectRegistration } from '@/state/reducers/regi
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { usePublicClient } from 'wagmi'
-import { mainnet } from 'wagmi/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useQuery } from '@tanstack/react-query'
-import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
-import { ENS_HOLIDAY_REFERRER_ADDRESS_SHORT, ENS_HOLIDAY_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/web3/abi/ENSHolidayRegistrar'
 import { formatPrice } from '@/utils/formatPrice'
 import PremiumPriceGraph from './PremiumPriceGraph'
 import PremiumPriceControls from './PremiumPriceControls'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
+import { config } from '@/lib/config'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
@@ -35,7 +35,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const registrationState = useAppSelector(selectRegistration)
 
   // Lifted state for premium price controls
@@ -106,7 +106,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
 
       const label = nameDetails.name.replace('.eth', '')
       const result = await publicClient.readContract({
-        address: ENS_HOLIDAY_REGISTRAR_ADDRESS as `0x${string}`,
+        address: config.ensRegistrar,
         abi: ENS_HOLIDAY_REGISTRAR_ABI,
         functionName: 'rentPrice',
         args: [label, ONE_YEAR_SECONDS],
@@ -131,7 +131,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           <PrimaryButton
             onClick={() => {
               window.open(
-                `https://app.ens.domains/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                `https://app.ens.domains/${nameDetails?.name}/register?referrer=${config.ensReferrerAddress}`,
                 '_blank'
               )
             }}
@@ -185,7 +185,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
                     dispatch(openRegistrationModal({ name: nameDetails?.name || '', domain: nameDetails }))
                   } else {
                     window.open(
-                      `https://app.ens.domains/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                      `https://app.ens.domains/${nameDetails?.name}/register?referrer=${config.ensReferrerAddress}`,
                       '_blank'
                     )
                   }
@@ -257,7 +257,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
                   dispatch(openRegistrationModal({ name: name || '', domain: nameDetails }))
                 } else {
                   window.open(
-                    `https://app.ens.domains/${name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                    `https://app.ens.domains/${name}/register?referrer=${config.ensReferrerAddress}`,
                     '_blank'
                   )
                 }

@@ -1,25 +1,38 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
-import { namehash, labelhash, hexToBigInt, encodeFunctionData, toHex, isAddress } from 'viem'
-import { mainnet } from 'viem/chains'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { namehash, labelhash, hexToBigInt, encodeFunctionData, toHex, isAddress, BaseError } from 'viem'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
-import { RegistryAbi } from '@/constants/abi/RegistryAbi'
-import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
-import { ENS_REGISTRY_CONTRACT_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import { PublicResolverAbi } from '@/constants/web3/abi/PublicResolverAbi'
+import { RegistryAbi } from '@/constants/web3/abi/RegistryAbi'
+import { BaseRegistrarAbi } from '@/constants/web3/abi/BaseRegistrar'
 import { resolveEnsAddress } from '@/utils/web3/ens'
 import { fetchNameRoles } from '@/api/name/roles'
 import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
+import { config } from '@/lib/config'
+import { activeChain } from '@/constants/web3/chain'
 
 export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'error'
 
+/** The transactions a V1 save can send, in the order they are sent. */
+export type V1TxKind = 'records' | 'manager' | 'owner'
+
+/** A readable line for the error screen, plus the raw text for its details when the two differ. */
+export const describeTxError = (err: unknown, fallback = 'Transaction failed') => {
+  const message = err instanceof Error ? err.message : fallback
+  const short = err instanceof BaseError ? err.shortMessage : message
+  return { message: short, details: short !== message ? message : null }
+}
+
 export function useEditRecords(name: string | null, metadata: Record<string, string> | null) {
   const { address } = useAccount()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
+  // Keep background refreshes from replacing edits already made in this modal.
+  const editedFields = useRef(new Set<string>())
 
   const { data: roles } = useQuery({
     queryKey: ['name', 'roles', name],
@@ -42,9 +55,9 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
   useEffect(() => {
     if (!roles) return
-    setRoleOwnerState(roles.owner)
-    setRoleManagerState(roles.manager)
-    setRoleEthRecordState(roles.ethAddress)
+    if (!editedFields.current.has('owner')) setRoleOwnerState(roles.owner)
+    if (!editedFields.current.has('manager')) setRoleManagerState(roles.manager)
+    if (!editedFields.current.has('eth')) setRoleEthRecordState(roles.ethAddress)
   }, [roles])
 
   // Text records state
@@ -77,11 +90,18 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const [step, setStep] = useState<EditStep>('editing')
   const [imageUploadTarget, setImageUploadTarget] = useState<'avatar' | 'header' | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
+  // Reported for the progress screens: what this save sends, each transaction's hash and which ones confirmed.
+  const [txPlan, setTxPlan] = useState<V1TxKind[]>([])
+  const [currentTx, setCurrentTx] = useState<V1TxKind | null>(null)
+  const [txHashes, setTxHashes] = useState<Partial<Record<V1TxKind, string>>>({})
+  const [confirmedTxs, setConfirmedTxs] = useState<V1TxKind[]>([])
+  const [recordChangeCount, setRecordChangeCount] = useState(0)
 
   // Initialize state from metadata
   useEffect(() => {
-    if (!metadata) return
+    if (!metadata || editedFields.current.has('records')) return
 
     const textRecs: Record<string, string> = {}
     for (const key of TEXT_RECORD_KEYS) {
@@ -103,7 +123,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
     // ETH record for Roles tab (metadata key is 'Ethereum' from chains, or 'eth')
     const ethValue = metadata['Ethereum'] || metadata['ethereum'] || metadata['eth'] || ''
-    setRoleEthRecordState(ethValue)
+    if (!editedFields.current.has('eth')) setRoleEthRecordState(ethValue)
     // Custom records: any key not in predefined sets
     const knownKeys = new Set<string>([
       ...TEXT_RECORD_KEYS,
@@ -246,16 +266,19 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
   // Update text record
   const setRecord = useCallback((key: string, value: string) => {
+    editedFields.current.add('records')
     setRecords((prev) => ({ ...prev, [key]: value }))
   }, [])
 
   // Update address record
   const setAddressRecord = useCallback((key: string, value: string) => {
+    editedFields.current.add('records')
     setAddressRecords((prev) => ({ ...prev, [key]: value }))
   }, [])
 
   // Add an address record to visible set
   const addVisibleAddressRecord = useCallback((key: string) => {
+    editedFields.current.add('records')
     setVisibleAddressRecords((prev) => new Set([...prev, key]))
   }, [])
 
@@ -266,15 +289,18 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
   // Custom record functions
   const setCustomRecord = useCallback((key: string, value: string) => {
+    editedFields.current.add('records')
     setCustomRecords((prev) => ({ ...prev, [key]: value }))
   }, [])
 
   const addCustomRecord = useCallback((key: string) => {
+    editedFields.current.add('records')
     setCustomRecords((prev) => ({ ...prev, [key]: '' }))
     setVisibleCustomRecords((prev) => new Set([...prev, key]))
   }, [])
 
   const removeCustomRecord = useCallback((key: string) => {
+    editedFields.current.add('records')
     setVisibleCustomRecords((prev) => {
       const next = new Set(prev)
       next.delete(key)
@@ -289,19 +315,29 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   }, [visibleCustomRecords])
 
   // Role setters
-  const setRoleOwner = useCallback((value: string) => setRoleOwnerState(value), [])
-  const setRoleManager = useCallback((value: string) => setRoleManagerState(value), [])
-  const setRoleEthRecord = useCallback((value: string) => setRoleEthRecordState(value), [])
+  const setRoleOwner = useCallback((value: string) => {
+    editedFields.current.add('owner')
+    setRoleOwnerState(value)
+  }, [])
+  const setRoleManager = useCallback((value: string) => {
+    editedFields.current.add('manager')
+    setRoleManagerState(value)
+  }, [])
+  const setRoleEthRecord = useCallback((value: string) => {
+    editedFields.current.add('eth')
+    setRoleEthRecordState(value)
+  }, [])
 
   // Save all changed records and roles
   const saveRecords = useCallback(async () => {
     if (!name || !resolverAddress || !publicClient) return
 
-    const walletClient = await getWalletClient()
-
     setStep('confirming')
     setErrorMessage(null)
+    setErrorDetails(null)
     setTxHash(null)
+    setTxHashes({})
+    setConfirmedTxs([])
 
     // Helper: resolve an input value to an effective address
     const resolveRole = (value: string, resolved: string | null): `0x${string}` | null => {
@@ -380,6 +416,21 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         )
       }
 
+      const managerChanged = roleManager.toLowerCase() !== managerAddress.toLowerCase()
+      const ownerChanged = roleOwner.toLowerCase() !== ownerAddress.toLowerCase()
+
+      // Report the whole run up front so the progress screen can list every transaction it sends.
+      const plan: V1TxKind[] = []
+      if (calls.length > 0) plan.push('records')
+      if (managerChanged && roleManager) plan.push('manager')
+      if (ownerChanged && roleOwner && ownerAddress) plan.push('owner')
+      setTxPlan(plan)
+      setCurrentTx(plan[0] ?? null)
+      setRecordChangeCount(calls.length)
+
+      // Inside the try, so a missing or locked wallet shows the error screen instead of being swallowed.
+      const walletClient = await getWalletClient()
+
       // Submit multicall if there are resolver changes
       if (calls.length > 0) {
         const hash = await walletClient.writeContract({
@@ -387,17 +438,21 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
           abi: PublicResolverAbi,
           functionName: 'multicall',
           args: [calls],
-          chain: mainnet,
+          chain: activeChain,
         })
 
         setTxHash(hash)
+        setTxHashes((previous) => ({ ...previous, records: hash }))
         setStep('processing')
-        await waitForTransaction(publicClient, hash)
+        const receipt = await waitForTransaction(publicClient, hash)
+        if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        refreshEnsQueries(queryClient, receipt)
+        setConfirmedTxs((previous) => [...previous, 'records'])
       }
 
       // --- Step 2: Manager change (setOwner on Registry, or reclaim on BaseRegistrar) ---
-      const managerChanged = roleManager.toLowerCase() !== managerAddress.toLowerCase()
       if (managerChanged && roleManager) {
+        setCurrentTx('manager')
         const effectiveManager = resolveRole(roleManager, resolvedRoleManager)
         if (!effectiveManager) {
           throw new Error(`Could not resolve "${roleManager}" to an address`)
@@ -411,31 +466,35 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         if (isManager) {
           // Current manager can use setOwner on the Registry
           hash = await walletClient.writeContract({
-            address: ENS_REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
+            address: config.ensRegistry,
             abi: RegistryAbi,
             functionName: 'setOwner',
             args: [node, effectiveManager],
-            chain: mainnet,
+            chain: activeChain,
           })
         } else {
           // NFT owner can use reclaim on the BaseRegistrar
           hash = await walletClient.writeContract({
-            address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+            address: config.ensRegistrar,
             abi: BaseRegistrarAbi,
             functionName: 'reclaim',
             args: [tokenId, effectiveManager],
-            chain: mainnet,
+            chain: activeChain,
           })
         }
 
         setTxHash(hash)
+        setTxHashes((previous) => ({ ...previous, manager: hash }))
         setStep('processing')
-        await waitForTransaction(publicClient, hash)
+        const receipt = await waitForTransaction(publicClient, hash)
+        if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        refreshEnsQueries(queryClient, receipt)
+        setConfirmedTxs((previous) => [...previous, 'manager'])
       }
 
       // --- Step 3: Owner transfer (safeTransferFrom on BaseRegistrar) ---
-      const ownerChanged = roleOwner.toLowerCase() !== ownerAddress.toLowerCase()
       if (ownerChanged && roleOwner && ownerAddress) {
+        setCurrentTx('owner')
         const effectiveOwner = resolveRole(roleOwner, resolvedRoleOwner)
         if (!effectiveOwner) {
           throw new Error(`Could not resolve "${roleOwner}" to an address`)
@@ -446,29 +505,28 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         const tokenId = hexToBigInt(labelhash(label))
 
         const hash = await walletClient.writeContract({
-          address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+          address: config.ensRegistrar,
           abi: BaseRegistrarAbi,
           functionName: 'safeTransferFrom',
           args: [ownerAddress, effectiveOwner, tokenId],
-          chain: mainnet,
+          chain: activeChain,
         })
 
         setTxHash(hash)
+        setTxHashes((previous) => ({ ...previous, owner: hash }))
         setStep('processing')
-        await waitForTransaction(publicClient, hash)
+        const receipt = await waitForTransaction(publicClient, hash)
+        if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        refreshEnsQueries(queryClient, receipt)
+        setConfirmedTxs((previous) => [...previous, 'owner'])
       }
-
-      // Invalidate caches
-      queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
-      queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
-      queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
-      queryClient.invalidateQueries({ queryKey: ['profile'] })
-      queryClient.invalidateQueries({ queryKey: ['profileMetadata', name] })
 
       setStep('success')
     } catch (err: unknown) {
+      const { message, details } = describeTxError(err)
       setStep('error')
-      setErrorMessage(err instanceof Error ? err.message : 'Transaction failed')
+      setErrorMessage(message)
+      setErrorDetails(details)
     }
   }, [
     name,
@@ -498,6 +556,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const resetToEditing = useCallback(() => {
     setStep('editing')
     setErrorMessage(null)
+    setErrorDetails(null)
     setTxHash(null)
   }, [])
 
@@ -535,7 +594,13 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     saveRecords,
     resetToEditing,
     errorMessage,
+    errorDetails,
     txHash,
+    txPlan,
+    currentTx,
+    txHashes,
+    confirmedTxs,
+    recordChangeCount,
     resolverAddress,
     address,
     isManager,

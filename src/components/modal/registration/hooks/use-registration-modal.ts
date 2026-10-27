@@ -1,18 +1,21 @@
 'use client'
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
-import { useAccount, useBalance, useGasPrice, usePublicClient } from 'wagmi'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import { useAccount, useGasPrice } from 'wagmi'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectRegistration,
   setRegistrationFlowState,
   setSecret,
+  setRegistrationParameters,
+  setResolverDeploymentTxHash,
   setRegistrationError,
   setRegistrationMode,
   setQuantity,
   setTimeUnit,
   setCustomDuration,
   setEntryDuration,
+  clearEntryDuration,
   setBulkAvailability,
   setEntryCalculatedDuration,
   initializeBatches,
@@ -26,25 +29,28 @@ import {
   reopenRegistrationModal,
   resetRegistrationModal,
 } from '@/state/reducers/registration'
-import useBulkRegisterDomains from '@/hooks/registrar/useBulkRegisterDomains'
-import useETHPrice from '@/hooks/useETHPrice'
-import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
-import { YEAR_IN_SECONDS } from '@/constants/time'
+import useRegisterDomains from '@/hooks/registrar/useRegisterDomains'
+import { TOKEN_ADDRESSES, TOKEN_DECIMALS, TOKENS } from '@/constants/web3/tokens'
+import { DAY_IN_SECONDS, YEAR_IN_SECONDS } from '@/constants/time'
 import { normalizeName } from '@/lib/ens'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Hex, isAddress } from 'viem'
+import { Address, createPublicClient, formatUnits, Hex, http, isAddress, zeroAddress } from 'viem'
 import { fetchAccount, useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
-import { mainnet } from 'viem/chains'
 import { useDebounce } from '@/hooks/useDebounce'
 import { MIN_REGISTRATION_DURATION } from '@/constants/registration'
 import { CalculationResults, TimeUnit } from '@/types/registration'
 import { computeDurationForEntry } from '@/utils/registration'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import { accountQueryKey } from '@/utils/queryKeys'
+import { activeChain } from '@/constants/web3/chain'
+import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
+import { calculateDurationDiscount } from '@/utils/registrationPricing'
+import { useRegistrationResolver } from './use-registration-resolver'
 
 const useRegistrationModal = () => {
   const isClient = useIsClient()
@@ -54,33 +60,55 @@ const useRegistrationModal = () => {
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
   const { address } = useAccount()
-  const { ethPrice } = useETHPrice()
-  const { data: gasPrice } = useGasPrice()
-  const publicClient = usePublicClient()
+  const { data: gasPrice } = useGasPrice({ chainId: activeChain.id })
+  const publicClient = createPublicClient({ chain: activeChain, transport: http() })
+
   const queryClient = useQueryClient()
   const {
+    isApproving,
+    approvalTxHash,
     generateSecret,
     checkBulkAvailable,
-    getBulkTotalPrice,
-    getBulkRentPrices,
+    getRegistrationsPrice,
+    getRegistrationPricing,
     makeBulkCommitments,
     submitMultiCommit,
     submitMultiRegister,
     calculateDomainPriceUSD,
     getCommitmentAges,
     checkCommitmentAge,
-  } = useBulkRegisterDomains()
+  } = useRegisterDomains()
+  const { isUserResolverDeployed, deployResolver, getDeployedResolver } = usePermissionedResolver()
 
+  const parameters = registrationState.parameters
+  const [selectedAsset, setAsset] = useState<Address>(TOKEN_ADDRESSES.USDC)
+  const asset = parameters?.asset ?? selectedAsset
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showCancelWarning, setShowCancelWarning] = useState(false)
   const [waitTimeRemaining, setWaitTimeRemaining] = useState<number>(60)
   const [gasEstimate, setGasEstimate] = useState<bigint | null>(BigInt(500000))
   const [showCustomOwner, setShowCustomOwner] = useState(false)
-  const [customOwner, setCustomOwner] = useState<string>('')
+  const [ownerInput, setOwnerInput] = useState<{ wallet: Address; value: string } | null>(null)
+  const customOwner = parameters?.owner ?? (ownerInput?.wallet === address ? ownerInput?.value : address) ?? ''
+  const setCustomOwner = (value: string) => {
+    if (address) setOwnerInput({ wallet: address, value })
+  }
+  const [resolverInput, setResolverInput] = useState<{ wallet: Address; owner?: Address; value: string } | null>(null)
+  const [isDeployingResolver, setIsDeployingResolver] = useState(false)
+  const [resolverDeploymentHash, setResolverDeploymentHash] = useState<Hex | null>(null)
+  const commitInFlight = useRef(false)
+  const deploymentInFlight = useRef(false)
+  const registrationRun = useRef(0)
   const [showPerNameDurations, setShowPerNameDurations] = useState(false)
   const [perNameDatePickerIndex, setPerNameDatePickerIndex] = useState<number | null>(null)
-  const [reverseRecord, setReverseRecord] = useState(false)
   const debouncedCustomOwner = useDebounce(customOwner, 500)
+
+  useEffect(() => {
+    if (registrationState.entries.length > 0) return
+    setOwnerInput(null)
+    setResolverInput(null)
+    setShowCustomOwner(false)
+  }, [registrationState.entries.length])
 
   const { data: account, isLoading: isResolving } = useQuery({
     queryKey: accountQueryKey(debouncedCustomOwner),
@@ -93,7 +121,36 @@ const useRegistrationModal = () => {
     enabled: !!customOwner,
   })
 
+  const getOwnerAddress = useCallback((): `0x${string}` | null => {
+    const value = customOwner.trim()
+    if (value) {
+      if (isAddress(value)) return value
+      if (value !== debouncedCustomOwner.trim()) return null
+      if (isAddress(account?.address ?? '')) return account!.address as `0x${string}`
+      return null
+    }
+    return address ?? null
+  }, [customOwner, debouncedCustomOwner, account, address])
+  const ownerAddress = getOwnerAddress() ?? undefined
+  const resolverSelection = useRegistrationResolver({
+    owner: ownerAddress,
+    input:
+      resolverInput && resolverInput.wallet === address && resolverInput.owner === ownerAddress
+        ? resolverInput.value
+        : null,
+    committedResolver: parameters?.resolver,
+    enabled: !!address && registrationState.isOpen && registrationState.flowState === 'review' && !parameters,
+  })
+  const { resolver, error: resolverError, getDefaultResolver } = resolverSelection
+  const setResolver = (value: string) => {
+    if (address) setResolverInput({ wallet: address, owner: ownerAddress, value })
+  }
+
   const entries = registrationState.entries
+  const registrationNames = entries.map((entry) => entry.name).join(',')
+  useEffect(() => {
+    registrationRun.current += 1
+  }, [address, registrationNames])
   const batches = registrationState.batches
   const isBulk = entries.length > 1
   const totalBatches = batches.length
@@ -114,17 +171,35 @@ const useRegistrationModal = () => {
   const availableEntries = useMemo(() => entries.filter((e) => e.isAvailable !== false), [entries])
   const unavailableEntries = useMemo(() => entries.filter((e) => e.isAvailable === false), [entries])
 
-  const { data: ethBalance } = useBalance({
-    address,
-    chainId: mainnet.id,
+  const { data: ethBalance } = useQuery({
+    queryKey: [address, 'balance', activeChain.id, 'ETH'],
+    queryFn: async () => {
+      if (!address) throw new Error('Connect your wallet to check your balance.')
+      return publicClient.getBalance({ address })
+    },
+    enabled: !!address && registrationState.isOpen,
+  })
+  const { data: assetBalance } = useQuery({
+    queryKey: [address, 'balance', activeChain.id, asset],
+    queryFn: async () => {
+      if (!address) throw new Error('Connect your wallet to check your balance.')
+      const balance = await publicClient.token.getBalance({
+        account: address,
+        token: asset,
+      })
+
+      return Number(balance.formatted)
+    },
+    enabled: !!address && registrationState.isOpen,
   })
 
   const entryDurations = useMemo(() => {
+    if (parameters) return parameters.durations.map(Number)
     return entries.map((entry) => {
       const seconds = computeDurationForEntry(entry, quantity, timeUnit, customDuration)
       return seconds
     })
-  }, [entries, quantity, timeUnit, customDuration])
+  }, [entries, quantity, timeUnit, customDuration, parameters])
 
   const availableLabels = useMemo(
     () => availableEntries.map((e) => normalizeName(e.name.replace('.eth', ''))),
@@ -143,11 +218,11 @@ const useRegistrationModal = () => {
   const allDurationsValid = availableDurations.length === availableEntries.length
   const shouldFetchRegistrationPrices = registrationState.isOpen && registrationState.flowState === 'review'
 
-  const { data: totalPriceData, isLoading: isLoadingPrice } = useQuery({
-    queryKey: ['bulkTotalPrice', availableLabels.join(','), availableDurations.map(String).join(',')],
+  const { data: registrationPrice, isLoading: isLoadingPrice } = useQuery({
+    queryKey: ['bulkRentPrices', activeChain.id, asset, availableLabels, availableDurations.map(String)],
     queryFn: async () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
-      return getBulkTotalPrice(availableLabels, availableDurations)
+      return getRegistrationsPrice(availableLabels, availableDurations, asset)
     },
     enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid,
     refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
@@ -155,13 +230,12 @@ const useRegistrationModal = () => {
     staleTime: 5000,
   })
 
-  const { data: perNamePrices } = useQuery({
-    queryKey: ['bulkRentPrices', availableLabels.join(','), availableDurations.map(String).join(',')],
-    queryFn: async () => {
-      if (availableLabels.length === 0 || !allDurationsValid) return null
-      return getBulkRentPrices(availableLabels, availableDurations)
-    },
-    enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid && isBulk,
+  const perNamePrices = registrationPrice?.prices
+
+  const { data: registrationPricing } = useQuery({
+    queryKey: ['registrationPricing', activeChain.id, asset],
+    queryFn: () => getRegistrationPricing(asset),
+    enabled: shouldFetchRegistrationPrices && availableLabels.length > 0,
     refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
     refetchOnWindowFocus: false,
     staleTime: 5000,
@@ -173,43 +247,58 @@ const useRegistrationModal = () => {
     const baseDurationSeconds = entryDurations[0]
     if (!baseDurationSeconds) return null
 
-    let totalPriceETH: number
-    let totalPriceUSD: number
-
-    if (totalPriceData) {
-      totalPriceETH = Number(totalPriceData) / 10 ** 18
-      totalPriceUSD = totalPriceETH * (ethPrice || 3300)
-    } else {
-      // Fallback estimate
-      totalPriceUSD = availableEntries.reduce((sum, entry) => {
-        const dur = entryDurations[entries.indexOf(entry)]
-        const years = (dur || 0) / YEAR_IN_SECONDS
-        return sum + calculateDomainPriceUSD(entry.name, years)
-      }, 0)
-      totalPriceETH = Math.floor((totalPriceUSD / (ethPrice || 3300)) * 10 ** 6) / 10 ** 6
-    }
+    const discount = registrationPricing
+      ? calculateDurationDiscount(availableLabels, availableDurations, registrationPricing)
+      : null
+    const toPaymentAmount = (value: bigint) => Number(formatUnits(value, TOKEN_DECIMALS[TOKENS[asset]]))
+    const totalPriceUSD = registrationPrice
+      ? toPaymentAmount(registrationPrice.total)
+      : discount
+        ? toPaymentAmount(discount.discountedPrice)
+        : availableEntries.reduce((sum, entry) => {
+            const dur = entryDurations[entries.indexOf(entry)]
+            return sum + calculateDomainPriceUSD(entry.name, (dur || 0) / (DAY_IN_SECONDS * 365))
+          }, 0)
 
     const anyBelowMinimum = entryDurations.some((d) => d !== null && d < MIN_REGISTRATION_DURATION)
 
     return {
       durationSeconds: BigInt(baseDurationSeconds),
       durationYears: baseDurationSeconds / YEAR_IN_SECONDS,
+      priceETH: 0,
       priceUSD: totalPriceUSD,
-      priceETH: totalPriceETH,
+      // Only show confirmed savings; premiums are already included in the quote and never discounted.
+      durationDiscount:
+        registrationPrice && discount
+          ? { amount: toPaymentAmount(discount.amount), percentage: discount.percentage }
+          : null,
       isBelowMinimum: anyBelowMinimum,
       isLoadingPrice,
     }
-  }, [entries, entryDurations, ethPrice, totalPriceData, isLoadingPrice, availableEntries])
+  }, [
+    entries,
+    entryDurations,
+    allDurationsValid,
+    availableLabels,
+    availableDurations,
+    registrationPrice,
+    registrationPricing,
+    isLoadingPrice,
+    availableEntries,
+    asset,
+  ])
 
   const hasSufficientBalance = useMemo(() => {
-    if (!ethBalance || !calculationResults || !gasPrice || !gasEstimate) return false
-
-    const totalPriceWei = BigInt(Math.floor(calculationResults.priceETH * Math.pow(10, TOKEN_DECIMALS.ETH)))
-    const gasWei = gasEstimate * gasPrice
-    const totalRequired = totalPriceWei + gasWei
-
-    return ethBalance.value >= totalRequired
-  }, [ethBalance, calculationResults, gasPrice, gasEstimate])
+    return {
+      hasSufficientAssets:
+        assetBalance !== undefined && calculationResults !== null && assetBalance >= calculationResults.priceUSD,
+      hasSufficientEth:
+        ethBalance !== undefined &&
+        gasPrice !== undefined &&
+        gasEstimate !== null &&
+        ethBalance >= gasEstimate * gasPrice,
+    }
+  }, [ethBalance, assetBalance, calculationResults, gasPrice, gasEstimate])
 
   useEffect(() => {
     if (!isClient || !registrationState.isOpen || entries.length === 0) return
@@ -217,6 +306,7 @@ const useRegistrationModal = () => {
 
     const checkAvailability = async () => {
       const labels = entries.map((e) => e.name.replace('.eth', ''))
+      console.log(labels)
       const results = await checkBulkAvailable(labels)
       dispatch(setBulkAvailability(results))
     }
@@ -238,18 +328,19 @@ const useRegistrationModal = () => {
     setGasEstimate(BigInt(500_000) * BigInt(availableLabels.length))
   }, [calculationResults, availableLabels.length])
 
-  useEffect(() => {
-    if (registrationState.flowState !== 'waiting') return
+  const lastCommitmentTimestamp = [...batches]
+    .reverse()
+    .find((b) => b.committed && b.commitmentTimestamp)?.commitmentTimestamp
 
-    const lastCommittedBatch = [...batches].reverse().find((b) => b.committed && b.commitmentTimestamp)
-    if (!lastCommittedBatch?.commitmentTimestamp) return
+  useEffect(() => {
+    if (registrationState.flowState !== 'waiting' || !lastCommitmentTimestamp) return
 
     let interval: ReturnType<typeof setInterval> | undefined
     let cancelled = false
 
     const updateRemainingTime = (minCommitmentAge: number) => {
       const currentTime = Math.floor(Date.now() / 1000)
-      const timePassed = currentTime - (lastCommittedBatch.commitmentTimestamp || 0)
+      const timePassed = currentTime - lastCommitmentTimestamp
       const timeRemaining = Math.max(0, minCommitmentAge - timePassed)
 
       setWaitTimeRemaining(timeRemaining)
@@ -261,21 +352,29 @@ const useRegistrationModal = () => {
 
     getCommitmentAges().then((ages) => {
       if (cancelled) return
-      updateRemainingTime(ages.min)
       interval = setInterval(() => updateRemainingTime(ages.min), 1000)
+      updateRemainingTime(ages.min)
     })
 
     return () => {
       cancelled = true
       if (interval) clearInterval(interval)
     }
-  }, [registrationState.flowState, batches, getCommitmentAges])
+  }, [registrationState.flowState, lastCommitmentTimestamp, getCommitmentAges])
 
   // Auto-reopen removed: when the user minimizes an active registration,
   // we show a toast instead of forcing the modal back open.
 
   useEffect(() => {
     const checkResume = async () => {
+      // A reload before the commitment was submitted can safely return to review.
+      if (
+        registrationState.flowState === 'committing' &&
+        !commitInFlight.current &&
+        !batches.some((b) => b.commitTxHash)
+      ) {
+        dispatch(setRegistrationFlowState('review'))
+      }
       if (
         entries.length === 0 ||
         !entries[0]?.domain ||
@@ -295,13 +394,13 @@ const useRegistrationModal = () => {
             ? await waitForTransaction(publicClient, pendingRegisterBatch.registerTxHash!)
             : undefined
           if (receipt?.status === 'success') {
+            refreshEnsQueries(queryClient, receipt)
             dispatch(setBatchRegistered(pendingRegisterBatch.batchIndex))
             const allRegistered = batches.every((b) =>
               b.batchIndex === pendingRegisterBatch.batchIndex ? true : b.registered
             )
             if (allRegistered) {
               dispatch(setRegistrationFlowState('success'))
-              refetchQueries()
             }
           }
         } catch (error) {
@@ -364,6 +463,7 @@ const useRegistrationModal = () => {
 
   const handleClose = useCallback(() => {
     if (
+      registrationState.flowState === 'resolver' ||
       registrationState.flowState === 'committing' ||
       registrationState.flowState === 'registering' ||
       registrationState.flowState === 'waiting'
@@ -373,6 +473,7 @@ const useRegistrationModal = () => {
       return
     }
 
+    registrationRun.current += 1
     dispatch(resetRegistrationModal())
   }, [registrationState.flowState, dispatch])
 
@@ -380,144 +481,213 @@ const useRegistrationModal = () => {
     dispatch(reopenRegistrationModal())
   }, [dispatch])
 
-  const refetchQueries = useCallback(() => {
-    setTimeout(() => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace', 'domains'] })
-      queryClient.invalidateQueries({ queryKey: ['marketplace', 'listings', 'count'] })
-      queryClient.invalidateQueries({ queryKey: ['bulkSearch'] })
-      queryClient.invalidateQueries({ queryKey: ['categoriesPage', 'domains'] })
-      queryClient.invalidateQueries({ queryKey: ['categoriesPage', 'listings', 'count'] })
-      queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
-      queryClient.invalidateQueries({ queryKey: ['profile', 'activity', address] })
-      entries.forEach((entry) => {
-        queryClient.refetchQueries({ queryKey: ['name', 'details', entry.name] })
-        queryClient.refetchQueries({ queryKey: ['name', 'activity', entry.name] })
-      })
-    }, 2000)
-  }, [queryClient, address, entries])
+  const handleCommit = useCallback(
+    async (chosenResolver?: Address) => {
+      if (!address || entries.length === 0 || !calculationResults || commitInFlight.current) return
 
-  const getOwnerAddress = useCallback((): `0x${string}` | null => {
-    if (showCustomOwner) {
-      if (isAddress(debouncedCustomOwner)) return debouncedCustomOwner as `0x${string}`
-      if (isAddress(account?.address ?? '')) return account!.address as `0x${string}`
-      return null
-    }
-    return address ?? null
-  }, [showCustomOwner, debouncedCustomOwner, account, address])
+      const owner = parameters?.owner ?? getOwnerAddress()
+      if (!owner) {
+        dispatch(setRegistrationError('Invalid owner address'))
+        return
+      }
 
-  const handleCommit = useCallback(async () => {
-    if (!address || entries.length === 0 || !calculationResults) return
+      if (
+        parameters &&
+        (parameters.account.toLowerCase() !== address.toLowerCase() || parameters.chainId !== activeChain.id)
+      ) {
+        dispatch(setRegistrationError('Reconnect the wallet and network used to start this registration.'))
+        return
+      }
+      if (!parameters && batches.some((batch) => batch.commitmentHashes?.length)) {
+        dispatch(setRegistrationError('This saved registration has no resolver details. Close it and start again.'))
+        return
+      }
+      if (resolver.trim() && !isAddress(resolver.trim(), { strict: false })) {
+        dispatch(setRegistrationError('Enter a valid resolver address.'))
+        return
+      }
 
-    const owner = getOwnerAddress()
-    if (!owner) {
-      dispatch(setRegistrationError('Invalid owner address'))
+      commitInFlight.current = true
+      const run = registrationRun.current
+      dispatch(setRegistrationFlowState('committing'))
+
+      try {
+        const selectedResolver =
+          chosenResolver ??
+          parameters?.resolver ??
+          (resolver.trim() ? (resolver.trim() as Address) : await getDefaultResolver())
+        if (run !== registrationRun.current) return
+
+        const commitmentParameters = {
+          account: address,
+          chainId: activeChain.id,
+          owner,
+          durations: entryDurations.map((duration) => String(duration || YEAR_IN_SECONDS)),
+          asset,
+          ...parameters,
+          resolver: selectedResolver || null,
+        }
+        dispatch(setRegistrationParameters(commitmentParameters))
+
+        if (!selectedResolver) {
+          dispatch(setRegistrationFlowState('resolver'))
+          return
+        }
+
+        const commitSecret = secret || generateSecret()
+        if (!secret) dispatch(setSecret(commitSecret))
+
+        if (batches.length === 0) {
+          dispatch(initializeBatches())
+        }
+
+        const localBatches =
+          batches.length > 0
+            ? batches
+            : (() => {
+                const availableIndices = entries
+                  .map((e, i) => (e.isAvailable !== false ? i : -1))
+                  .filter((i) => i !== -1)
+                const result = []
+                for (let i = 0; i < availableIndices.length; i += 100) {
+                  result.push({
+                    batchIndex: result.length,
+                    nameIndices: availableIndices.slice(i, i + 100),
+                    commitmentHashes: null as Hex[] | null,
+                    commitTxHash: null as Hex | null,
+                    commitmentTimestamp: null as number | null,
+                    registerTxHash: null as Hex | null,
+                    committed: false,
+                    registered: false,
+                  })
+                }
+                return result
+              })()
+
+        for (let batchIndex = 0; batchIndex < localBatches.length; batchIndex++) {
+          if (run !== registrationRun.current) return
+          const batch = localBatches[batchIndex]
+          if (batch.committed) continue
+
+          dispatch(setCurrentBatchIndex(batchIndex))
+
+          const batchLabels = batch.nameIndices.map((idx) => normalizeName(entries[idx].name.replace('.eth', '')))
+          const batchDurations = batch.nameIndices.map((idx) => {
+            const d = entryDurations[idx]
+            return BigInt(d || YEAR_IN_SECONDS)
+          })
+
+          const hashes = await makeBulkCommitments(batchLabels, owner, batchDurations, commitSecret, selectedResolver)
+          if (run !== registrationRun.current) return
+          dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp: 0 }))
+
+          const tx = await submitMultiCommit(hashes)
+          if (run !== registrationRun.current) return
+          dispatch(setBatchCommitTxHash({ batchIndex, txHash: tx }))
+
+          const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
+          if (run !== registrationRun.current) return
+
+          if (receipt?.status === 'reverted') {
+            dispatch(setRegistrationError(`Commitment transaction failed for batch ${batchIndex + 1}`))
+            return
+          }
+
+          if (receipt?.status !== 'success') {
+            dispatch(setRegistrationError(`Commitment transaction failed for batch ${batchIndex + 1}`))
+            return
+          }
+
+          const timestamp = Math.floor(Date.now() / 1000)
+          dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp }))
+          dispatch(setBatchCommitted(batchIndex))
+        }
+
+        dispatch(setRegistrationFlowState('waiting'))
+      } catch (error: any) {
+        if (run !== registrationRun.current) return
+        console.error('Failed to commit:', error)
+        dispatch(setRegistrationError(error.message || 'Failed to submit commitment'))
+      } finally {
+        commitInFlight.current = false
+      }
+    },
+    [
+      address,
+      entries,
+      calculationResults,
+      getOwnerAddress,
+      parameters,
+      resolver,
+      asset,
+      getDefaultResolver,
+      secret,
+      batches,
+      entryDurations,
+      generateSecret,
+      makeBulkCommitments,
+      submitMultiCommit,
+      publicClient,
+      dispatch,
+    ]
+  )
+
+  const handleDeployResolver = async () => {
+    if (!address || !parameters || deploymentInFlight.current) return
+    if (parameters.account.toLowerCase() !== address.toLowerCase() || parameters.chainId !== activeChain.id) {
+      dispatch(setRegistrationError('Reconnect the wallet and network used to start this registration.'))
       return
     }
 
-    dispatch(setRegistrationFlowState('committing'))
+    deploymentInFlight.current = true
+    setIsDeployingResolver(true)
+    dispatch(setRegistrationFlowState('resolver'))
+    const run = registrationRun.current
+    let deploymentHash = registrationState.resolverDeploymentTxHash ?? null
 
     try {
-      const commitSecret = secret || generateSecret()
-      if (!secret) dispatch(setSecret(commitSecret))
-
-      if (batches.length === 0) {
-        dispatch(initializeBatches())
-      }
-
-      const localBatches =
-        batches.length > 0
-          ? batches
-          : (() => {
-              const availableIndices = entries.map((e, i) => (e.isAvailable !== false ? i : -1)).filter((i) => i !== -1)
-              const result = []
-              for (let i = 0; i < availableIndices.length; i += 100) {
-                result.push({
-                  batchIndex: result.length,
-                  nameIndices: availableIndices.slice(i, i + 100),
-                  commitmentHashes: null as Hex[] | null,
-                  commitTxHash: null as Hex | null,
-                  commitmentTimestamp: null as number | null,
-                  registerTxHash: null as Hex | null,
-                  committed: false,
-                  registered: false,
-                })
-              }
-              return result
-            })()
-
-      if (batches.length === 0) {
-        dispatch(initializeBatches())
-      }
-
-      for (let batchIndex = 0; batchIndex < localBatches.length; batchIndex++) {
-        const batch = localBatches[batchIndex]
-        if (batch.committed) continue
-
-        dispatch(setCurrentBatchIndex(batchIndex))
-
-        const batchLabels = batch.nameIndices.map((idx) => normalizeName(entries[idx].name.replace('.eth', '')))
-        const batchDurations = batch.nameIndices.map((idx) => {
-          const d = entryDurations[idx]
-          return BigInt(d || YEAR_IN_SECONDS)
-        })
-
-        const hashes = await makeBulkCommitments(
-          batchLabels,
-          owner,
-          batchDurations,
-          commitSecret,
-          reverseRecord ? 1 : 0
-        )
-        dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp: 0 }))
-
-        const tx = await submitMultiCommit(hashes)
-        dispatch(setBatchCommitTxHash({ batchIndex, txHash: tx }))
-
-        const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
-
-        if (receipt?.status === 'reverted') {
-          dispatch(setRegistrationError(`Commitment transaction failed for batch ${batchIndex + 1}`))
-          return
-        }
-
-        if (receipt?.status !== 'success') {
-          dispatch(setRegistrationError(`Commitment transaction failed for batch ${batchIndex + 1}`))
-          return
-        }
-
-        const timestamp = Math.floor(Date.now() / 1000)
-        dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp }))
-        dispatch(setBatchCommitted(batchIndex))
-      }
-
-      dispatch(setRegistrationFlowState('waiting'))
-    } catch (error: any) {
-      console.error('Failed to commit:', error)
-      dispatch(setRegistrationError(error.message || 'Failed to submit commitment'))
+      const deployedResolver = registrationState.resolverDeploymentTxHash
+        ? await getDeployedResolver(registrationState.resolverDeploymentTxHash)
+        : (await isUserResolverDeployed()) ||
+          (await deployResolver(0, (hash) => {
+            deploymentHash = hash
+            if (run === registrationRun.current) dispatch(setResolverDeploymentTxHash(hash))
+          }))
+      if (run !== registrationRun.current) return
+      queryClient.setQueryData(['registration', 'resolver', activeChain.id, address], deployedResolver)
+      setResolver(deployedResolver)
+      setResolverDeploymentHash(deploymentHash)
+      // Stays on the resolver step: it shows the deployment as done, and Register starts the commitment.
+      dispatch(setRegistrationParameters({ ...parameters, resolver: deployedResolver }))
+      dispatch(setResolverDeploymentTxHash(null))
+    } catch (error) {
+      if (run !== registrationRun.current) return
+      dispatch(setResolverDeploymentTxHash(null))
+      dispatch(setRegistrationError(error instanceof Error ? error.message : 'Failed to deploy resolver'))
+    } finally {
+      deploymentInFlight.current = false
+      setIsDeployingResolver(false)
     }
-  }, [
-    address,
-    entries,
-    calculationResults,
-    getOwnerAddress,
-    secret,
-    batches,
-    entryDurations,
-    generateSecret,
-    makeBulkCommitments,
-    submitMultiCommit,
-    publicClient,
-    dispatch,
-  ])
+  }
+
+  useEffect(() => {
+    if (registrationState.flowState === 'resolver' && registrationState.resolverDeploymentTxHash) {
+      void handleDeployResolver()
+    }
+  }, [address, registrationState.resolverDeploymentTxHash])
 
   const handleRegister = useCallback(async () => {
     if (!address || entries.length === 0 || !secret) return
 
-    const owner = getOwnerAddress()
-    if (!owner) {
-      dispatch(setRegistrationError('Invalid owner address'))
+    if (!parameters?.resolver) {
+      dispatch(setRegistrationError('The committed resolver is missing. Close this registration and start again.'))
       return
     }
+    if (parameters.account.toLowerCase() !== address.toLowerCase() || parameters.chainId !== activeChain.id) {
+      dispatch(setRegistrationError('Reconnect the wallet and network used to start this registration.'))
+      return
+    }
+    const { owner, resolver: committedResolver } = parameters
 
     dispatch(setRegistrationFlowState('registering'))
 
@@ -536,12 +706,13 @@ const useRegistrationModal = () => {
           return BigInt(d || YEAR_IN_SECONDS)
         })
 
-        const batchPrice = await getBulkTotalPrice(batchLabels, batchDurations)
-        if (!batchPrice) {
+        const registrationPrice = await getRegistrationsPrice(batchLabels, batchDurations, asset)
+        const totalPrice = registrationPrice?.total
+        if (!totalPrice) {
           dispatch(setRegistrationError(`Failed to get price for batch ${batchIndex + 1}`))
           return
         }
-        const valueWithBuffer = (batchPrice * BigInt(105)) / BigInt(100)
+        const valueWithBuffer = (totalPrice * BigInt(105)) / BigInt(100)
 
         const tx = await submitMultiRegister(
           batchLabels,
@@ -549,7 +720,8 @@ const useRegistrationModal = () => {
           batchDurations,
           secret,
           valueWithBuffer,
-          reverseRecord ? 1 : 0
+          asset,
+          committedResolver
         )
         dispatch(setBatchRegisterTxHash({ batchIndex, txHash: tx }))
 
@@ -565,6 +737,7 @@ const useRegistrationModal = () => {
           return
         }
 
+        refreshEnsQueries(queryClient, receipt)
         dispatch(setBatchRegistered(batchIndex))
       }
 
@@ -578,8 +751,6 @@ const useRegistrationModal = () => {
           modifyCart({ domain: cartDomain, inCart: true, cartType: cartDomain.cartType })
         }
       })
-
-      refetchQueries()
     } catch (error: any) {
       console.error('Failed to register:', error)
       dispatch(setRegistrationError(error.message || 'Failed to register name'))
@@ -588,16 +759,17 @@ const useRegistrationModal = () => {
     address,
     entries,
     secret,
-    getOwnerAddress,
+    parameters,
+    asset,
+    getRegistrationsPrice,
     batches,
     entryDurations,
-    getBulkTotalPrice,
     submitMultiRegister,
     publicClient,
     cartRegisteredDomains,
     cartUnregisteredDomains,
     modifyCart,
-    refetchQueries,
+    queryClient,
     dispatch,
   ])
 
@@ -674,6 +846,14 @@ const useRegistrationModal = () => {
     [entries, timeUnit, customDuration, dispatch]
   )
 
+  // Drops a name's own duration so it follows the base duration again
+  const onEntryDurationReset = useCallback(
+    (index: number) => {
+      dispatch(clearEntryDuration(index))
+    },
+    [dispatch]
+  )
+
   const onEntryDateSelect = useCallback(
     (timestamp: number) => {
       if (perNameDatePickerIndex === null) return
@@ -694,15 +874,18 @@ const useRegistrationModal = () => {
   )
 
   const onRetry = useCallback(() => {
-    dispatch(setRegistrationFlowState('review'))
-  }, [dispatch])
+    dispatch(setRegistrationFlowState(parameters?.resolver === null ? 'resolver' : 'review'))
+  }, [dispatch, parameters])
 
   const onResetModal = useCallback(() => {
+    registrationRun.current += 1
     dispatch(resetRegistrationModal())
   }, [dispatch])
 
   return {
     isClient,
+    isApproving,
+    approvalTxHash,
     registrationState,
     poapClaimed,
     entries,
@@ -714,6 +897,8 @@ const useRegistrationModal = () => {
     quantity,
     timeUnit,
     customDuration,
+    asset,
+    setAsset,
     firstName,
     firstDomain,
     allNamesValid,
@@ -732,11 +917,28 @@ const useRegistrationModal = () => {
     setShowCustomOwner,
     customOwner,
     setCustomOwner,
+    resolver,
+    setResolver,
+    resolverError,
+    isCheckingResolver: resolverSelection.isCheckingResolver,
+    resolverOptions: resolverSelection.options,
+    resolverWarning: resolverSelection.warning,
+    isDeployingResolver,
+    isResolverDeployed:
+      registrationState.flowState === 'resolver' && !!parameters?.resolver && parameters.resolver !== zeroAddress,
+    resolverDeploymentHash,
+    handleDeployResolver,
+    handleSkipResolver: () => {
+      if (!deploymentInFlight.current) return handleCommit(zeroAddress)
+    },
+    handleResolverBack: () => {
+      dispatch(setRegistrationParameters(null))
+      dispatch(setRegistrationFlowState('review'))
+    },
+    hasRegistrationParameters: !!parameters,
     debouncedCustomOwner,
     account,
     isResolving,
-    reverseRecord,
-    setReverseRecord,
     showDatePicker,
     setShowDatePicker,
     showCancelWarning,
@@ -748,7 +950,7 @@ const useRegistrationModal = () => {
     setPerNameDatePickerIndex,
     handleClose,
     handleReopen,
-    handleCommit,
+    handleCommit: () => handleCommit(),
     handleRegister,
     onTimeUnitChange,
     onQuantityChange,
@@ -757,6 +959,7 @@ const useRegistrationModal = () => {
     onEntryDurationChange,
     onEntryQuantityChange,
     onEntryDateSelect,
+    onEntryDurationReset,
     onRetry,
     onResetModal,
   }

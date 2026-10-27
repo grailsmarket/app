@@ -29,6 +29,7 @@ export type MarketplaceDomainType = {
   downvotes: number
   upvotes: number
   watchlist_record_id: number | null
+  compromised?: CompromisedInfoType | null
   watchlist?: {
     notifyOnSale: boolean
     notifyOnOffer: boolean
@@ -52,6 +53,7 @@ export type DomainListingType = {
   source: string
   broker_address: Address | null
   broker_fee_bps: number | null
+  order_data_redacted?: boolean
 }
 
 export type DomainOfferType = {
@@ -69,6 +71,24 @@ export type DomainOfferType = {
   token_id: string
   order_data: DomainOfferOrderDataType
   order_hash: Hex
+  compromised?: CompromisedInfoType | null
+  order_data_redacted?: boolean
+}
+
+export type CompromiseIncidentType = {
+  slug: string
+  title: string
+  description: string | null
+  info_url: string | null
+  malicious_operators: Address[]
+}
+
+// Present when the name was reported stolen (backend compromised_names table)
+export type CompromisedInfoType = {
+  incident: CompromiseIncidentType
+  original_owner: Address
+  allowed_addresses: Address[]
+  taken_at: string | null
 }
 
 export type DomainOfferOrderDataType = {

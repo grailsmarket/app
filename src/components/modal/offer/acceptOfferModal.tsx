@@ -49,6 +49,7 @@ import {
   getBusyHint,
 } from '../listing/seaport-views'
 import { getAcceptOfferBusyScreen, type AcceptOfferStep } from './offer-screens'
+import { COMPROMISED_OFFER_TOOLTIP, isCompromisedCounterparty } from '@/utils/compromised'
 
 interface AcceptOfferModalProps {
   offer: DomainOfferType | null
@@ -105,6 +106,10 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
     setErrorDetails(details)
     setStep('error')
   }
+  // Stolen name: only an offer from the original owner may be accepted
+  const compromised = domain.compromised ?? offer.compromised ?? null
+  const isBlockedByCompromise = !!compromised && !isCompromisedCounterparty(compromised, offer.buyer_address)
+  const isOrderUnavailable = isBlockedByCompromise || !offer.order_data
 
   const estimateGas = async () => {
     try {
@@ -277,6 +282,10 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       if (!address || !publicClient) {
         throw new Error('Wallet not connected')
+      }
+
+      if (isBlockedByCompromise) {
+        throw new Error(COMPROMISED_OFFER_TOOLTIP)
       }
 
       const walletClient = await getWalletClient()
@@ -475,10 +484,18 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         <PriceBreakdown offer={offer} />
       </div>
 
-      {needsApproval && (
-        <div className='text-md p-sm mb-2 rounded-lg text-center'>
-          You need to approve Seaport to transfer your NFT. This is a one time approval.
+      {isOrderUnavailable ? (
+        <div className='mb-2 rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
+          <p className='text-md text-red-400'>
+            {isBlockedByCompromise ? COMPROMISED_OFFER_TOOLTIP : 'This offer is not available.'}
+          </p>
         </div>
+      ) : (
+        needsApproval && (
+          <div className='text-md p-sm mb-2 rounded-lg text-center'>
+            You need to approve Seaport to transfer your NFT. This is a one time approval.
+          </div>
+        )
       )}
     </>
   )
@@ -514,7 +531,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             <PrimaryButton
               onClick={needsApproval ? handleApprove : handleAcceptOffer}
               className={modalPrimaryActionClassName}
-              // disabled={isCorrectChain ? needsApproval : false}
+            // disabled={isCorrectChain ? needsApproval : false}
             >
               {needsApproval ? 'Approve NFT Transfer' : 'Accept Offer'}
             </PrimaryButton>

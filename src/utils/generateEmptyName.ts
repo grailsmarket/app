@@ -28,4 +28,5 @@ export const generateEmptyName = (name: string, tokenId: string) => ({
   downvotes: 0,
   upvotes: 0,
   watchlist_record_id: null,
+  compromised: null,
 })

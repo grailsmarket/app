@@ -80,6 +80,13 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             </div>
           </div>
         </div>
+        {domain.compromised && (
+          <div>
+            <Tooltip position='right' label='Reported stolen — only the original owner can trade it' align='center'>
+              <p className='pl-2 text-xs'>🚨</p>
+            </Tooltip>
+          </div>
+        )}
         {!domainIsValid && (
           <div>
             <Tooltip position='right' label='Name contains invalid character(s)' align='center'>

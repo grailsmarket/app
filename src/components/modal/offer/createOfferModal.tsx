@@ -52,6 +52,9 @@ import {
   getBusyHint,
 } from '../listing/seaport-views'
 import { getMakeOfferBusyScreen, getMakeOfferPartial } from './offer-screens'
+import useMaliciousApprovals from '@/hooks/useMaliciousApprovals'
+import RevokeApprovalsNotice from '@/components/compromised/revokeApprovalsNotice'
+import { isBlockedByCompromise } from '@/utils/compromised'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -77,6 +80,10 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const [errorDetails, setErrorDetails] = useState<string | null>(null)
   // What the Seaport client reported: per-marketplace approval and signature, then each API save
   const [run, setRun] = useState<SeaportRun>(EMPTY_RUN)
+
+  // Stolen names only accept offers from the original owner; unsafe exploit approvals must be revoked first
+  const isCompromiseBlocked = isBlockedByCompromise(domain?.compromised, address)
+  const approvalCheck = useMaliciousApprovals()
 
   const currentTimestamp = useMemo(() => Math.floor(Date.now() / 1000), [])
   const [expiryDate, setExpiryDate] = useState<number>(currentTimestamp + DAY_IN_SECONDS * 7)
@@ -145,6 +152,8 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
     setError(null)
     setErrorDetails(null)
     setRun(EMPTY_RUN)
+
+    if (isCompromiseBlocked || approvalCheck.blocksTrading) return
 
     if (!currentOwner) {
       console.error('Domain is not registered')
@@ -347,6 +356,17 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
         By making an offer, you&apos;re committing to purchase this NFT if the seller accepts. The offer will be signed
         with your wallet.
       </div>
+
+      {isCompromiseBlocked && (
+        <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
+          <p className='text-md text-red-400'>
+            This name was reported stolen. Only the original owner can make offers on it.
+          </p>
+        </div>
+      )}
+
+      {!isCompromiseBlocked && <RevokeApprovalsNotice approvalCheck={approvalCheck} />}
+
     </div>
   )
 

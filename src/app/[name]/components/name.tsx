@@ -12,6 +12,7 @@ import CommentsPanel from './commentsPanel'
 import NamePageTabContent from './namePageTabContent'
 import SimilarNames from './similarNames'
 import { cn } from '@/utils/tailwind'
+import CompromisedBanner from '@/components/compromised/compromisedBanner'
 // import Metadata from './metadata'
 
 interface Props {
@@ -83,6 +84,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
       <div className='px-md flex w-full flex-row justify-between'>
         <Actions nameDetails={nameDetails} />
       </div>
+      <CompromisedBanner compromised={nameDetails?.compromised} />
       <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4 @[64rem]/app:flex-row'>
         <div className='flex h-fit flex-col gap-1 @[40rem]/app:gap-4 @[40rem]/app:rounded-lg @[64rem]/app:w-2/5'>
           <PrimaryDetails

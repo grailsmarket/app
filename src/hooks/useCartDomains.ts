@@ -35,10 +35,10 @@ const useCartDomains = () => {
     [modifyCartLoading, modifyingCartTokenIds]
   )
 
-  const toggleCart = async (domain: MarketplaceDomainType, expireTime: string | null) => {
-    if (getRegistrationStatus(expireTime) === GRACE_PERIOD) return
+  const toggleCart = async (domain: MarketplaceDomainType) => {
+    if (getRegistrationStatus(domain) === GRACE_PERIOD) return
 
-    const registered = getRegistrationStatus(expireTime) === REGISTERED
+    const registered = getRegistrationStatus(domain) === REGISTERED
     const domainInCart =
       cartRegisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id) ||
       cartUnregisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id)
@@ -53,7 +53,7 @@ const useCartDomains = () => {
 
   const onSelect = (e: MouseEvent, domain: MarketplaceDomainType) => {
     e.stopPropagation()
-    toggleCart(domain, domain.expiry_date)
+    toggleCart(domain)
   }
 
   return {

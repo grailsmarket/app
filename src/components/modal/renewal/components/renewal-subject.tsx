@@ -5,7 +5,10 @@ import type { MarketplaceDomainType } from '@/types/domains'
 import type { RenewalTotals } from '../hooks/use-renewal-modal'
 import { formatExpiryDate, pluralize } from './renewal-format'
 
-export type RenewalSubjectDomain = Pick<MarketplaceDomainType, 'name' | 'token_id' | 'version' | 'expiry_date'>
+export type RenewalSubjectDomain = Pick<
+  MarketplaceDomainType,
+  'name' | 'token_id' | 'version' | 'expiry_date' | 'registration_status'
+>
 
 interface RenewalSubjectProps {
   domains: RenewalSubjectDomain[]
@@ -50,6 +53,7 @@ const RenewalSubject: React.FC<RenewalSubjectProps> = ({
             tokenId={domain.token_id}
             version={domain.version}
             expiryDate={domain.expiry_date}
+            registrationStatus={domain.registration_status}
             className='h-full w-full'
             height={imageSize}
             width={imageSize}
@@ -71,6 +75,7 @@ const RenewalSubject: React.FC<RenewalSubjectProps> = ({
           tokenId={domain.token_id}
           version={domain.version}
           expiryDate={domain.expiry_date}
+          registrationStatus={domain.registration_status}
           className='h-full w-full object-cover'
           height={imageSize}
           width={imageSize}

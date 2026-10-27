@@ -48,7 +48,7 @@ const DiscardChangesModal = ({
   }, [onCancel])
   return (
     <div
-      className='fixed inset-0 z-110 flex h-dvh items-end justify-center bg-black/40 backdrop-blur-sm md:items-center md:p-4'
+      className='fixed inset-0 z-1100 flex h-dvh items-end justify-center bg-black/40 backdrop-blur-sm md:items-center md:p-4'
       onClick={(event) => {
         event.stopPropagation()
         onCancel()

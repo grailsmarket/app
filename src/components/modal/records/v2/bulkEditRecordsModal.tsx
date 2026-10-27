@@ -15,7 +15,7 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import Dropdown from '@/components/ui/dropdown'
 import TabSelector from '@/components/ui/tabSelector'
 import NameImage from '@/components/ui/nameImage'
-import { ConfigurationGroupsSkeleton, RecordsSkeleton } from '@/components/ui/ensSkeletons'
+import { RecordsSkeleton } from '@/components/ui/ensSkeletons'
 import DiscardChangesModal from '../components/discardChangesModal'
 import RecordForm from './recordForm'
 
@@ -318,7 +318,7 @@ const V2BulkEditRecordsModal = ({ names, onClose }: V2BulkEditRecordsModalProps)
           <div className='flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain p-4 sm:px-6'>
             {!editor.account && <p className='text-neutral'>Connect your wallet to edit records.</p>}
             {editor.walletChanged && <p className='text-grace'>Your wallet changed. Reopen the editor to continue.</p>}
-            {!editor.data && editor.account && !editor.loading.isError && <ConfigurationGroupsSkeleton />}
+            {!editor.data && editor.account && !editor.loading.isError && <RecordsSkeleton />}
             {editor.loading.isError && !editor.data && (
               <>
                 <p className='text-red-400' role='alert'>

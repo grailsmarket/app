@@ -1,13 +1,19 @@
 import { Address, Hex } from 'viem'
-import { ALL_REGISTRATION_STATUSES } from '@/constants/domains/registrationStatuses'
+import { ALL_REGISTRATION_STATUSES, UNKNOWN } from '@/constants/domains/registrationStatuses'
 
-export type MarketplaceDomainType = {
+export interface DomainRegistrationDetails {
+  version: number
+  expiry_date: string | null
+  registration_status?: 'registered' | 'grace' | 'premium' | 'available' | null
+  grace_ends_at?: string | null
+  premium_ends_at?: string | null
+}
+
+export type MarketplaceDomainType = DomainRegistrationDetails & {
   id: number
   name: string
   token_id: string
-  version: number
   owner: Address | null
-  expiry_date: string | null
   registration_date: string | null
   creation_date: string | null
   metadata: Record<string, string>
@@ -297,7 +303,7 @@ export type WatchlistEntryType = {
   notifyOnComment: boolean
 }
 
-export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number]
+export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number] | typeof UNKNOWN
 
 export type CategoryType = {
   name: string

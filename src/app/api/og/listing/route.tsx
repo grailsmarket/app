@@ -12,7 +12,11 @@ import { API_URL } from '@/constants/api'
 import { getInterFonts } from '../_lib/inter'
 import { config } from '@/lib/config'
 import { activeChainSlug } from '@/constants/web3/chain'
-import { DOMAIN_IMAGE_URL as UNWRAPPED_DOMAIN_IMAGE_URL, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
+import {
+  DOMAIN_IMAGE_URL as UNWRAPPED_DOMAIN_IMAGE_URL,
+  DOMAIN_IMAGE_URL_V2,
+  WRAPPED_DOMAIN_IMAGE_URL,
+} from '@/constants/ens'
 
 const size = {
   width: 1600,
@@ -53,7 +57,7 @@ const getCurrencySymbol = (currencyAddress: string): string => {
   return token || 'ETH'
 }
 
-export async function GET(req: NextRequest) {
+export const GET = async (req: NextRequest) => {
   try {
     const searchParams = req.nextUrl.searchParams
     const name = searchParams.get('name')
@@ -70,6 +74,8 @@ export async function GET(req: NextRequest) {
         const data = result.data
 
         return {
+          version: data.version,
+          tokenId: data.token_id,
           listings: data.listings,
           owner_address: data.owner,
           categories: data.clubs || [],
@@ -128,6 +134,9 @@ export async function GET(req: NextRequest) {
 
     const getENSImage = async () => {
       try {
+        if (nameDetails.version === 2)
+          return nameDetails.tokenId ? `${DOMAIN_IMAGE_URL_V2}/${nameDetails.tokenId}/image/png` : null
+
         const nameHash = namehash(displayName)
         const labelHash = labelhash(displayName.replace('.eth', ''))
 

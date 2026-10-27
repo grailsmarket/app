@@ -10,7 +10,7 @@ import { readNameResolver } from '@/utils/records/v2Resolver'
 import type { BulkRecordName } from '@/types/records'
 import ModalShell from '@/components/ui/modal/modalShell'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-import { NameListSkeleton } from '@/components/ui/ensSkeletons'
+import { RecordsSkeleton } from '@/components/ui/ensSkeletons'
 import { SettingsTransactionProvider } from '@/context/settingsTransaction'
 import V1BulkEditRecordsModal from './v1/bulkEditRecordsModal'
 import V2BulkEditRecordsModal from './v2/bulkEditRecordsModal'
@@ -108,7 +108,7 @@ const BulkEditRecordsModal = ({ names, onClose }: BulkEditRecordsModalProps) => 
             </SecondaryButton>
           </>
         ) : (
-          <NameListSkeleton label='Checking ENS versions…' />
+          <RecordsSkeleton label='Checking ENS versions…' />
         )
       ) : (
         <>

@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import { DAY_IN_SECONDS, ONE_HOUR } from '@/constants/time'
 
-const PREMIUM_PERIOD_DAYS = 111
-const GRACE_PERIOD_DAYS = 90
+import { getRegistrationDates } from '@/utils/getRegistrationStatus'
+import { DomainRegistrationDetails } from '@/types/domains'
 
 type CountdownType = 'premium' | 'grace' | null
 
@@ -21,22 +21,25 @@ const defaultResult = {
   isActive: false,
 }
 
-export const useExpiryCountdown = (expiryDate: string | null, type: CountdownType): UseExpiryCountdownResult => {
+export const useExpiryCountdown = (
+  domain: DomainRegistrationDetails,
+  type: CountdownType
+): UseExpiryCountdownResult => {
   const [tick, setTick] = useState(0)
+  const { graceEndsAt, premiumEndsAt } = getRegistrationDates(domain)
+  const { expiry_date: expiryDate, version } = domain
 
   const calculateValues = useCallback(() => {
-    // If no type or no expiry date, return defaults
-    if (!type || !expiryDate) {
+    const endDate = type === 'premium' ? premiumEndsAt : graceEndsAt
+    if (!type || !endDate) {
       return { ...defaultResult, remainingSeconds: 0 }
     }
 
-    const periodDays = type === 'premium' ? PREMIUM_PERIOD_DAYS : GRACE_PERIOD_DAYS
-    const expiryTime = new Date(expiryDate).getTime()
-    const endTime = expiryTime + periodDays * DAY_IN_SECONDS * 1000
+    const endTime = Date.parse(endDate)
     const now = Date.now()
     const remainingMs = endTime - now
 
-    if (remainingMs <= 0) {
+    if (!Number.isFinite(remainingMs) || remainingMs <= 0) {
       return { ...defaultResult, remainingSeconds: 0 }
     }
 
@@ -45,8 +48,11 @@ export const useExpiryCountdown = (expiryDate: string | null, type: CountdownTyp
 
     // Only calculate premium price for premium type
     let premiumPrice = 0
-    if (type === 'premium') {
-      const premiumPriceOracle = new PremiumPriceOracle(expiryTime / 1000)
+    if (type === 'premium' && graceEndsAt && premiumEndsAt) {
+      const premiumPriceOracle = new PremiumPriceOracle(expiryDate ? Date.parse(expiryDate) / 1000 : 0, version, {
+        graceEndsAt,
+        premiumEndsAt,
+      })
       premiumPrice = premiumPriceOracle.getOptimalPrecisionPremiumAmount(now / 1000)
     }
 
@@ -73,7 +79,7 @@ export const useExpiryCountdown = (expiryDate: string | null, type: CountdownTyp
       isActive: true,
       remainingSeconds,
     }
-  }, [expiryDate, type])
+  }, [expiryDate, type, version, graceEndsAt, premiumEndsAt])
 
   const values = calculateValues()
 

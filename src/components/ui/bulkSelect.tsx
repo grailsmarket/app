@@ -26,14 +26,13 @@ import {
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectCategory } from '@/state/reducers/category/category'
 import { useSelectAll } from '@/context/selectAll'
-import { DAY_IN_SECONDS } from '@/constants/time'
 import { useUserContext } from '@/context/user'
 import { cn } from '@/utils/tailwind'
 import { useShiftKeyListener } from '@/hooks/useShiftKey'
 import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { useQueryClient } from '@tanstack/react-query'
 import Label from './label'
-import { REGISTERED, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
+import { REGISTERED, REGISTERABLE_STATUSES, REGISTERED_STATUSES } from '@/constants/domains/registrationStatuses'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
@@ -90,21 +89,18 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   }, [selectedTab, dispatch])
 
   const namesExtend = selectedDomains.filter(
-    (domain) =>
-      domain.expiry_date && new Date(domain.expiry_date).getTime() + 90 * DAY_IN_SECONDS * 1000 > new Date().getTime()
+    (domain) => domain.expiry_date && REGISTERED_STATUSES.includes(getRegistrationStatus(domain))
   )
   const namesList = userAddress
     ? selectedDomains.filter(
         (domain) =>
-          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          getRegistrationStatus(domain.expiry_date) === REGISTERED
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() && getRegistrationStatus(domain) === REGISTERED
       )
     : []
   const namesTransfer = userAddress
     ? selectedDomains.filter(
         (domain) =>
-          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          getRegistrationStatus(domain.expiry_date) === REGISTERED
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() && getRegistrationStatus(domain) === REGISTERED
       )
     : []
   const namesCancel = userAddress
@@ -117,7 +113,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )
     : []
   const namesRegister = selectedDomains.filter((domain) =>
-    REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain.expiry_date))
+    REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain))
   )
 
   const handleBulkSelect = () => {
@@ -163,7 +159,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   }, [isSelecting, selectAllContext, handleCancelBulkSelect, pageType])
 
   const handleListAction = () => {
-    const namesToList = namesList.filter((domain) => getRegistrationStatus(domain.expiry_date) === REGISTERED)
+    const namesToList = namesList.filter((domain) => getRegistrationStatus(domain) === REGISTERED)
     dispatch(setMakeListingModalDomains(namesToList))
     dispatch(setMakeListingModalPreviousListings(previousListings))
     dispatch(setMakeListingModalOpen(true))

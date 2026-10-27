@@ -9,7 +9,7 @@ import { applyStateGradient } from '@/utils/ensImage/applyStateGradient'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 import LoadingCell from './loadingCell'
-import { RegistrationStatus } from '@/types/domains'
+import { DomainRegistrationDetails, RegistrationStatus } from '@/types/domains'
 import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
 
 const INTRINSIC_SIZE = 540
@@ -19,6 +19,7 @@ interface NameImageProps {
   tokenId: string
   version: number
   expiryDate: string | null
+  registrationStatus?: DomainRegistrationDetails['registration_status']
   className?: string
   height?: number
   width?: number
@@ -31,6 +32,7 @@ const NameImage = ({
   tokenId,
   version,
   expiryDate,
+  registrationStatus,
   className,
   height,
   width,
@@ -67,13 +69,13 @@ const NameImage = ({
   )
   const v2Src = useMemo(() => `${DOMAIN_IMAGE_URL_V2}/${tokenId}/image${cacheParam}`, [labelHash, cacheParam])
 
+  const status =
+    forceRegStatus ??
+    getRegistrationStatus({ expiry_date: expiryDate, version, registration_status: registrationStatus })
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${hexToBigInt(nameHash).toString()}?name=${encodeURIComponent(
     name
-  )}&expires=${encodeURIComponent(expireTime)}${refreshKey ? `&v=${refreshKey}` : ''}`
-
-  // Subtract 400ms to ensure the state changes at the same time as the other components
-  const status = forceRegStatus ?? getRegistrationStatus(expiryDate)
+  )}&version=${version}&expires=${encodeURIComponent(expireTime)}&status=${status}${refreshKey ? `&v=${refreshKey}` : ''}`
 
   // 0 = try wrapped SVG, 1 = try unwrapped SVG, 2 = give up on SVG and show PNG fallback.
   const [attempt, setAttempt] = useState(0)

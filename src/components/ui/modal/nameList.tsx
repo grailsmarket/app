@@ -9,7 +9,7 @@ import { AlertIcon, ChevronIcon } from './icons'
 export interface NameListItem {
   key: string
   name: string
-  status: 'available' | 'checking' | 'unavailable'
+  status: 'available' | 'premium' | 'checking' | 'unavailable'
   price?: React.ReactNode
   duration?: React.ReactNode
   isCustom?: boolean
@@ -63,6 +63,11 @@ const NameList: React.FC<NameListProps> = ({ items, openKey, onToggle }) => {
                   {isUnavailable && (
                     <span className='shrink-0 rounded-sm bg-red-900/20 px-1.5 py-0.5 text-sm font-bold text-red-400'>
                       Unavailable
+                    </span>
+                  )}
+                  {item.status === 'premium' && (
+                    <span className='shrink-0 rounded-sm bg-purple-900/20 px-1.5 py-0.5 text-sm font-bold text-purple-400'>
+                      Premium
                     </span>
                   )}
                   {item.status === 'checking' && (

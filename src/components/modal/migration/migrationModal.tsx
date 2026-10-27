@@ -4,7 +4,6 @@ import { ReviewSkeleton, RecordListSkeleton } from '@/components/ui/ensSkeletons
 import { SkeletonText } from '@/components/ui/loadingSkeleton'
 
 import { useEffect, useRef, useState } from 'react'
-import { activeChain } from '@/constants/web3/chain'
 import { SettingsTransactionProvider } from '@/context/settingsTransaction'
 import { useMigration, type MigrationRecordMode } from '@/hooks/migration/useMigration'
 import { roleErrorText } from '@/hooks/records/useV2Roles'
@@ -128,9 +127,6 @@ export const MigrationReview: React.FC<MigrationReviewProps> = ({ name, onBack, 
       ) : error ? (
         <div role='alert' className='border-tertiary bg-secondary flex flex-col gap-3 rounded-md border p-4'>
           <p className='text-lg'>{roleErrorText(error)}</p>
-          <p className='text-neutral text-sm'>
-            Migration must happen on the same network as the V1 token. This deployment uses {activeChain.name}.
-          </p>
           <SecondaryButton
             onClick={() =>
               void (migration.deployment.isError ? migration.deployment.refetch() : migration.eligibility.refetch())
@@ -235,6 +231,7 @@ export const MigrationReview: React.FC<MigrationReviewProps> = ({ name, onBack, 
                   <>
                     <Dropdown
                       label='Configuration'
+                      dropdownPosition='top'
                       value={migration.configuration}
                       onSelect={(value) => migration.setConfiguration(String(value))}
                       options={options}

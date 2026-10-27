@@ -52,14 +52,13 @@ const getCurrencySymbol = (currencyAddress: string): string => {
   return 'WETH'
 }
 
-export async function GET(req: NextRequest) {
+export const GET = async (req: NextRequest) => {
   try {
     const searchParams = req.nextUrl.searchParams
     const name = searchParams.get('name')
     const offer_id = searchParams.get('offer_id')
     const owner_address = searchParams.get('owner')
     const categories = searchParams.get('categories')?.split(',') || []
-    const version = Number(searchParams.get('version')) || 1
 
     if (!name || !offer_id) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -154,14 +153,14 @@ export async function GET(req: NextRequest) {
 
     const getENSImage = async () => {
       try {
+        const { version, token_id } = offerDetails.offer
+        if (version === 2) return token_id ? `${DOMAIN_IMAGE_URL_V2}/${token_id}/image/png` : null
+
         const nameHash = namehash(displayName)
         const labelHash = labelhash(displayName.replace('.eth', ''))
 
-        const v2ImageUrl = `${DOMAIN_IMAGE_URL_V2}/${nameHash}/image/png`
         const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
         const unwrappedImageUrl = `${DOMAIN_IMAGE_URL}/${labelHash}/image/png`
-
-        if (version === 2) return v2ImageUrl
 
         const wrappedResult = await fetch(wrappedImageUrl)
           .then((res) => res.ok)

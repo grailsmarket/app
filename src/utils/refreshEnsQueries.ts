@@ -55,7 +55,17 @@ const isRelatedQuery = (query: Query) => {
   if (section === 'migration') return detail !== 'deployment'
   if (section === 'registration') return detail === 'resolver'
 
-  return ['v2-records', 'v2-roles', 'isWrapped', 'balance'].includes(String(section)) || detail === 'balance'
+  return (
+    [
+      'v2-records',
+      'v2-roles',
+      'isWrapped',
+      'balance',
+      'rentPrice',
+      'bulkRentPrices',
+      'registrationAvailability',
+    ].includes(String(section)) || detail === 'balance'
+  )
 }
 
 export const refreshEnsQueries = (queries: QueryClient, receipt: Pick<TransactionReceipt, 'status'>) => {

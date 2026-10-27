@@ -12,6 +12,7 @@ interface PerNameDurationEditorProps {
   availableEntries: NameRegistrationEntry[]
   entryDurations: (number | null)[]
   perNamePrices: readonly bigint[] | null | undefined
+  perNamePremiums: readonly bigint[] | undefined
   asset: Address
   timeUnit: TimeUnit
   quantity: number
@@ -32,6 +33,7 @@ const PerNameDurationEditor: React.FC<PerNameDurationEditorProps> = ({
   availableEntries,
   entryDurations,
   perNamePrices,
+  perNamePremiums,
   asset,
   timeUnit,
   quantity,
@@ -52,12 +54,20 @@ const PerNameDurationEditor: React.FC<PerNameDurationEditorProps> = ({
     const isBelowMinimum = duration !== null && duration < MIN_REGISTRATION_DURATION
     const availableIndex = availableEntries.indexOf(entry)
     const price = perNamePrices && availableIndex >= 0 ? perNamePrices[availableIndex] : null
+    const premium = availableIndex >= 0 ? perNamePremiums?.[availableIndex] : undefined
     const warning = isBelowMinimum ? 'Duration below 28-day minimum' : undefined
 
     return {
       key: `${entry.name}-${index}`,
       name: beautifyName(entry.name),
-      status: entry.isAvailable === false ? 'unavailable' : entry.isAvailable === null ? 'checking' : 'available',
+      status:
+        entry.isAvailable === false
+          ? 'unavailable'
+          : entry.isAvailable === null || premium === undefined
+            ? 'checking'
+            : premium > BigInt(0)
+              ? 'premium'
+              : 'available',
       price:
         price !== null && price !== undefined
           ? `${Number(formatUnits(price, TOKEN_DECIMALS[TOKENS[asset]])).toFixed(2)} ${TOKENS[asset]}`

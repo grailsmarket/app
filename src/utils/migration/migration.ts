@@ -129,8 +129,7 @@ export const readMigrationName = async (
   })
 
   if (state.status === 2) throw new Error('This name is already registered in ENS V2 on this network.')
-  if (!isSubname && state.status !== 1)
-    throw new Error('This name has no active V2 reservation on this network. Mainnet names cannot migrate to Sepolia.')
+  if (!isSubname && state.status !== 1) throw new Error('This name has no active V2 reservation on this network.')
 
   const [wrappedData, resolver] = await Promise.all([
     client.readContract({
@@ -159,7 +158,12 @@ export const readMigrationName = async (
     )
   }
 
-  if (expiry <= now) throw new Error('Renew this name out of its V1 grace period before migrating.')
+  if (expiry <= now)
+    throw new Error(
+      isSubname
+        ? 'This subname has expired and cannot be migrated.'
+        : 'This name is in its V1 grace period. Renew it so its V1 expiry is in the future, then migrate.'
+    )
 
   const owner = wrapped
     ? wrappedData[0]

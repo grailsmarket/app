@@ -7,36 +7,53 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import useETHPrice from '@/hooks/useETHPrice'
 import { GRACE_PERIOD, PREMIUM } from '@/constants/domains/registrationStatuses'
-import { DAY_IN_SECONDS } from '@/constants/time'
+import { getRegistrationDates } from '@/utils/getRegistrationStatus'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { openRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { usePublicClient } from 'wagmi'
-import { activeChain } from '@/constants/web3/chain'
-import { useQuery } from '@tanstack/react-query'
-import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/web3/abi/ENSHolidayRegistrar'
 import { formatPrice } from '@/utils/formatPrice'
 import PremiumPriceGraph from './PremiumPriceGraph'
 import PremiumPriceControls from './PremiumPriceControls'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import { config } from '@/lib/config'
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
+import { useRegistrationPrice } from '@/hooks/registrar/useRegistrationPrice'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
   registrationStatus: RegistrationStatus
 }
 
-const ONE_YEAR_SECONDS = BigInt(365 * 24 * 60 * 60)
-
 const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) => {
   const { ethPrice } = useETHPrice()
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
-  const publicClient = usePublicClient({ chainId: activeChain.id })
   const registrationState = useAppSelector(selectRegistration)
+
+  const {
+    data: rentPriceData,
+    isError: isRentPriceError,
+    refetch: refetchRentPrice,
+  } = useRegistrationPrice(
+    nameDetails?.name,
+    !!nameDetails?.name.endsWith('.eth') && nameDetails.name.split('.').length === 2
+  )
+  const useNameGracePeriod = registrationStatus === GRACE_PERIOD && !!nameDetails?.expiry_date
+  const registrationExpiryDate = useNameGracePeriod
+    ? nameDetails.expiry_date
+    : (rentPriceData?.expiryDate ?? nameDetails?.expiry_date)
+  const registrationVersion = useNameGracePeriod || !rentPriceData ? (nameDetails?.version ?? 1) : 2
+  const { graceEndsAt, premiumEndsAt } = getRegistrationDates({
+    ...(registrationVersion === nameDetails?.version && registrationExpiryDate === nameDetails?.expiry_date
+      ? nameDetails
+      : undefined),
+    expiry_date: registrationExpiryDate ?? null,
+    version: registrationVersion,
+  })
+  const hasQuote = !!rentPriceData?.isAvailable && !isRentPriceError
 
   // Lifted state for premium price controls
   const [priceInput, setPriceInput] = useState<string>('')
@@ -44,10 +61,10 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
 
   // Create oracle instance for price/date calculations
   const oracle = useMemo(() => {
-    if (!nameDetails?.expiry_date) return null
-    const expiryTimestamp = Math.floor(new Date(nameDetails.expiry_date).getTime() / 1000)
-    return new PremiumPriceOracle(expiryTimestamp)
-  }, [nameDetails?.expiry_date])
+    if (!registrationExpiryDate || !graceEndsAt || !premiumEndsAt) return null
+    const expiryTimestamp = Math.floor(new Date(registrationExpiryDate).getTime() / 1000)
+    return new PremiumPriceOracle(expiryTimestamp, registrationVersion, { graceEndsAt, premiumEndsAt })
+  }, [registrationExpiryDate, registrationVersion, graceEndsAt, premiumEndsAt])
 
   // Calculate target point for the graph
   const targetPoint = useMemo(() => {
@@ -98,32 +115,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
     [oracle, ethPrice]
   )
 
-  // Fetch rent price (including premium) directly from ENS contract
-  const { data: rentPriceData, isLoading: isLoadingRentPrice } = useQuery({
-    queryKey: ['rentPrice', nameDetails?.name],
-    queryFn: async () => {
-      if (!publicClient || !nameDetails?.name) return null
-
-      const label = nameDetails.name.replace('.eth', '')
-      const result = await publicClient.readContract({
-        address: config.ensRegistrar,
-        abi: ENS_HOLIDAY_REGISTRAR_ABI,
-        functionName: 'rentPrice',
-        args: [label, ONE_YEAR_SECONDS],
-      })
-
-      return result as { base: bigint; premium: bigint }
-    },
-    enabled: !!publicClient && !!nameDetails?.name,
-    refetchInterval: 10000, // Refresh every 10 seconds
-    refetchOnWindowFocus: true,
-    staleTime: 5000, // Consider data stale after 5 seconds
-  })
-
   if (registrationStatus === GRACE_PERIOD) {
-    const expiryDateTimestamp = nameDetails?.expiry_date ? new Date(nameDetails.expiry_date).getTime() : 0
-    const gracePeriodEndDate = new Date(expiryDateTimestamp + 90 * DAY_IN_SECONDS * 1000).toISOString()
-
     return (
       <div className='p-lg @[64rem]/app:p-xl bg-secondary @[40rem]/app:border-tertiary flex w-full flex-col gap-6 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
         <div className='flex flex-row items-center justify-between'>
@@ -140,45 +132,60 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           </PrimaryButton>
         </div>
         <p className='text-light-150 text-xl'>
-          The domain is in grace period and can be registered again after{' '}
-          <strong>{formatExpiryDate(gracePeriodEndDate)}</strong>
+          The domain is in grace period
+          {graceEndsAt ? (
+            <>
+              {' '}
+              and can be registered again after <strong>{formatExpiryDate(graceEndsAt)}</strong>
+            </>
+          ) : (
+            '.'
+          )}
         </p>
       </div>
     )
   }
 
   const name = nameDetails?.name
-  const baseRentPrice = rentPriceData?.base?.toString() || '0'
-  const price = Math.round(Number(formatPrice(baseRentPrice, 'ETH', true)) * (ethPrice || 3000)) || 0
+  const priceDisplay = isRentPriceError ? (
+    <div className='flex flex-col gap-1 text-sm'>
+      <p className='text-neutral'>Could not load registration price.</p>
+      <button className='text-primary w-fit cursor-pointer hover:underline' onClick={() => void refetchRentPrice()}>
+        Retry
+      </button>
+    </div>
+  ) : !rentPriceData ? (
+    <SkeletonText label='Loading registration price…' className='h-9 w-44' />
+  ) : !rentPriceData.isAvailable ? (
+    <p className='text-neutral text-lg'>This name is not available for registration.</p>
+  ) : (
+    <>
+      {registrationStatus === PREMIUM && (
+        <>
+          <Price
+            price={rentPriceData.premium.toString()}
+            currencyAddress={TOKEN_ADDRESSES.USDC}
+            iconSize='28px'
+            fontSize='font-bold pl-0.5'
+          />
+          <p className='font-bold'>+</p>
+        </>
+      )}
+      <p className='font-bold'>
+        ${formatPrice(rentPriceData.base.toString(), 'USDC')}&nbsp;<span className='text-neutral'>/&nbsp;Year</span>
+      </p>
+    </>
+  )
 
-  if (registrationStatus === PREMIUM) {
-    const premiumPriceWei = rentPriceData?.premium?.toString() || '0'
-
+  if (registrationStatus === PREMIUM && rentPriceData?.isAvailable && !isRentPriceError) {
     return (
       <div className='p-lg @[64rem]/app:p-xl bg-secondary @[40rem]/app:border-tertiary flex w-full flex-col @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
         <h3 className='font-sedan-sc text-3xl'>Premium Registration</h3>
         <div className='mt-4 flex w-full flex-row items-center justify-between gap-4'>
-          <div className='flex flex-row items-center gap-2 text-2xl @[40rem]/app:text-3xl'>
-            {isLoadingRentPrice ? (
-              <span className='font-bold'>Loading...</span>
-            ) : (
-              <Price
-                price={premiumPriceWei}
-                currencyAddress={TOKEN_ADDRESSES.ETH}
-                iconSize='28px'
-                fontSize='font-bold pl-0.5'
-              />
-            )}
-            <p className='font-bold'>+</p>
-            <div className='flex flex-row items-center gap-1 font-bold'>
-              <p className=''>
-                ${price}&nbsp;<span className='text-neutral'>/&nbsp;yr</span>
-              </p>
-            </div>
-          </div>
+          <div className='flex flex-row items-center gap-2 text-2xl @[40rem]/app:text-3xl'>{priceDisplay}</div>
           <div className='flex flex-row items-center gap-2'>
             <PrimaryButton
-              disabled={registrationState.flowState !== 'review'}
+              disabled={registrationState.flowState !== 'review' || !hasQuote}
               onClick={() => {
                 if (userAddress) {
                   if (nameDetails?.name && nameDetails?.name.length > 0) {
@@ -211,10 +218,13 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
             </button> */}
           </div>
         </div>
-        {nameDetails?.expiry_date && ethPrice && oracle && (
+        {nameDetails && registrationExpiryDate && ethPrice && oracle && (
           <>
             <PremiumPriceControls
-              expiryDate={nameDetails.expiry_date}
+              expiryDate={registrationExpiryDate}
+              version={registrationVersion}
+              graceEndsAt={graceEndsAt}
+              premiumEndsAt={premiumEndsAt}
               ethPrice={ethPrice}
               domainName={nameDetails.name || ''}
               priceInput={priceInput}
@@ -223,7 +233,10 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
               onDateChange={handleDateChange}
             />
             <PremiumPriceGraph
-              expiryDate={nameDetails.expiry_date}
+              expiryDate={registrationExpiryDate}
+              version={registrationVersion}
+              graceEndsAt={graceEndsAt}
+              premiumEndsAt={premiumEndsAt}
               ethPrice={ethPrice}
               targetPoint={targetPoint}
               onPointClick={handleDateChange}
@@ -241,16 +254,12 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
         <div className='flex flex-row items-center gap-3'>
           {/* <Image src={ENS_LOGO} alt='ENS Logo' width={32} height={32} /> */}
           {nameDetails?.name && (
-            <div className='flex flex-row items-center gap-1 text-3xl font-bold'>
-              <p className=''>
-                ${price}&nbsp;<span className='text-neutral'>/&nbsp;Year</span>
-              </p>
-            </div>
+            <div className='flex flex-row items-center gap-1 text-3xl font-bold'>{priceDisplay}</div>
           )}
         </div>
         <div className='flex flex-row items-center gap-2'>
           <PrimaryButton
-            disabled={registrationState.flowState !== 'review'}
+            disabled={registrationState.flowState !== 'review' || !hasQuote}
             onClick={() => {
               if (userAddress) {
                 if (name && name.length > 0) {

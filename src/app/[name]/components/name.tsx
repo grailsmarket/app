@@ -5,7 +5,7 @@ import PrimaryDetails from './primaryDetails'
 import { useName } from '../hooks/useName'
 import Actions from './actions'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { GRACE_PERIOD, REGISTERED, UNKNOWN } from '@/constants/domains/registrationStatuses'
 import Categories from './categories'
 import KeywordMetrics from './keywordMetrics'
 import CommentsPanel from './commentsPanel'
@@ -13,6 +13,7 @@ import NamePageTabContent from './namePageTabContent'
 import SimilarNames from './similarNames'
 import { cn } from '@/utils/tailwind'
 import CompromisedBanner from '@/components/compromised/compromisedBanner'
+import { useRegistrationPrice } from '@/hooks/registrar/useRegistrationPrice'
 // import Metadata from './metadata'
 
 interface Props {
@@ -70,11 +71,23 @@ const NamePage: React.FC<Props> = ({ name }) => {
   }, [name])
 
   const isSubname = name.split('.').length > 2
-  const registrationStatus = nameDetails
-    ? isSubname
-      ? REGISTERED
-      : getRegistrationStatus(nameDetails.expiry_date)
-    : UNREGISTERED
+  const apiStatus = nameDetails?.id ? (isSubname ? REGISTERED : getRegistrationStatus(nameDetails)) : UNKNOWN
+  const canQuoteRegistration = !isSubname && name.endsWith('.eth')
+  const {
+    data: registrationPrice,
+    isLoading: registrationPriceIsLoading,
+    isError: registrationPriceIsError,
+  } = useRegistrationPrice(name, canQuoteRegistration)
+  // V1 names can remain renewable through their original grace window while reserved in V2.
+  const registrationStatus =
+    canQuoteRegistration && registrationPrice && !registrationPriceIsError
+      ? !registrationPrice.isAvailable &&
+        registrationPrice.isReserved &&
+        nameDetails?.version === 1 &&
+        apiStatus === GRACE_PERIOD
+        ? GRACE_PERIOD
+        : registrationPrice.status
+      : apiStatus
   const isRegistered = registrationStatus === REGISTERED
   // const isUnregistered = registrationStatus === UNREGISTERED || registrationStatus === PREMIUM
 
@@ -93,6 +106,10 @@ const NamePage: React.FC<Props> = ({ name }) => {
             nameDetails={nameDetails}
             nameDetailsIsLoading={nameDetailsIsLoading}
             registrationStatus={registrationStatus}
+            registrationStatusIsLoading={
+              canQuoteRegistration && registrationPriceIsLoading && registrationStatus === UNKNOWN
+            }
+            registrationExpiryDate={registrationPrice?.expiryDate}
             isSubname={isSubname}
             openEditMetadataModal={openEditMetadataModal}
             openMigrationModal={openMigrationModal}

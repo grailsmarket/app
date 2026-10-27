@@ -836,6 +836,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
                   tokenId={domain.token_id}
                   version={domain.version}
                   expiryDate={domain.expiry_date}
+                  registrationStatus={domain.registration_status}
                   className='h-full w-full'
                   height={48}
                   width={48}

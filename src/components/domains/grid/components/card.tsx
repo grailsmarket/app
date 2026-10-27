@@ -34,7 +34,7 @@ import User from '@/components/ui/user'
 import Image from 'next/image'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useQuery } from '@tanstack/react-query'
-import { DAY_IN_SECONDS } from '@/constants/time'
+import { getRegistrationDates } from '@/utils/getRegistrationStatus'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
 import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2 } from '@/constants/ens'
@@ -71,7 +71,7 @@ const Card: React.FC<CardProps> = ({
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const { isSelecting: isBulkSelecting } = useAppSelector(selectBulkSelect)
   const domainIsValid = checkNameValidity(domain?.name)
-  const registrationStatus = getRegistrationStatus(domain.expiry_date)
+  const registrationStatus = getRegistrationStatus(domain)
   const domainListing = domain.listings?.[0]
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
@@ -93,7 +93,8 @@ const Card: React.FC<CardProps> = ({
   // Determine countdown type based on registration status
   const countdownType =
     registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD ? 'grace' : null
-  const { premiumPrice, timeLeftString } = useExpiryCountdown(domain.expiry_date, countdownType)
+  const { premiumPrice, timeLeftString } = useExpiryCountdown(domain, countdownType)
+  const { graceEndsAt } = getRegistrationDates(domain)
   const regPrice = calculateRegistrationPrice(domain.name, ethPrice)
 
   const { data: brokerAccount } = useQuery({
@@ -232,6 +233,7 @@ const Card: React.FC<CardProps> = ({
             version={domain.version}
             tokenId={domain.token_id}
             expiryDate={domain.expiry_date}
+            registrationStatus={domain.registration_status}
             className='h-full w-full rounded-t-sm rounded-b-none object-cover'
           />
         )}
@@ -273,7 +275,11 @@ const Card: React.FC<CardProps> = ({
         <div className='flex w-full flex-col gap-1 px-3'>
           {registrationStatus === GRACE_PERIOD ? (
             <Tooltip
-              label={`Ends ${formatExpiryDate(new Date(new Date(domain.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+              label={
+                graceEndsAt
+                  ? `Ends ${formatExpiryDate(graceEndsAt, { includeTime: true, dateDivider: '/' })}`
+                  : 'Grace period'
+              }
               align='left'
               position='top'
             >

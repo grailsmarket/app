@@ -20,7 +20,7 @@ import TabSelector from '@/components/ui/tabSelector'
 import { TxScreenPanel } from '../components/txScreen'
 import { getBulkScreen } from '../components/recordsTxScreens'
 import DiscardChangesModal from '../components/discardChangesModal'
-import { NameListSkeleton } from '@/components/ui/ensSkeletons'
+import { RecordsSkeleton } from '@/components/ui/ensSkeletons'
 
 interface BulkEditRecordsModalProps {
   names: string[]
@@ -147,9 +147,9 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
         >
           {/* Loading roles state */}
           {step === 'loading_roles' && (
-            <div className='flex flex-col items-center gap-6 p-6'>
+            <div className='flex min-h-0 flex-col items-center gap-6 overflow-y-auto p-6'>
               <h2 className='text-2xl font-bold'>Edit Records</h2>
-              <NameListSkeleton label='Loading name permissions…' />
+              <RecordsSkeleton label='Loading name permissions…' />
             </div>
           )}
 

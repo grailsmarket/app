@@ -31,7 +31,7 @@ import {
 } from '@/state/reducers/registration'
 import useRegisterDomains from '@/hooks/registrar/useRegisterDomains'
 import { TOKEN_ADDRESSES, TOKEN_DECIMALS, TOKENS } from '@/constants/web3/tokens'
-import { DAY_IN_SECONDS, YEAR_IN_SECONDS } from '@/constants/time'
+import { YEAR_IN_SECONDS } from '@/constants/time'
 import { normalizeName } from '@/lib/ens'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -74,7 +74,6 @@ const useRegistrationModal = () => {
     makeBulkCommitments,
     submitMultiCommit,
     submitMultiRegister,
-    calculateDomainPriceUSD,
     getCommitmentAges,
     checkCommitmentAge,
   } = useRegisterDomains()
@@ -162,12 +161,36 @@ const useRegistrationModal = () => {
 
   const allNamesValid = useMemo(() => {
     return entries.every((e) => {
-      const label = e.name.replace('.eth', '')
-      return checkNameValidity(label)
+      const label = e.name.replace(/\.eth$/, '')
+      return e.name.endsWith('.eth') && !label.includes('.') && checkNameValidity(label)
     })
   }, [entries])
 
-  const allAvailabilityChecked = entries.length > 0 && entries.every((e) => e.isAvailable !== null)
+  const shouldFetchRegistrationPrices =
+    registrationState.isOpen && ['review', 'resolver'].includes(registrationState.flowState)
+
+  const labels = useMemo(
+    () => (allNamesValid ? entries.map((entry) => normalizeName(entry.name).replace(/\.eth$/, '')) : []),
+    [entries, allNamesValid]
+  )
+  const {
+    data: availability,
+    isError: isAvailabilityError,
+    refetch: refetchAvailability,
+  } = useQuery({
+    queryKey: ['registrationAvailability', activeChain.id, labels],
+    queryFn: () => checkBulkAvailable(labels),
+    enabled: isClient && shouldFetchRegistrationPrices && entries.length > 0 && allNamesValid,
+    refetchInterval: 10000,
+    refetchOnMount: 'always',
+    staleTime: 5000,
+  })
+
+  const allAvailabilityChecked =
+    !!availability &&
+    !isAvailabilityError &&
+    entries.length > 0 &&
+    entries.every((entry, index) => entry.isAvailable === availability[index])
   const availableEntries = useMemo(() => entries.filter((e) => e.isAvailable !== false), [entries])
   const unavailableEntries = useMemo(() => entries.filter((e) => e.isAvailable === false), [entries])
 
@@ -202,8 +225,8 @@ const useRegistrationModal = () => {
   }, [entries, quantity, timeUnit, customDuration, parameters])
 
   const availableLabels = useMemo(
-    () => availableEntries.map((e) => normalizeName(e.name.replace('.eth', ''))),
-    [availableEntries]
+    () => (allNamesValid ? availableEntries.map((e) => normalizeName(e.name).replace(/\.eth$/, '')) : []),
+    [availableEntries, allNamesValid]
   )
   const availableDurations = useMemo(() => {
     return availableEntries
@@ -216,21 +239,42 @@ const useRegistrationModal = () => {
   }, [availableEntries, entries, entryDurations])
 
   const allDurationsValid = availableDurations.length === availableEntries.length
-  const shouldFetchRegistrationPrices = registrationState.isOpen && registrationState.flowState === 'review'
 
-  const { data: registrationPrice, isLoading: isLoadingPrice } = useQuery({
+  const {
+    data: registrationPrice,
+    isLoading: isLoadingPrice,
+    isError: isPriceError,
+    refetch: refetchPrice,
+  } = useQuery({
     queryKey: ['bulkRentPrices', activeChain.id, asset, availableLabels, availableDurations.map(String)],
     queryFn: async () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
-      return getRegistrationsPrice(availableLabels, availableDurations, asset)
+      const quote = await getRegistrationsPrice(availableLabels, availableDurations, asset, true)
+      if (!quote) throw new Error('Could not load registration prices. Please try again.')
+      return quote
     },
-    enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid,
+    enabled:
+      shouldFetchRegistrationPrices &&
+      allAvailabilityChecked &&
+      availableLabels.length > 0 &&
+      allDurationsValid &&
+      availableDurations.every((duration) => duration >= BigInt(MIN_REGISTRATION_DURATION)),
     refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
     refetchOnWindowFocus: false,
     staleTime: 5000,
   })
 
-  const perNamePrices = registrationPrice?.prices
+  const perNamePrices = !isPriceError && allAvailabilityChecked ? registrationPrice?.prices : undefined
+  const perNamePremiums = !isPriceError && allAvailabilityChecked ? registrationPrice?.premiums : undefined
+  const registrationCheckError = isAvailabilityError
+    ? 'Could not check name availability. Please try again.'
+    : isPriceError
+      ? 'Could not load registration prices. Please try again.'
+      : null
+  const refetchRegistrationChecks = () => {
+    if (isAvailabilityError) void refetchAvailability()
+    else void refetchPrice()
+  }
 
   const { data: registrationPricing } = useQuery({
     queryKey: ['registrationPricing', activeChain.id, asset],
@@ -251,14 +295,8 @@ const useRegistrationModal = () => {
       ? calculateDurationDiscount(availableLabels, availableDurations, registrationPricing)
       : null
     const toPaymentAmount = (value: bigint) => Number(formatUnits(value, TOKEN_DECIMALS[TOKENS[asset]]))
-    const totalPriceUSD = registrationPrice
-      ? toPaymentAmount(registrationPrice.total)
-      : discount
-        ? toPaymentAmount(discount.discountedPrice)
-        : availableEntries.reduce((sum, entry) => {
-            const dur = entryDurations[entries.indexOf(entry)]
-            return sum + calculateDomainPriceUSD(entry.name, (dur || 0) / (DAY_IN_SECONDS * 365))
-          }, 0)
+    const hasQuote = !!registrationPrice && !isPriceError && allAvailabilityChecked
+    const totalPriceUSD = hasQuote ? toPaymentAmount(registrationPrice.total) : 0
 
     const anyBelowMinimum = entryDurations.some((d) => d !== null && d < MIN_REGISTRATION_DURATION)
 
@@ -269,13 +307,13 @@ const useRegistrationModal = () => {
       priceUSD: totalPriceUSD,
       // Only show confirmed savings; premiums are already included in the quote and never discounted.
       durationDiscount:
-        registrationPrice && discount
-          ? { amount: toPaymentAmount(discount.amount), percentage: discount.percentage }
-          : null,
+        hasQuote && discount ? { amount: toPaymentAmount(discount.amount), percentage: discount.percentage } : null,
       isBelowMinimum: anyBelowMinimum,
-      isLoadingPrice,
+      isLoadingPrice: isLoadingPrice || !hasQuote,
     }
   }, [
+    isPriceError,
+    allAvailabilityChecked,
     entries,
     entryDurations,
     allDurationsValid,
@@ -301,18 +339,9 @@ const useRegistrationModal = () => {
   }, [ethBalance, assetBalance, calculationResults, gasPrice, gasEstimate])
 
   useEffect(() => {
-    if (!isClient || !registrationState.isOpen || entries.length === 0) return
-    if (registrationState.flowState === 'success' || registrationState.flowState === 'registering') return
-
-    const checkAvailability = async () => {
-      const labels = entries.map((e) => e.name.replace('.eth', ''))
-      console.log(labels)
-      const results = await checkBulkAvailable(labels)
-      dispatch(setBulkAvailability(results))
-    }
-
-    checkAvailability()
-  }, [isClient, registrationState.isOpen, entries.length, registrationState.flowState])
+    if (availability && entries.some((entry, index) => entry.isAvailable !== availability[index]))
+      dispatch(setBulkAvailability(availability))
+  }, [availability, entries, dispatch])
 
   useEffect(() => {
     entryDurations.forEach((d, i) => {
@@ -483,7 +512,14 @@ const useRegistrationModal = () => {
 
   const handleCommit = useCallback(
     async (chosenResolver?: Address) => {
-      if (!address || entries.length === 0 || !calculationResults || commitInFlight.current) return
+      if (
+        !address ||
+        entries.length === 0 ||
+        !calculationResults ||
+        calculationResults.isLoadingPrice ||
+        commitInFlight.current
+      )
+        return
 
       const owner = parameters?.owner ?? getOwnerAddress()
       if (!owner) {
@@ -911,6 +947,9 @@ const useRegistrationModal = () => {
     hasSufficientBalance,
     currentBatch: batches[registrationState.currentBatchIndex],
     perNamePrices,
+    perNamePremiums,
+    registrationCheckError,
+    refetchRegistrationChecks,
     gasEstimate,
     gasPrice,
     showCustomOwner,

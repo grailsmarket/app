@@ -1,3 +1,4 @@
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
 import { Address } from 'viem'
 import DetailList, { type DetailRow } from '@/components/ui/modal/detailList'
 import Notice from '@/components/ui/modal/notice'
@@ -59,7 +60,14 @@ const CostSummary: React.FC<CostSummaryProps> = ({
       {calculationResults && (
         <DetailList
           rows={rows}
-          total={{ label: 'Registration Cost', value: `${calculationResults.priceUSD.toFixed(2)} ${TOKENS[asset]}` }}
+          total={{
+            label: 'Registration Cost',
+            value: calculationResults.isLoadingPrice ? (
+              <SkeletonText label='Loading registration price…' className='w-24' />
+            ) : (
+              `${calculationResults.priceUSD.toFixed(2)} ${TOKENS[asset]}`
+            ),
+          }}
         />
       )}
       <Notice tone='info'>
@@ -70,10 +78,10 @@ const CostSummary: React.FC<CostSummaryProps> = ({
       {calculationResults?.isBelowMinimum && (
         <Notice tone='warning'>Minimum registration duration is 28 days. Please select a longer duration.</Notice>
       )}
-      {calculationResults && !hasSufficientBalance.hasSufficientEth && (
+      {calculationResults && !calculationResults.isLoadingPrice && !hasSufficientBalance.hasSufficientEth && (
         <Notice tone='danger'>Insufficient ETH balance to cover transaction gas.</Notice>
       )}
-      {calculationResults && !hasSufficientBalance.hasSufficientAssets && (
+      {calculationResults && !calculationResults.isLoadingPrice && !hasSufficientBalance.hasSufficientAssets && (
         <Notice tone='danger'>
           Insufficient {TOKENS[asset]} balance. You need {calculationResults.priceUSD.toFixed(2)} {TOKENS[asset]} to pay
           for this registration.

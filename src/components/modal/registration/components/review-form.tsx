@@ -35,6 +35,7 @@ interface ReviewFormProps {
   setShowDatePicker: (show: boolean) => void
   setPerNameDatePickerIndex: (index: number | null) => void
   perNamePrices: readonly bigint[] | null | undefined
+  perNamePremiums: readonly bigint[] | undefined
   showCustomOwner: boolean
   setShowCustomOwner: (show: boolean) => void
   customOwner: string
@@ -77,6 +78,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   setShowDatePicker,
   setPerNameDatePickerIndex,
   perNamePrices,
+  perNamePremiums,
   showCustomOwner,
   setShowCustomOwner,
   customOwner,
@@ -139,6 +141,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             availableEntries={availableEntries}
             entryDurations={entryDurations}
             perNamePrices={perNamePrices}
+            perNamePremiums={perNamePremiums}
             asset={asset}
             timeUnit={timeUnit}
             quantity={quantity}
@@ -223,6 +226,7 @@ export const ReviewActions: React.FC<ReviewActionsProps> = ({
         onClick={handleCommit}
         disabled={
           !calculationResults ||
+          calculationResults.isLoadingPrice ||
           isCheckingResolver ||
           (!!resolver.trim() && !!resolverError) ||
           !hasSufficientBalance.hasSufficientEth ||
@@ -238,17 +242,19 @@ export const ReviewActions: React.FC<ReviewActionsProps> = ({
       >
         {!allNamesValid
           ? 'Invalid Name'
-          : !hasSufficientBalance.hasSufficientEth
-            ? 'Insufficient ETH Balance'
-            : !hasSufficientBalance.hasSufficientAssets
-              ? 'Insufficient Token Balance'
-              : calculationResults?.isBelowMinimum
-                ? 'Duration Too Short (28 days minimum)'
-                : !allAvailabilityChecked
-                  ? 'Checking Availability...'
-                  : isBulk
-                    ? `Register ${availableEntries.length} Names`
-                    : `Register ${beautifyName(firstName!)}`}
+          : calculationResults?.isBelowMinimum
+            ? 'Duration Too Short (28 days minimum)'
+            : !allAvailabilityChecked
+              ? 'Checking Availability...'
+              : !calculationResults || calculationResults.isLoadingPrice
+                ? 'Loading Price...'
+                : !hasSufficientBalance.hasSufficientEth
+                  ? 'Insufficient ETH Balance'
+                  : !hasSufficientBalance.hasSufficientAssets
+                    ? 'Insufficient Token Balance'
+                    : isBulk
+                      ? `Register ${availableEntries.length} Names`
+                      : `Register ${beautifyName(firstName!)}`}
       </PrimaryButton>
       <SecondaryButton onClick={handleClose} className={modalActionClassName}>
         Close

@@ -23,45 +23,56 @@ const useRegisterDomains = () => {
   }
 
   const checkBulkAvailable = async (labels: string[]): Promise<boolean[]> => {
-    console.log(publicClient)
-    if (!publicClient) return labels.map(() => false)
-
-    try {
-      const result = await publicClient.readContract({
-        address: config.ensBulkRegistrar,
-        abi: BULK_REGISTRAR_ABI,
-        functionName: 'available',
-        args: [labels],
-      })
-      console.log(result)
-      return result as boolean[]
-    } catch (error) {
-      console.error('Error checking bulk availability:', error)
-      return labels.map(() => false)
-    }
+    const result = await publicClient.readContract({
+      address: config.ensBulkRegistrar,
+      abi: BULK_REGISTRAR_ABI,
+      functionName: 'available',
+      args: [labels],
+    })
+    return result as boolean[]
   }
 
   const getRegistrationsPrice = async (
     labels: string[],
     durations: bigint[],
-    asset: Address
+    asset: Address,
+    includePremiums = false
   ): Promise<{
     prices: readonly bigint[]
     total: bigint
+    premiums?: readonly bigint[]
   } | null> => {
     if (!publicClient) return null
 
     try {
+      const blockNumber = await publicClient.getBlockNumber({ cacheTime: 0 })
       const result = await publicClient.readContract({
         address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'registerQuote',
         args: [labels, durations, asset],
+        blockNumber,
       })
+      const quotes = includePremiums
+        ? await publicClient.multicall({
+            allowFailure: false,
+            blockNumber,
+            contracts: labels.map(
+              (label, index) =>
+                ({
+                  address: config.ensV2Registrar,
+                  abi: ENS_V2_REGISTRAR,
+                  functionName: 'getRegisterPrice',
+                  args: [label, durations[index], asset],
+                }) as const
+            ),
+          })
+        : undefined
 
       return {
         prices: result[0],
         total: result[1],
+        premiums: quotes?.map((quote) => quote[1]),
       }
     } catch (error) {
       console.error('Error getting bulk rent prices:', error)

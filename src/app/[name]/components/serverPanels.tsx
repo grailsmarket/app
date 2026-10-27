@@ -4,7 +4,7 @@ import { hexToBigInt, namehash, numberToHex, type Address } from 'viem'
 import { MetadataType, RolesType } from '@/types/api'
 import { DomainListingType, DomainOfferType, MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
-import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { REGISTERED, UNKNOWN, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { TOKENS } from '@/constants/web3/tokens'
 import { beautifyName } from '@/lib/ens'
 import { formatPrice } from '@/utils/formatPrice'
@@ -49,11 +49,16 @@ const formatTokenPrice = (price: string | number | null | undefined, currencyAdd
   return formatted ? `${formatted} ${asset}` : '-'
 }
 
-const getNameImageUrl = (name: string, expiryDate: string | null | undefined) => {
+const getNameImageUrl = (
+  name: string,
+  expiryDate: string | null | undefined,
+  version: number,
+  status: RegistrationStatus
+) => {
   const tokenId = hexToBigInt(namehash(name)).toString()
   const expires = expiryDate ? new Date(expiryDate).getTime() : ''
 
-  return `/api/og/ens-name/${tokenId}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expires)}`
+  return `/api/og/ens-name/${tokenId}?name=${encodeURIComponent(name)}&version=${version}&expires=${encodeURIComponent(expires)}&status=${status}`
 }
 
 const CopyableText = ({ value, truncate = true }: { value: string; truncate?: boolean }) => (
@@ -62,11 +67,11 @@ const CopyableText = ({ value, truncate = true }: { value: string; truncate?: bo
 
 export default function ServerPanels({ name, nameDetails, offers = [], metadata = [], roles }: ServerPanelsProps) {
   const isSubname = name.split('.').length > 2
-  const registrationStatus: RegistrationStatus = nameDetails
+  const registrationStatus: RegistrationStatus = nameDetails?.id
     ? isSubname
       ? REGISTERED
-      : getRegistrationStatus(nameDetails.expiry_date)
-    : UNREGISTERED
+      : getRegistrationStatus(nameDetails)
+    : UNKNOWN
   const isRegistered = registrationStatus === REGISTERED
 
   return (
@@ -167,7 +172,7 @@ const ServerPrimaryDetails = ({
   <div className='bg-secondary border-tertiary flex flex-col @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
     <div className='bg-tertiary h-fit w-full'>
       <Image
-        src={getNameImageUrl(name, nameDetails?.expiry_date)}
+        src={getNameImageUrl(name, nameDetails?.expiry_date, nameDetails?.version ?? 1, registrationStatus)}
         alt={`${name} preview`}
         width={1024}
         height={1024}

@@ -1,6 +1,5 @@
-import { DAY_IN_SECONDS } from '../constants/time'
+import { getGracePeriod, PREMIUM_PERIOD } from './getRegistrationStatus'
 
-export const getEndOfPremium = (expire_time: number) => {
-  const endOfPremium = expire_time + 111 * DAY_IN_SECONDS
-  return endOfPremium
+export const getEndOfPremium = (expireTime: number, version: number) => {
+  return expireTime + getGracePeriod(version) + PREMIUM_PERIOD
 }

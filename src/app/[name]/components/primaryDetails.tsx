@@ -38,7 +38,7 @@ import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
-import { DAY_IN_SECONDS } from '@/constants/time'
+import { getRegistrationDates } from '@/utils/getRegistrationStatus'
 import CartIcon from '@/components/domains/table/components/CartIcon'
 import useCartDomains from '@/hooks/useCartDomains'
 import RefreshIcon from 'public/icons/refresh.svg'
@@ -51,6 +51,8 @@ interface NameDetailsProps {
   nameDetails?: MarketplaceDomainType | null
   nameDetailsIsLoading: boolean
   registrationStatus: RegistrationStatus
+  registrationStatusIsLoading?: boolean
+  registrationExpiryDate?: string | null
   isSubname: boolean
   openEditMetadataModal: () => void
   openMigrationModal: () => void
@@ -61,6 +63,8 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   nameDetails,
   nameDetailsIsLoading,
   registrationStatus,
+  registrationStatusIsLoading = false,
+  registrationExpiryDate,
   isSubname,
   openEditMetadataModal,
   openMigrationModal,
@@ -71,7 +75,20 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   // Determine countdown type based on registration status
   const countdownType =
     registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD ? 'grace' : null
-  const { timeLeftString } = useExpiryCountdown(nameDetails?.expiry_date ?? null, countdownType)
+  const useNameGracePeriod = registrationStatus === GRACE_PERIOD && !!nameDetails?.expiry_date
+  const countdownExpiryDate = useNameGracePeriod
+    ? nameDetails.expiry_date
+    : (registrationExpiryDate ?? nameDetails?.expiry_date ?? null)
+  const countdownVersion = useNameGracePeriod || registrationExpiryDate === undefined ? (nameDetails?.version ?? 1) : 2
+  const registrationDetails = {
+    ...(countdownVersion === nameDetails?.version && countdownExpiryDate === nameDetails?.expiry_date
+      ? nameDetails
+      : undefined),
+    expiry_date: countdownExpiryDate,
+    version: countdownVersion,
+  }
+  const { timeLeftString } = useExpiryCountdown(registrationDetails, countdownType)
+  const { graceEndsAt } = getRegistrationDates(registrationDetails)
 
   const { data: isWrapped } = useQuery({
     queryKey: ['isWrapped', name],
@@ -154,6 +171,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             tokenId={nameDetails.token_id}
             version={nameDetails.version}
             expiryDate={nameDetails.expiry_date}
+            forceRegStatus={registrationStatus}
             forceRefreshKey={pendingRefreshKey}
             className='bg-tertiary mx-auto aspect-square w-full max-w-lg'
           />
@@ -305,13 +323,17 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           </div>
           {!isSubname && (
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-              {nameDetailsIsLoading ? (
+              {nameDetailsIsLoading || registrationStatusIsLoading ? (
                 <LoadingCell height='44px' width='128px' />
               ) : (
                 <>
                   {registrationStatus === GRACE_PERIOD ? (
                     <Tooltip
-                      label={`Ends ${formatExpiryDate(new Date(new Date(nameDetails?.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+                      label={
+                        graceEndsAt
+                          ? `Ends ${formatExpiryDate(graceEndsAt, { includeTime: true, dateDivider: '/' })}`
+                          : 'Grace period'
+                      }
                       align='right'
                       position='top'
                     >

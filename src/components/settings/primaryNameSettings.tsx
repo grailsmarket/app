@@ -4,7 +4,7 @@ import { NameListSkeleton, ReviewSkeleton } from '@/components/ui/ensSkeletons'
 import { SkeletonText } from '@/components/ui/loadingSkeleton'
 
 import Link from 'next/link'
-import { Avatar, Check, ShortArrow, truncateAddress } from 'ethereum-identity-kit'
+import { Avatar, Check, DEFAULT_FALLBACK_AVATAR, ShortArrow, truncateAddress } from 'ethereum-identity-kit'
 import { useUserContext } from '@/context/user'
 import { usePrimaryName } from '@/hooks/settings/usePrimaryName'
 import { beautifyName } from '@/lib/ens'
@@ -17,6 +17,7 @@ import { useSettingsDirty } from '@/hooks/settings/useSettingsDirty'
 import { QueryError, SettingsNotice } from './shared'
 import { useConfigurationPreferences } from '@/hooks/settings/useResolverPreferences'
 import { configurationName } from '@/utils/settings/labels'
+import { getMetadataAssetUrl } from '@/utils/web3/ens'
 
 const PrimaryNameSettings = () => {
   const { userAddress } = useUserContext()
@@ -32,7 +33,13 @@ const PrimaryNameSettings = () => {
     <div className='border-tertiary flex flex-col gap-4 rounded-md border p-4'>
       <div className='flex flex-wrap items-center justify-between gap-4'>
         <div className='flex min-w-0 items-center gap-3'>
-          <Avatar address={userAddress} style={{ width: 48, height: 48, minWidth: 48 }} />
+          <Avatar
+            key={name || userAddress}
+            address={userAddress}
+            name={name}
+            src={name ? getMetadataAssetUrl(name, 'avatar') : DEFAULT_FALLBACK_AVATAR}
+            style={{ width: 48, height: 48, minWidth: 48 }}
+          />
           <div className='min-w-0'>
             <p className='truncate text-xl font-semibold'>
               {editor.primary.isLoading ? (

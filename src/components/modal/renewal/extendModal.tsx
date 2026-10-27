@@ -275,15 +275,15 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
           expiryItems={
             isBulk && entries.length > 0
               ? entries.map((entry) => {
-                  const newExpiry = getNewExpiry(entry.currentExpiry, entry.duration)
-                  return {
-                    name: beautifyName(entry.domain.name),
-                    version: entry.version,
-                    from: entry.currentExpiry > 0 ? formatExpiryDate(entry.currentExpiry * 1000) : null,
-                    to: newExpiry ? formatExpiryDate(newExpiry) : null,
-                    done: completedNames.has(entry.domain.name),
-                  }
-                })
+                const newExpiry = getNewExpiry(entry.currentExpiry, entry.duration)
+                return {
+                  name: beautifyName(entry.domain.name),
+                  version: entry.version,
+                  from: entry.currentExpiry > 0 ? formatExpiryDate(entry.currentExpiry * 1000) : null,
+                  to: newExpiry ? formatExpiryDate(newExpiry) : null,
+                  done: completedNames.has(entry.domain.name),
+                }
+              })
               : null
           }
         />
@@ -347,10 +347,10 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       <p className='text-right font-medium text-green-500'>
                         {domain.expiry_date
                           ? new Date(
-                              timeUnit !== 'custom'
-                                ? new Date(domain.expiry_date).getTime() + quantity * getSecondsPerUnit(timeUnit) * 1000
-                                : customDate * 1000
-                            ).toLocaleDateString()
+                            timeUnit !== 'custom'
+                              ? new Date(domain.expiry_date).getTime() + quantity * getSecondsPerUnit(timeUnit) * 1000
+                              : customDate * 1000
+                          ).toLocaleDateString()
                           : 'Unknown'}
                       </p>
                     </div>
@@ -382,9 +382,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
               <PrimaryButton onClick={() => setShowDatePicker(true)} className='h-12! w-full' disabled={isLoading}>
                 {customDate
                   ? new Date(customDate * 1000).toLocaleDateString(navigator.language || 'en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
                   : 'Select Date'}
               </PrimaryButton>
             ) : (
@@ -419,7 +419,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
           </button>
           {hasV2 && (
             <Dropdown
-              label={hasV1 ? 'V2 currency' : 'Currency'}
+              label='Currency'
               options={registrationAssets}
               value={asset}
               onSelect={(value) => setAsset(value as Address)}

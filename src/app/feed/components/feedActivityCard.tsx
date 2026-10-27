@@ -62,6 +62,7 @@ const EVENT_COPY: Record<
   sent: { verb: 'sent', actorLabel: 'From', counterpartyLabel: 'To', counterpartyPreposition: 'to' },
   received: { verb: 'received', actorLabel: 'From', counterpartyLabel: 'To', counterpartyPreposition: 'from' },
   renewal: { verb: 'extended', actorLabel: 'Extended by' },
+  migrated: { verb: 'migrated to ENSv2', actorLabel: 'Migrated by' },
 }
 
 const EVENT_STYLE_MAP: Record<ProfileActivityEventType, string> = {
@@ -79,6 +80,7 @@ const EVENT_STYLE_MAP: Record<ProfileActivityEventType, string> = {
   sold: 'bg-grace/5 border-grace/30',
   sent: 'bg-foreground/5 border-foreground/20',
   received: 'bg-foreground/5 border-foreground/20',
+  migrated: 'bg-foreground/5 border-foreground/20',
 }
 
 const EVENT_VERB_COLOR_MAP: Record<ProfileActivityEventType, string> = {
@@ -96,6 +98,7 @@ const EVENT_VERB_COLOR_MAP: Record<ProfileActivityEventType, string> = {
   sold: 'text-grace',
   sent: 'text-foreground/85',
   received: 'text-foreground/85',
+  migrated: 'text-foreground/85',
 }
 
 const formatEventType = (eventType: string) => {

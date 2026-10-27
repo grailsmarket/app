@@ -80,7 +80,6 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     hasSufficientBalance,
     hasSufficientEth,
     hasSufficientAssets,
-    hasV1,
     hasV2,
     hasDifferentV1Durations,
     hasPendingTransaction,
@@ -275,15 +274,15 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
           expiryItems={
             isBulk && entries.length > 0
               ? entries.map((entry) => {
-                const newExpiry = getNewExpiry(entry.currentExpiry, entry.duration)
-                return {
-                  name: beautifyName(entry.domain.name),
-                  version: entry.version,
-                  from: entry.currentExpiry > 0 ? formatExpiryDate(entry.currentExpiry * 1000) : null,
-                  to: newExpiry ? formatExpiryDate(newExpiry) : null,
-                  done: completedNames.has(entry.domain.name),
-                }
-              })
+                  const newExpiry = getNewExpiry(entry.currentExpiry, entry.duration)
+                  return {
+                    name: beautifyName(entry.domain.name),
+                    version: entry.version,
+                    from: entry.currentExpiry > 0 ? formatExpiryDate(entry.currentExpiry * 1000) : null,
+                    to: newExpiry ? formatExpiryDate(newExpiry) : null,
+                    done: completedNames.has(entry.domain.name),
+                  }
+                })
               : null
           }
         />
@@ -347,10 +346,10 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       <p className='text-right font-medium text-green-500'>
                         {domain.expiry_date
                           ? new Date(
-                            timeUnit !== 'custom'
-                              ? new Date(domain.expiry_date).getTime() + quantity * getSecondsPerUnit(timeUnit) * 1000
-                              : customDate * 1000
-                          ).toLocaleDateString()
+                              timeUnit !== 'custom'
+                                ? new Date(domain.expiry_date).getTime() + quantity * getSecondsPerUnit(timeUnit) * 1000
+                                : customDate * 1000
+                            ).toLocaleDateString()
                           : 'Unknown'}
                       </p>
                     </div>
@@ -382,9 +381,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
               <PrimaryButton onClick={() => setShowDatePicker(true)} className='h-12! w-full' disabled={isLoading}>
                 {customDate
                   ? new Date(customDate * 1000).toLocaleDateString(navigator.language || 'en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
                   : 'Select Date'}
               </PrimaryButton>
             ) : (
@@ -439,7 +438,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
               <div className='text-md space-y-2'>
                 {!!calculationResults.durationDiscount?.amount && (
                   <div className='flex items-center justify-between gap-2 text-green-400'>
-                    <p>{hasV1 ? 'V2 duration discount:' : 'Duration discount:'}</p>
+                    <p>Duration discount:</p>
                     <p className='text-right font-medium'>
                       -{calculationResults.durationDiscount.amount.toFixed(2)} {TOKENS[asset]} (
                       {Number(calculationResults.durationDiscount.percentage.toFixed(2))}%)
@@ -447,7 +446,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                   </div>
                 )}
                 <div className='flex items-center justify-between'>
-                  <p>{hasV1 ? 'V2 renewal cost:' : 'Renewal cost:'}</p>
+                  <p>Renewal cost:</p>
                   <p className='font-medium'>
                     {calculationResults.totalPriceAsset.toFixed(2)} {TOKENS[asset]}
                   </p>
@@ -475,7 +474,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
               <p className='text-md text-red-400'>
                 {!hasSufficientEth && `Insufficient ETH on ${currentNetwork} for network fees. `}
-                {!hasSufficientAssets && `Insufficient ${TOKENS[asset]} for V2 renewals.`}
+                {!hasSufficientAssets && `Insufficient ${TOKENS[asset]} for renewals.`}
               </p>
             </div>
           )}

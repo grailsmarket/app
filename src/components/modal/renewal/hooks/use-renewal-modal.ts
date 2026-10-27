@@ -210,10 +210,11 @@ export const useRenewalModal = (onClose: () => void) => {
         )
       : null
   const tokenAmount = (value: bigint) => Number(formatUnits(value, TOKEN_DECIMALS[TOKENS[asset]]))
+  const totalRenewalCost = quotes.data ? quotes.data.v1 + quotes.data.v2 : undefined
   const calculationResults =
-    quotes.data && !quotes.isError && !prepared.error
+    totalRenewalCost !== undefined && !quotes.isError && !prepared.error
       ? {
-          totalPriceAsset: tokenAmount(quotes.data.v2 + quotes.data.v1),
+          totalPriceAsset: tokenAmount(totalRenewalCost),
           durationDiscount: discount ? { amount: tokenAmount(discount.amount), percentage: discount.percentage } : null,
         }
       : null
@@ -229,7 +230,10 @@ export const useRenewalModal = (onClose: () => void) => {
     gasCost !== undefined &&
     networkFunds.data.balance >= gasCost
   const hasSufficientAssets =
-    !assetBalance.isError && assetBalance.data !== undefined && !!quotes.data && assetBalance.data >= quotes.data.v2
+    !assetBalance.isError &&
+    assetBalance.data !== undefined &&
+    totalRenewalCost !== undefined &&
+    assetBalance.data >= totalRenewalCost
   const hasSufficientBalance = hasSufficientEth && hasSufficientAssets
   const isLoadingFunds = networkFunds.isLoading || assetBalance.isLoading
   const fundingError = networkFunds.error || assetBalance.error

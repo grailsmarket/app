@@ -30,7 +30,7 @@ import {
   resetRegistrationModal,
 } from '@/state/reducers/registration'
 import useRegisterDomains from '@/hooks/registrar/useRegisterDomains'
-import { TOKEN_ADDRESSES, TOKEN_DECIMALS, TOKENS, ZERO_ADDRESS } from '@/constants/web3/tokens'
+import { TOKEN_ADDRESSES, TOKEN_DECIMALS, TOKENS } from '@/constants/web3/tokens'
 import { DAY_IN_SECONDS, YEAR_IN_SECONDS } from '@/constants/time'
 import { normalizeName } from '@/lib/ens'
 import { checkNameValidity } from '@/utils/checkNameValidity'
@@ -60,7 +60,7 @@ const useRegistrationModal = () => {
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
   const { address } = useAccount()
-  const { data: gasPrice } = useGasPrice()
+  const { data: gasPrice } = useGasPrice({ chainId: activeChain.id })
   const publicClient = createPublicClient({ chain: activeChain, transport: http() })
 
   const queryClient = useQueryClient()
@@ -172,21 +172,17 @@ const useRegistrationModal = () => {
   const unavailableEntries = useMemo(() => entries.filter((e) => e.isAvailable === false), [entries])
 
   const { data: ethBalance } = useQuery({
-    queryKey: [address, 'balance', asset],
+    queryKey: [address, 'balance', activeChain.id, 'ETH'],
     queryFn: async () => {
-      if (!address) return
-      const balance = await publicClient.token.getBalance({
-        account: address,
-        token: ZERO_ADDRESS,
-      })
-
-      return balance.amount
+      if (!address) throw new Error('Connect your wallet to check your balance.')
+      return publicClient.getBalance({ address })
     },
+    enabled: !!address && registrationState.isOpen,
   })
   const { data: assetBalance } = useQuery({
-    queryKey: [address, 'balance', asset],
+    queryKey: [address, 'balance', activeChain.id, asset],
     queryFn: async () => {
-      if (!address) return
+      if (!address) throw new Error('Connect your wallet to check your balance.')
       const balance = await publicClient.token.getBalance({
         account: address,
         token: asset,
@@ -194,6 +190,7 @@ const useRegistrationModal = () => {
 
       return Number(balance.formatted)
     },
+    enabled: !!address && registrationState.isOpen,
   })
 
   const entryDurations = useMemo(() => {
@@ -292,22 +289,16 @@ const useRegistrationModal = () => {
   ])
 
   const hasSufficientBalance = useMemo(() => {
-    if (!ethBalance || !assetBalance || !calculationResults || !gasPrice || !gasEstimate)
-      return {
-        hasSufficientAssets: false,
-        hasSufficientEth: false,
-      }
-
-    const hasSufficientAssets = assetBalance >= calculationResults.priceUSD
-
-    const gasWei = gasEstimate * gasPrice
-    const hasSufficientEth = ethBalance >= gasWei
-
     return {
-      hasSufficientAssets,
-      hasSufficientEth,
+      hasSufficientAssets:
+        assetBalance !== undefined && calculationResults !== null && assetBalance >= calculationResults.priceUSD,
+      hasSufficientEth:
+        ethBalance !== undefined &&
+        gasPrice !== undefined &&
+        gasEstimate !== null &&
+        ethBalance >= gasEstimate * gasPrice,
     }
-  }, [assetBalance, calculationResults, gasPrice, gasEstimate])
+  }, [ethBalance, assetBalance, calculationResults, gasPrice, gasEstimate])
 
   useEffect(() => {
     if (!isClient || !registrationState.isOpen || entries.length === 0) return

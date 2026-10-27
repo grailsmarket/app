@@ -70,10 +70,13 @@ const CostSummary: React.FC<CostSummaryProps> = ({
       {calculationResults?.isBelowMinimum && (
         <Notice tone='warning'>Minimum registration duration is 28 days. Please select a longer duration.</Notice>
       )}
-      {calculationResults && !hasSufficientBalance && (
+      {calculationResults && !hasSufficientBalance.hasSufficientEth && (
+        <Notice tone='danger'>Insufficient ETH balance to cover transaction gas.</Notice>
+      )}
+      {calculationResults && !hasSufficientBalance.hasSufficientAssets && (
         <Notice tone='danger'>
-          Insufficient ETH balance. You need approximately {(calculationResults.priceETH + 0.01).toFixed(4)} ETH to
-          complete this registration (including gas costs).
+          Insufficient {TOKENS[asset]} balance. You need {calculationResults.priceUSD.toFixed(2)} {TOKENS[asset]} to pay
+          for this registration.
         </Notice>
       )}
       {!allNamesValid && (

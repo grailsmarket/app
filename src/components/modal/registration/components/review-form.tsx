@@ -225,7 +225,8 @@ export const ReviewActions: React.FC<ReviewActionsProps> = ({
           !calculationResults ||
           isCheckingResolver ||
           (!!resolver.trim() && !!resolverError) ||
-          !hasSufficientBalance ||
+          !hasSufficientBalance.hasSufficientEth ||
+          !hasSufficientBalance.hasSufficientAssets ||
           !allNamesValid ||
           !allDurationsValid ||
           (registrationMode === 'register_to' && customDuration === 0) ||
@@ -237,15 +238,17 @@ export const ReviewActions: React.FC<ReviewActionsProps> = ({
       >
         {!allNamesValid
           ? 'Invalid Name'
-          : !hasSufficientBalance
+          : !hasSufficientBalance.hasSufficientEth
             ? 'Insufficient ETH Balance'
-            : calculationResults?.isBelowMinimum
-              ? 'Duration Too Short (28 days minimum)'
-              : !allAvailabilityChecked
-                ? 'Checking Availability...'
-                : isBulk
-                  ? `Register ${availableEntries.length} Names`
-                  : `Register ${beautifyName(firstName!)}`}
+            : !hasSufficientBalance.hasSufficientAssets
+              ? 'Insufficient Token Balance'
+              : calculationResults?.isBelowMinimum
+                ? 'Duration Too Short (28 days minimum)'
+                : !allAvailabilityChecked
+                  ? 'Checking Availability...'
+                  : isBulk
+                    ? `Register ${availableEntries.length} Names`
+                    : `Register ${beautifyName(firstName!)}`}
       </PrimaryButton>
       <SecondaryButton onClick={handleClose} className={modalActionClassName}>
         Close

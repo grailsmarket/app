@@ -28,7 +28,7 @@ export const getRenewalSteps = ({
   const v1Approval = approvals.find((approval) => approval.version === 1)
   const isV2Approving = isApproving && currentVersion === 2
   const v2Approval = approvals.find((approval) => approval.version === 2)
-  const hasApproval = isApproving || approvals.length > 0
+  const hasApproval = approvals.length > 0
 
   if (batches.length <= 1) {
     const steps: TxStep[] = []

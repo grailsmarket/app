@@ -248,13 +248,9 @@ const V1EditRecordsModal: React.FC<V1EditRecordsModalProps> = ({ name, metadata,
                   <div className='bg-secondary border-tertiary flex items-center justify-between gap-3 rounded-md border p-3'>
                     <div>
                       <p className='text-lg font-semibold'>Move to ENS V2</p>
-                      <p className='text-neutral text-sm'>
-                        {hasChanges
-                          ? 'Save your changes before starting migration.'
-                          : 'Review your records and move your name to V2.'}
-                      </p>
+                      <p className='text-neutral text-sm'>Review your records and move your name to V2.</p>
                     </div>
-                    <PrimaryButton disabled={hasChanges} onClick={onMigrate} className='shrink-0'>
+                    <PrimaryButton onClick={onMigrate} className='shrink-0'>
                       Migrate
                     </PrimaryButton>
                   </div>

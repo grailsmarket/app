@@ -53,6 +53,7 @@ interface NameDetailsProps {
   registrationStatus: RegistrationStatus
   isSubname: boolean
   openEditMetadataModal: () => void
+  openMigrationModal: () => void
 }
 
 const PrimaryDetails: React.FC<NameDetailsProps> = ({
@@ -62,6 +63,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   registrationStatus,
   isSubname,
   openEditMetadataModal,
+  openMigrationModal,
 }) => {
   const [isOwnerCopied, setIsOwnerCopied] = useState(false)
   const [isRefreshingMetadata, setIsRefreshingMetadata] = useState(false)
@@ -122,7 +124,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
     dispatch(setTransferModalOpen(true))
   }
 
-  const isOwner = userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase()
+  const isOwner = !!userAddress && userAddress.toLowerCase() === nameDetails?.owner?.toLowerCase()
 
   const refreshMetadata = async () => {
     if (isRefreshingMetadata) return
@@ -160,6 +162,15 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
       </div>
 
       <div className='p-lg flex flex-col items-center gap-3 @[64rem]/app:pt-5'>
+        {isOwner && nameDetails?.version === 1 && REGISTERED_STATUSES.includes(registrationStatus) && (
+          <PrimaryButton
+            onClick={openMigrationModal}
+            className='w-full text-lg'
+            disabled={authStatus !== 'authenticated'}
+          >
+            Migrate to V2
+          </PrimaryButton>
+        )}
         {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
           <div className='flex w-full flex-row items-center justify-between gap-2'>
             {!isSubname && (

@@ -17,12 +17,20 @@ interface EditRecordsModalProps {
   version: number | null
   metadata: Record<string, string> | null
   defaultTab: 'records' | 'roles'
+  startWithMigration?: boolean
   onClose: () => void
 }
 
-const EditRecordsModal = ({ name, version, metadata, defaultTab, onClose }: EditRecordsModalProps) => {
+const EditRecordsModal = ({
+  name,
+  version,
+  metadata,
+  defaultTab,
+  startWithMigration = false,
+  onClose,
+}: EditRecordsModalProps) => {
   const [migratedName, setMigratedName] = useState<string>()
-  const [migrationName, setMigrationName] = useState<string>()
+  const [migrationName, setMigrationName] = useState<string | undefined>(startWithMigration ? name : undefined)
   const lookup = useQuery({
     queryKey: ['name', 'recordEditorVersion', activeChain.id, config.ensV2Registry, name],
     queryFn: async () => {

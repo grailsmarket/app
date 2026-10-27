@@ -212,8 +212,9 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
       !selectionError)
   const loadError = binding.error || snapshot.error || (!recordData && recordQuery.error)
   const isBusy = step === 'confirming' || step === 'processing'
+  // Automatically offering a new configuration is not an unsaved edit.
   const hasChanges =
-    mode !== 'shared' ||
+    (selectedMode !== null && mode !== 'shared') ||
     (!!catalog.data && selectedId !== catalog.data.linkedRecordId) ||
     records.some((row) => row.value !== row.initialValue)
   let validationError = selectionError
@@ -252,7 +253,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     !isLoading &&
     !loadError &&
     !validationError &&
-    hasChanges &&
+    (hasChanges || mode !== 'shared') &&
     calls.length > 0
 
   const updateRecord = (key: string, value: string) => {

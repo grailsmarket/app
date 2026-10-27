@@ -26,7 +26,7 @@ export const describeTxError = (err: unknown, fallback = 'Transaction failed') =
   return { message: short, details: short !== message ? message : null }
 }
 
-export function useEditRecords(name: string | null, metadata: Record<string, string> | null) {
+export const useEditRecords = (name: string | null, metadata: Record<string, string> | null) => {
   const { address } = useAccount()
   const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
@@ -46,19 +46,18 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const ownerAddress = roles?.owner || ''
   const managerAddress = roles?.manager || ''
   const resolverAddress = roles?.resolver || ''
-  const ethAddress = roles?.ethAddress || ''
+  const ethAddress = roles ? roles.ethAddress || '' : metadata?.Ethereum || metadata?.ethereum || metadata?.eth || ''
 
   // Roles state
-  const [roleOwner, setRoleOwnerState] = useState('')
-  const [roleManager, setRoleManagerState] = useState('')
-  const [roleEthRecord, setRoleEthRecordState] = useState('')
+  const [roleOwner, setRoleOwnerState] = useState(ownerAddress)
+  const [roleManager, setRoleManagerState] = useState(managerAddress)
+  const [roleEthRecord, setRoleEthRecordState] = useState(ethAddress)
 
   useEffect(() => {
-    if (!roles) return
-    if (!editedFields.current.has('owner')) setRoleOwnerState(roles.owner)
-    if (!editedFields.current.has('manager')) setRoleManagerState(roles.manager)
-    if (!editedFields.current.has('eth')) setRoleEthRecordState(roles.ethAddress)
-  }, [roles])
+    if (!editedFields.current.has('owner')) setRoleOwnerState(ownerAddress)
+    if (!editedFields.current.has('manager')) setRoleManagerState(managerAddress)
+    if (!editedFields.current.has('eth')) setRoleEthRecordState(ethAddress)
+  }, [ownerAddress, managerAddress, ethAddress])
 
   // Text records state
   const [records, setRecords] = useState<Record<string, string>>({})
@@ -121,9 +120,6 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     setInitialAddressRecords(addrRecs)
     setVisibleAddressRecords(visible)
 
-    // ETH record for Roles tab (metadata key is 'Ethereum' from chains, or 'eth')
-    const ethValue = metadata['Ethereum'] || metadata['ethereum'] || metadata['eth'] || ''
-    if (!editedFields.current.has('eth')) setRoleEthRecordState(ethValue)
     // Custom records: any key not in predefined sets
     const knownKeys = new Set<string>([
       ...TEXT_RECORD_KEYS,
@@ -232,6 +228,12 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     return address.toLowerCase() === ownerAddress.toLowerCase()
   }, [address, ownerAddress])
 
+  // Only user edits count as role changes, including while API data is loading or refreshing.
+  const ethRecordChanged = editedFields.current.has('eth') && roleEthRecord.toLowerCase() !== ethAddress.toLowerCase()
+  const managerChanged =
+    editedFields.current.has('manager') && roleManager.toLowerCase() !== managerAddress.toLowerCase()
+  const ownerChanged = editedFields.current.has('owner') && roleOwner.toLowerCase() !== ownerAddress.toLowerCase()
+
   // Track dirty state
   const hasChanges = useMemo(() => {
     for (const key of TEXT_RECORD_KEYS) {
@@ -245,10 +247,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
       if ((customRecords[key] ?? '') !== (initialCustomRecords[key] ?? '')) return true
     }
     // Check role changes
-    if (roleEthRecord !== ethAddress) return true
-    if (roleManager.toLowerCase() !== managerAddress.toLowerCase()) return true
-    if (roleOwner.toLowerCase() !== ownerAddress.toLowerCase()) return true
-    return false
+    return ethRecordChanged || managerChanged || ownerChanged
   }, [
     records,
     initialRecords,
@@ -256,12 +255,9 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     initialAddressRecords,
     customRecords,
     initialCustomRecords,
-    roleEthRecord,
-    ethAddress,
-    roleManager,
-    managerAddress,
-    roleOwner,
-    ownerAddress,
+    ethRecordChanged,
+    managerChanged,
+    ownerChanged,
   ])
 
   // Update text record
@@ -403,7 +399,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
       }
 
       // Encode ETH record change from Roles tab
-      if (roleEthRecord !== ethAddress) {
+      if (ethRecordChanged) {
         const effectiveEthAddr =
           resolveRole(roleEthRecord, resolvedRoleEthRecord) ||
           ('0x0000000000000000000000000000000000000000' as `0x${string}`)
@@ -415,9 +411,6 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
           })
         )
       }
-
-      const managerChanged = roleManager.toLowerCase() !== managerAddress.toLowerCase()
-      const ownerChanged = roleOwner.toLowerCase() !== ownerAddress.toLowerCase()
 
       // Report the whole run up front so the progress screen can list every transaction it sends.
       const plan: V1TxKind[] = []
@@ -540,10 +533,11 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     customRecords,
     initialCustomRecords,
     roleEthRecord,
-    ethAddress,
+    ethRecordChanged,
     roleManager,
-    managerAddress,
+    managerChanged,
     roleOwner,
+    ownerChanged,
     ownerAddress,
     isManager,
     resolvedRoleOwner,

@@ -325,7 +325,7 @@ export const MigrationReview: React.FC<MigrationReviewProps> = ({ name, onBack, 
                 checked={migration.acknowledged}
                 onChange={(event) => migration.setAcknowledged(event.target.checked)}
               />
-              <span>I have reviewed the records and understand that migration is permanent.</span>
+              <span>I reviewed the records and understand that migration is permanent.</span>
             </label>
           </>
         )

@@ -88,6 +88,7 @@ const Modals: React.FC = () => {
     version: editRecordsModalVersion,
     metadata: editRecordsModalMetadata,
     defaultTab: editRecordsModalDefaultTab,
+    startWithMigration: editRecordsModalStartWithMigration,
   } = useAppSelector(selectEditRecordsModal)
   const { open: bulkEditRecordsModalOpen, names: bulkEditRecordsModalNames } =
     useAppSelector(selectBulkEditRecordsModal)
@@ -230,6 +231,7 @@ const Modals: React.FC = () => {
             version={editRecordsModalVersion}
             metadata={editRecordsModalMetadata}
             defaultTab={editRecordsModalDefaultTab}
+            startWithMigration={editRecordsModalStartWithMigration}
             onClose={() => dispatch(setEditRecordsModalOpen(false))}
           />
         )}

@@ -8,6 +8,7 @@ type EditRecordsModalState = {
   version: number | null
   metadata: Record<string, string> | null
   defaultTab: 'records' | 'roles'
+  startWithMigration: boolean
 }
 
 // Initial State ------------------------------------
@@ -17,6 +18,7 @@ const initialState: EditRecordsModalState = {
   version: null,
   metadata: null,
   defaultTab: 'records',
+  startWithMigration: false,
 }
 
 // Slice -------------------------------------------
@@ -26,11 +28,13 @@ export const EditRecordsModalSlice = createSlice({
   reducers: {
     setEditRecordsModalOpen(state, { payload }: PayloadAction<boolean>) {
       state.open = payload
+      if (!payload) state.startWithMigration = false
     },
     setEditRecordsModalName(state, { payload }: PayloadAction<string | null>) {
       state.name = payload
       state.version = null
       state.defaultTab = 'records'
+      state.startWithMigration = false
     },
     setEditRecordsModalVersion(state, { payload }: PayloadAction<number | null>) {
       state.version = payload
@@ -40,6 +44,9 @@ export const EditRecordsModalSlice = createSlice({
     },
     setEditRecordsModalDefaultTab(state, { payload }: PayloadAction<'records' | 'roles'>) {
       state.defaultTab = payload
+    },
+    setEditRecordsModalStartWithMigration: (state, { payload }: PayloadAction<boolean>) => {
+      state.startWithMigration = payload
     },
   },
 })
@@ -51,6 +58,7 @@ export const {
   setEditRecordsModalVersion,
   setEditRecordsModalMetadata,
   setEditRecordsModalDefaultTab,
+  setEditRecordsModalStartWithMigration,
 } = EditRecordsModalSlice.actions
 
 // Selectors ------------------------------------------

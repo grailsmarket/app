@@ -1,15 +1,21 @@
 import * as z from 'zod'
 
 const address = () => z.templateLiteral(['0x', z.string()])
+const url = () => z.url({ protocol: /^https?$/ }).transform((value) => value.replace(/\/+$/, ''))
+const isServer = typeof window === 'undefined'
+
+export const serverConfigSchema = z.object({
+  metadataCacheInvalidationToken: z.string().default(''),
+  openseaApiKey: z.string().default(''),
+})
 
 const configSchema = z.object({
   publicChainId: z.enum(['1', '11155111']),
   walletConnectId: z.string(),
 
-  grailsApiUrl: z.string(),
-  ensV2ApiUrl: z.url({ protocol: /^https?$/ }).transform((url) => url.replace(/\/+$/, '')),
-  ensMetadataUrl: z.string(),
-  metadataCacheInvalidationToken: z.string(),
+  grailsApiUrl: url(),
+  ensV2ApiUrl: url(),
+  ensMetadataUrl: url(),
 
   quicknodeId: z.string(),
   alchemy: z.object({
@@ -21,8 +27,8 @@ const configSchema = z.object({
     optimismSepolia: z.string(),
   }),
 
-  openseaApiKey: z.string(),
-  openseaApiUrl: z.string(),
+  openseaApiKey: z.string().default(''),
+  openseaApiUrl: url(),
 
   // V2 contracts
   ensV2Registry: address(),
@@ -65,10 +71,13 @@ export const config = configSchema.parse({
   publicChainId: process.env.NEXT_PUBLIC_CHAIN_ID,
   walletConnectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
 
-  grailsApiUrl: process.env.NEXT_PUBLIC_GRAILS_API_URL,
+  // Server overrides also apply to shared API clients used during server rendering.
+  grailsApiUrl:
+    (isServer ? process.env.GRAILS_API_URL : undefined) ||
+    process.env.NEXT_PUBLIC_GRAILS_API_URL ||
+    'https://api.grails.app/api/v1',
   ensV2ApiUrl: process.env.NEXT_PUBLIC_ENS_V2_API_URL,
-  ensMetadataUrl: process.env.NEXT_PUBLIC_ENS_METADATA_URL,
-  metadataCacheInvalidationToken: process.env.NEXT_PUBLIC_METADATA_CACHE_INVALIDATION_TOKEN,
+  ensMetadataUrl: (isServer ? process.env.ENS_METADATA_URL : undefined) || process.env.NEXT_PUBLIC_ENS_METADATA_URL,
 
   quicknodeId: process.env.NEXT_PUBLIC_QUICKNODE_ID,
   alchemy: {
@@ -81,7 +90,10 @@ export const config = configSchema.parse({
   },
 
   openseaApiKey: process.env.NEXT_PUBLIC_OPENSEA_API_KEY,
-  openseaApiUrl: process.env.NEXT_PUBLIC_OPENSEA_API_URL,
+  openseaApiUrl:
+    (isServer ? process.env.OPENSEA_API_URL : undefined) ||
+    process.env.NEXT_PUBLIC_OPENSEA_API_URL ||
+    'https://api.opensea.io',
 
   ensV2Registry: process.env.NEXT_PUBLIC_ENS_V2_ETH_REGISTRY,
   ensV2Registrar: process.env.NEXT_PUBLIC_ENS_V2_ETH_REGISTRAR,

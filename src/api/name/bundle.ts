@@ -4,6 +4,7 @@ import { APIResponseType, RolesType } from '@/types/api'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { generateEmptyName } from '@/utils/generateEmptyName'
 import { hexToBigInt, labelhash } from 'viem'
+import { cache } from 'react'
 
 export type NameBundleType = {
   details: MarketplaceDomainType
@@ -11,10 +12,12 @@ export type NameBundleType = {
   roles: RolesType | null
 }
 
-export const fetchNameBundle = async (name: string): Promise<NameBundleType> => {
+// Share one request between generateMetadata and the page render, without caching mutable token IDs across requests.
+export const fetchNameBundle = cache(async (name: string): Promise<NameBundleType> => {
   try {
     const normalizedName = normalizeName(name)
     const response = await fetch(`${API_URL}/names/${normalizedName}/bundle`, {
+      cache: 'no-store',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
@@ -42,4 +45,4 @@ export const fetchNameBundle = async (name: string): Promise<NameBundleType> => 
       roles: null,
     }
   }
-}
+})

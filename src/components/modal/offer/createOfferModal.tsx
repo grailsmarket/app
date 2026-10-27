@@ -366,7 +366,6 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
       )}
 
       {!isCompromiseBlocked && <RevokeApprovalsNotice approvalCheck={approvalCheck} />}
-
     </div>
   )
 

@@ -28,6 +28,7 @@ interface NameImageProps {
 
 const NameImage = ({
   name,
+  tokenId,
   version,
   expiryDate,
   className,
@@ -64,10 +65,7 @@ const NameImage = ({
     () => `${DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image${cacheParam}`,
     [labelHash, cacheParam]
   )
-  const v2Src = useMemo(
-    () => `${DOMAIN_IMAGE_URL_V2}/${hexToBigInt(labelHash).toString()}/image${cacheParam}`,
-    [labelHash, cacheParam]
-  )
+  const v2Src = useMemo(() => `${DOMAIN_IMAGE_URL_V2}/${tokenId}/image${cacheParam}`, [labelHash, cacheParam])
 
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${hexToBigInt(nameHash).toString()}?name=${encodeURIComponent(
@@ -112,18 +110,20 @@ const NameImage = ({
   }, [refreshKey])
 
   useEffect(() => {
-    if (version === 2) {
-      ;(async () => {
-        const res = await fetch(v2Src, refreshKey !== undefined ? { cache: 'reload' } : undefined)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const text = await res.text()
-        setSvg(applyStateGradient(text, status))
-      })()
-    }
+    // if (version === 2) {
+    //   ; (async () => {
+    //     const res = await fetch(v2Src, refreshKey !== undefined ? { cache: 'reload' } : undefined)
+    //     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    //     const text = await res.text()
+    //     setSvg(applyStateGradient(text, status))
+    //   })()
+
+    //   return
+    // }
 
     if (attempt > 1) return
     // reverse for now to only use unwrapped because the graph subgraph returns correct reccord no matter what
-    const url = attempt === 1 ? wrappedSrc : unwrappedSrc
+    const url = version === 2 ? v2Src : attempt === 1 ? wrappedSrc : unwrappedSrc
 
     let cancelled = false
     const maxRetries = 2

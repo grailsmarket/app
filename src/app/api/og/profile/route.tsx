@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server'
 import { ens_beautify } from '@adraffy/ens-normalize'
 import { truncateAddress, fetchAccount } from 'ethereum-identity-kit/utils'
 import { config } from '@/lib/config'
+import { activeChainSlug } from '@/constants/web3/chain'
 
 export async function GET(req: NextRequest) {
   const user = req.url.split('user=')[1] || ''
@@ -51,10 +52,10 @@ export async function GET(req: NextRequest) {
       ? truncateAddress(address)
       : ens_beautify(address)
   const fetchedAvatar = response.ens?.name
-    ? `${config.ensMetadataUrl}/mainnet/avatar/${response.ens?.name}`
+    ? `${config.ensMetadataUrl}/${activeChainSlug}/avatar/${response.ens?.name}`
     : defaultAvatar
   const fetchedHeader = response.ens?.name
-    ? `${config.ensMetadataUrl}/mainnet/header/${response.ens?.name}`
+    ? `${config.ensMetadataUrl}/${activeChainSlug}/header/${response.ens?.name}`
     : defaultHeader
 
   return new ImageResponse(

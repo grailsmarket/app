@@ -531,7 +531,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             <PrimaryButton
               onClick={needsApproval ? handleApprove : handleAcceptOffer}
               className={modalPrimaryActionClassName}
-            // disabled={isCorrectChain ? needsApproval : false}
+              // disabled={isCorrectChain ? needsApproval : false}
             >
               {needsApproval ? 'Approve NFT Transfer' : 'Accept Offer'}
             </PrimaryButton>

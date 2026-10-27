@@ -11,6 +11,7 @@ const size = {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const name = decodeURIComponent(searchParams.get('name') || '')
+  const tokenId = decodeURIComponent(searchParams.get('tokenId') || '')
 
   if (name === '') {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 })
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 
-  const v2ImageUrl = `${DOMAIN_IMAGE_URL_V2}/${labelHash}/image/png`
+  const v2ImageUrl = `${DOMAIN_IMAGE_URL_V2}/${tokenId}/image/png`
   const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
   const unwrappedImageUrl = `${DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 

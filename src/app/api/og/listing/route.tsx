@@ -11,14 +11,13 @@ import { MarketplaceDomainType } from '@/types/domains'
 import { API_URL } from '@/constants/api'
 import { getInterFonts } from '../_lib/inter'
 import { config } from '@/lib/config'
+import { activeChainSlug } from '@/constants/web3/chain'
+import { DOMAIN_IMAGE_URL as UNWRAPPED_DOMAIN_IMAGE_URL, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
 
 const size = {
   width: 1600,
   height: 836,
 }
-
-const WRAPPED_DOMAIN_IMAGE_URL = `${config.ensMetadataUrl}/mainnet/${config.ensNameWrapper}`
-const UNWRAPPED_DOMAIN_IMAGE_URL = `${config.ensMetadataUrl}/mainnet/${config.ensRegistrar}`
 
 const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
@@ -200,7 +199,7 @@ export async function GET(req: NextRequest) {
       if (categories.length !== 1) return {}
       const entries = await Promise.all(
         categories.map(async (category) => {
-          const dataUri = await fetchImageAsDataUri(`https://api.grails.app/api/v1/clubs/${category}/avatar`)
+          const dataUri = await fetchImageAsDataUri(`${API_URL}/clubs/${category}/avatar`)
           return [category, dataUri || ''] as const
         })
       )
@@ -216,7 +215,7 @@ export async function GET(req: NextRequest) {
     ])
 
     const ownerAvatarDataUri = ownerProfile.displayName
-      ? await fetchImageAsDataUri(`${config.ensMetadataUrl}/mainnet/avatar/${ownerProfile.displayName}`)
+      ? await fetchImageAsDataUri(`${config.ensMetadataUrl}/${activeChainSlug}/avatar/${ownerProfile.displayName}`)
       : null
     const ownerAvatar = ownerAvatarDataUri || (defaultAvatarDataUri as string)
 

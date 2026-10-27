@@ -10,6 +10,7 @@ import { APIResponseType } from '@/types/api'
 import { DomainOfferType } from '@/types/domains'
 import { getInterFonts } from '../_lib/inter'
 import { config } from '@/lib/config'
+import { activeChainSlug } from '@/constants/web3/chain'
 import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
 
 const size = {
@@ -222,7 +223,7 @@ export async function GET(req: NextRequest) {
       if (categories.length !== 1) return {}
       const entries = await Promise.all(
         categories.map(async (category) => {
-          const dataUri = await fetchImageAsDataUri(`https://api.grails.app/api/v1/clubs/${category}/avatar`)
+          const dataUri = await fetchImageAsDataUri(`${API_URL}/clubs/${category}/avatar`)
           return [category, dataUri || ''] as const
         })
       )
@@ -232,7 +233,7 @@ export async function GET(req: NextRequest) {
     // Metadata avatar endpoint expects an actual ENS name; truncated addresses won't resolve.
     const avatarUrlForProfile = (profile: { avatar: string; displayName: string }) =>
       profile.displayName.endsWith('.eth')
-        ? `${config.ensMetadataUrl}/mainnet/avatar/${profile.displayName}`
+        ? `${config.ensMetadataUrl}/${activeChainSlug}/avatar/${profile.displayName}`
         : profile.avatar
 
     const [ownerProfile, offerrerProfile, ensImage, categoryAvatars, interFonts] = await Promise.all([

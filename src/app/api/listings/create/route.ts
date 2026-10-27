@@ -6,10 +6,10 @@ import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 import { APIResponseType, CreateListingsResultType } from '@/types/api'
 import { captureListingCreated } from '@/lib/posthog-server'
 import { config } from '@/lib/config'
+import { serverConfig } from '@/lib/serverConfig'
+import { activeChain } from '@/constants/web3/chain'
 import { getListingTokenId } from '@/lib/seaport/ensv2'
 
-const OPENSEA_API_URL = process.env.OPENSEA_API_URL || 'https://api.opensea.io'
-const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export async function POST(request: NextRequest) {
@@ -209,8 +209,8 @@ export async function POST(request: NextRequest) {
 /**
  * Submit a Seaport order to OpenSea's API
  */
-async function submitOrderToOpenSea(order_data: any) {
-  if (!OPENSEA_API_KEY) {
+const submitOrderToOpenSea = async (order_data: any) => {
+  if (!serverConfig.openseaApiKey) {
     throw new Error('OPENSEA_API_KEY not configured')
   }
 
@@ -245,7 +245,8 @@ async function submitOrderToOpenSea(order_data: any) {
     protocol_address: config.seaportAddress,
   }
 
-  const url = `${OPENSEA_API_URL}/v2/orders/ethereum/seaport/listings`
+  const chain = activeChain.id === 1 ? 'ethereum' : 'sepolia'
+  const url = `${config.openseaApiUrl}/v2/orders/${chain}/seaport/listings`
   console.log('Submitting order to OpenSea:', {
     url,
     offerer: payload.parameters.offerer,
@@ -259,7 +260,7 @@ async function submitOrderToOpenSea(order_data: any) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': OPENSEA_API_KEY,
+      'X-API-KEY': serverConfig.openseaApiKey,
     },
     body: JSON.stringify(payload),
   })

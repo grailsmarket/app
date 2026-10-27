@@ -1,10 +1,11 @@
 import { config } from '@/lib/config'
+import { serverConfig } from '@/lib/serverConfig'
 import { activeChainSlug } from '@/constants/web3/chain'
 import { normalizeName } from '@/lib/ens'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
-  if (!config.metadataCacheInvalidationToken) {
+  if (!serverConfig.metadataCacheInvalidationToken) {
     return NextResponse.json({ error: 'Metadata cache invalidation is not configured' }, { status: 503 })
   }
 
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
   const response = await fetch(`${config.ensMetadataUrl}/cache/invalidate`, {
     method: 'POST',
     headers: {
-      authorization: `Bearer ${config.metadataCacheInvalidationToken}`,
+      authorization: `Bearer ${serverConfig.metadataCacheInvalidationToken}`,
       'content-type': 'application/json',
     },
     body: JSON.stringify({

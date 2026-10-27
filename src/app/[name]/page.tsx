@@ -16,11 +16,17 @@ interface Props {
   searchParams: Promise<SearchParams>
 }
 
-export async function generateMetadata(props: Props): Promise<Metadata> {
+export const generateMetadata = async (props: Props): Promise<Metadata> => {
   const params = await props.params
   const name = beautifyName(decodeURIComponent(params.name))
-  const imageUrl = `https://grails.app/api/og/name?name=${encodeURIComponent(name)}`
-  // const imageUrl = `https://grails.app/previews/home.jpeg`
+  const { details } = await fetchNameBundle(name)
+  const imageParams = new URLSearchParams({ name })
+
+  if (details.id > 0 && details.token_id) {
+    imageParams.set('tokenId', details.token_id)
+  }
+
+  const imageUrl = `https://grails.app/api/og/name?${imageParams.toString()}`
 
   return {
     title: `${name}`,

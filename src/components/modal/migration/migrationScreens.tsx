@@ -32,9 +32,10 @@ interface MigrationSubjectProps {
   /** The name has migrated: its image and badge read V2 from here on. */
   migrated: boolean
   compact?: boolean
+  inProgress?: boolean
 }
 
-export const MigrationSubject: React.FC<MigrationSubjectProps> = ({ name, migrated, compact }) => (
+export const MigrationSubject: React.FC<MigrationSubjectProps> = ({ name, migrated, compact, inProgress }) => (
   <AssetSummary
     name={name}
     compact={compact}
@@ -52,8 +53,8 @@ export const MigrationSubject: React.FC<MigrationSubjectProps> = ({ name, migrat
         expiryDate={null}
         forceRegStatus='Registered'
         className='h-full w-full'
-        width={48}
-        height={48}
+        width={inProgress ? 40 : 48}
+        height={inProgress ? 40 : 48}
       />
     }
   />
@@ -150,7 +151,9 @@ export const migrationTransactionScreen = ({
   onClose,
   onOpenRecords,
 }: MigrationTransactionScreenProps): MigrationTransactionScreen | null => {
-  const subject = <MigrationSubject name={name} migrated={migrated} compact />
+  const subject = (
+    <MigrationSubject name={name} migrated={migrated} compact inProgress={!!view && isTransactionBusy(view)} />
+  )
 
   if (view && isTransactionBusy(view))
     return {

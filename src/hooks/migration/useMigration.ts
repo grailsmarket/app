@@ -14,6 +14,7 @@ import { loadResolverState } from '@/utils/records/loadResolver'
 import { newResolverVersion } from '@/utils/records/resolverDeployment'
 import { createdConfigurationId } from '@/utils/settings/configurations'
 import { migrationTransfer, readMigrationDeployment, readMigrationName } from '@/utils/migration/migration'
+import { resetMigrationQueries } from '@/utils/migration/resetMigrationQueries'
 import {
   publicResolverCopyCalls,
   readV1MigrationRecords,
@@ -281,6 +282,7 @@ export const useMigration = (name: string) => {
       confirmed: () => {
         setMigrated(true)
         queries.setQueryData(['name', 'recordEditorVersion', activeChain.id, config.ensV2Registry, name], 2)
+        resetMigrationQueries(queries, [name], snapshot.owner).catch(() => {})
         if (!snapshot.replacesResolver || selectedMode !== 'copy' || !captured.length) setComplete(true)
       },
     })

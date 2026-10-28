@@ -5,6 +5,7 @@ export interface SettingsTransactionStep {
   label: string
   readTimeoutMs?: number
   prepare: (account: Address) => Promise<{ to: Address; data: Hex } | null>
+  verifyReceipt?: (receipt: TransactionReceipt) => void
   confirmed?: (receipt: TransactionReceipt) => void
 }
 
@@ -15,6 +16,7 @@ interface PrepareSettingsTransactionParams {
   chain: Chain
   getWallet: () => Promise<WalletClient>
   onStatus: (status: string) => void
+  isCurrent?: () => boolean
   readTimeoutMs?: number
 }
 
@@ -40,6 +42,7 @@ export const prepareSettingsTransaction = async ({
   chain,
   getWallet,
   onStatus,
+  isCurrent = () => true,
   readTimeoutMs = 30_000,
 }: PrepareSettingsTransactionParams) => {
   onStatus('Checking onchain data…')
@@ -49,7 +52,7 @@ export const prepareSettingsTransaction = async ({
     step.readTimeoutMs ?? readTimeoutMs
   )
 
-  if (!request) return null
+  if (!isCurrent() || !request) return null
 
   onStatus('Checking the transaction…')
   await readWithDeadline(
@@ -57,6 +60,7 @@ export const prepareSettingsTransaction = async ({
     'The transaction check timed out. No transaction was requested. Please retry.',
     readTimeoutMs
   )
+  if (!isCurrent()) return null
 
   onStatus('Connecting to your wallet…')
   const wallet = await readWithDeadline(
@@ -64,6 +68,7 @@ export const prepareSettingsTransaction = async ({
     'Your wallet did not respond. Unlock it or reconnect, then retry. No transaction was requested.',
     readTimeoutMs
   )
+  if (!isCurrent()) return null
 
   if (wallet.account?.address.toLowerCase() !== account.toLowerCase())
     throw new Error('The connected wallet changed. Reconnect the wallet that started this transaction.')
@@ -74,5 +79,6 @@ export const prepareSettingsTransaction = async ({
     await ensureChain(wallet, chain.id)
   }
 
+  if (!isCurrent()) return null
   return { request, wallet }
 }

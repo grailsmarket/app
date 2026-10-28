@@ -46,6 +46,27 @@ export interface MigrationName {
 
 const sameAddress = (left: Address, right: Address) => left.toLowerCase() === right.toLowerCase()
 
+export class MigrationEligibilityError extends Error {
+  constructor(
+    readonly reason:
+      | 'unsupported-name'
+      | 'parent-unavailable'
+      | 'unsupported-parent'
+      | 'already-migrated'
+      | 'not-reserved'
+      | 'unsupported-subname'
+      | 'expired-subname'
+      | 'grace-period'
+      | 'not-owner'
+      | 'transfer-locked'
+      | 'frozen-approval',
+    message: string
+  ) {
+    super(message)
+    this.name = 'MigrationEligibilityError'
+  }
+}
+
 export const readMigrationDeployment = async (
   client: PublicClient,
   helper: Address,
@@ -74,24 +95,70 @@ export const readMigrationDeployment = async (
 }
 
 export const assertMigrationRestrictions = (fuses: number, approved: Address, isSubname: boolean) => {
-  if (fuses & 4) throw new Error('This name cannot migrate because its transfer permission is permanently locked.')
+  if (fuses & 4)
+    throw new MigrationEligibilityError(
+      'transfer-locked',
+      'This name cannot migrate because its transfer permission is permanently locked.'
+    )
   if (fuses & 1 && fuses & 64 && approved !== zeroAddress)
-    throw new Error('This name has a frozen token approval and cannot migrate.')
+    throw new MigrationEligibilityError('frozen-approval', 'This name has a frozen token approval and cannot migrate.')
   if (isSubname && !(fuses & 65536))
-    throw new Error('This subname is not emancipated. Its parent owner must recreate it in V2.')
+    throw new MigrationEligibilityError(
+      'unsupported-subname',
+      'This subname is not emancipated. Its parent owner must recreate it in V2.'
+    )
+}
+
+const assertMigrationReceiver = async (
+  client: PublicClient,
+  deployment: MigrationDeployment,
+  receiver: Address,
+  parent: string
+) => {
+  const [factory, implementation, parentNode, wrapper] = await Promise.all([
+    client.readContract({
+      address: deployment.lockedController,
+      abi: migrationAbi,
+      functionName: 'VERIFIABLE_FACTORY',
+    }),
+    client.readContract({
+      address: deployment.lockedController,
+      abi: migrationAbi,
+      functionName: 'WRAPPER_REGISTRY_IMPL',
+    }),
+    client.readContract({ address: receiver, abi: migrationAbi, functionName: 'getWrappedNode' }),
+    client.readContract({ address: receiver, abi: migrationAbi, functionName: 'NAME_WRAPPER' }),
+  ])
+  const verified = await client.readContract({
+    address: factory,
+    abi: VERIFIABLE_FACTORY_ABI,
+    functionName: 'verifyContract',
+    args: [receiver],
+  })
+
+  if (
+    !sameAddress(verified, implementation) ||
+    !sameAddress(wrapper, deployment.wrapper) ||
+    parentNode !== namehash(parent)
+  )
+    throw new MigrationEligibilityError(
+      'unsupported-parent',
+      'The parent subregistry is not a supported ENS migration receiver.'
+    )
 }
 
 export const readMigrationName = async (
   client: PublicClient,
   deployment: MigrationDeployment,
   input: string,
-  account: Address
+  account: Address,
+  { parentGracePeriod = BigInt(0) }: { parentGracePeriod?: bigint } = {}
 ): Promise<MigrationName> => {
   const name = normalize(input)
   const labels = name.split('.')
 
   if (labels.length < 2 || labels.at(-1) !== 'eth')
-    throw new Error('Only .eth names and emancipated subnames can migrate.')
+    throw new MigrationEligibilityError('unsupported-name', 'Only .eth names and emancipated subnames can migrate.')
 
   const node = namehash(name)
   const isSubname = labels.length > 2
@@ -108,8 +175,35 @@ export const readMigrationName = async (
       args: [BigInt(labelhash(labels[index]))],
     })
 
-    if (state.status !== 2 || state.expiry <= now)
-      throw new Error('Migrate and renew the parent name before this subname.')
+    if (state.status !== 2 || state.expiry <= now) {
+      if (
+        index !== labels.length - 2 ||
+        state.latestOwner === zeroAddress ||
+        state.expiry > now ||
+        now >= state.expiry + parentGracePeriod
+      )
+        throw new MigrationEligibilityError(
+          'parent-unavailable',
+          'Migrate and renew the parent name before this subname.'
+        )
+      const parent = labels.slice(index).join('.')
+      const factory = await client.readContract({
+        address: deployment.lockedController,
+        abi: migrationAbi,
+        functionName: 'VERIFIABLE_FACTORY',
+      })
+      registry = await client.readContract({
+        address: factory,
+        abi: VERIFIABLE_FACTORY_ABI,
+        functionName: 'predictProxyAddress',
+        args: [deployment.lockedController, BigInt(namehash(parent))],
+      })
+      const code = await client.getCode({ address: registry })
+      if (!code || code === '0x')
+        throw new MigrationEligibilityError('unsupported-parent', 'The parent has no migration wrapper registry.')
+      await assertMigrationReceiver(client, deployment, registry, parent)
+      continue
+    }
 
     registry = await client.readContract({
       address: registry,
@@ -118,7 +212,11 @@ export const readMigrationName = async (
       args: [labels[index]],
     })
 
-    if (registry === zeroAddress) throw new Error('The parent name does not have a migration subregistry.')
+    if (registry === zeroAddress)
+      throw new MigrationEligibilityError(
+        'unsupported-parent',
+        'The parent name does not have a migration subregistry.'
+      )
   }
 
   const state = await client.readContract({
@@ -128,8 +226,13 @@ export const readMigrationName = async (
     args: [labelId],
   })
 
-  if (state.status === 2) throw new Error('This name is already registered in ENS V2 on this network.')
-  if (!isSubname && state.status !== 1) throw new Error('This name has no active V2 reservation on this network.')
+  if (state.status === 2)
+    throw new MigrationEligibilityError(
+      'already-migrated',
+      'This name is already registered in ENS V2 on this network.'
+    )
+  if (!isSubname && state.status !== 1)
+    throw new MigrationEligibilityError('not-reserved', 'This name has no active V2 reservation on this network.')
 
   const [wrappedData, resolver] = await Promise.all([
     client.readContract({
@@ -153,13 +256,15 @@ export const readMigrationName = async (
       args: [labelId],
     })
   } else if (!wrapped) {
-    throw new Error(
+    throw new MigrationEligibilityError(
+      'unsupported-subname',
       'Only emancipated NameWrapper subnames can migrate. The parent owner must recreate other subnames in V2.'
     )
   }
 
   if (expiry <= now)
-    throw new Error(
+    throw new MigrationEligibilityError(
+      isSubname ? 'expired-subname' : 'grace-period',
       isSubname
         ? 'This subname has expired and cannot be migrated.'
         : 'This name is in its V1 grace period. Renew it so its V1 expiry is in the future, then migrate.'
@@ -175,7 +280,10 @@ export const readMigrationName = async (
       })
 
   if (!sameAddress(owner, account))
-    throw new Error('Connect the wallet that owns this V1 token on this network. Manager access is not enough.')
+    throw new MigrationEligibilityError(
+      'not-owner',
+      'Connect the wallet that owns this V1 token on this network. Manager access is not enough.'
+    )
 
   const approved = wrapped
     ? await client.readContract({
@@ -190,35 +298,7 @@ export const readMigrationName = async (
 
   const receiver = isSubname ? registry : locked ? deployment.lockedController : deployment.unlockedController
 
-  if (isSubname) {
-    const [factory, implementation, parentNode, wrapper] = await Promise.all([
-      client.readContract({
-        address: deployment.lockedController,
-        abi: migrationAbi,
-        functionName: 'VERIFIABLE_FACTORY',
-      }),
-      client.readContract({
-        address: deployment.lockedController,
-        abi: migrationAbi,
-        functionName: 'WRAPPER_REGISTRY_IMPL',
-      }),
-      client.readContract({ address: receiver, abi: migrationAbi, functionName: 'getWrappedNode' }),
-      client.readContract({ address: receiver, abi: migrationAbi, functionName: 'NAME_WRAPPER' }),
-    ])
-    const verified = await client.readContract({
-      address: factory,
-      abi: VERIFIABLE_FACTORY_ABI,
-      functionName: 'verifyContract',
-      args: [receiver],
-    })
-
-    if (
-      !sameAddress(verified, implementation) ||
-      !sameAddress(wrapper, deployment.wrapper) ||
-      parentNode !== namehash(labels.slice(1).join('.'))
-    )
-      throw new Error('The parent subregistry is not a supported ENS migration receiver.')
-  }
+  if (isSubname) await assertMigrationReceiver(client, deployment, receiver, labels.slice(1).join('.'))
 
   let fixedResolver: Address | null = null
 

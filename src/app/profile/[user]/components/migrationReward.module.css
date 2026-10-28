@@ -1,0 +1,59 @@
+.banner {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(110deg, #292826, #242424 65%);
+}
+
+.ready {
+  background: linear-gradient(115deg, #383634, #282a2c 32%, #484744 51%, #303234 72%, #3c3934);
+}
+
+.ready::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: '';
+  background: linear-gradient(110deg, transparent 30%, #fff1dc16 45%, #ffffff0d 50%, transparent 65%);
+  background-size: 250% 100%;
+  animation: shine 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.fill {
+  background: linear-gradient(90deg, var(--primary-hover), var(--primary));
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.claim:not(:disabled) {
+  animation: pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0%,
+  100% {
+    background-position: 100% 0;
+  }
+  50% {
+    background-position: 0 0;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 #ffdfc000;
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px #ffdfc012,
+      0 0 24px #ffdfc02b;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ready::before,
+  .claim:not(:disabled) {
+    animation: none;
+  }
+}

@@ -165,7 +165,7 @@ export const MigrationRewardBanner = ({
                 href={`https://etherscan.io/nft/${COMMEMORATIVE_NFT_ADDRESS}/${assets.tokenId}`}
                 target='_blank'
                 rel='noopener noreferrer'
-                className='text-neutral hover:text-primary text-md mx-auto transition-colors @[40rem]/app:mx-0'
+                className='text-neutral hover:text-primary text-md mx-0 hidden transition-colors @[40rem]/app:block'
               >
                 View on Etherscan ↗
               </a>

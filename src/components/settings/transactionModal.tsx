@@ -25,6 +25,7 @@ export interface SettingsTransactionModalProps extends SettingsTransactionView {
   networkName?: string
   successTitle?: string
   successMessage?: string
+  successContent?: React.ReactNode
   errorTitle?: string
   onRetry: () => void
   onClose: () => void
@@ -55,7 +56,12 @@ export const settingsTransactionScreen = (props: SettingsTransactionModalProps):
   if (props.phase === 'success')
     return {
       key: 'success',
-      content: (
+      content: props.successContent ? (
+        <div className='flex flex-col items-center gap-3'>
+          {props.successContent}
+          <TransactionLinks links={confirmedTransactions(props)} />
+        </div>
+      ) : (
         <TxStatus state='success' title={props.successTitle ?? 'Changes Saved'} message={props.successMessage}>
           <TransactionLinks links={confirmedTransactions(props)} />
         </TxStatus>

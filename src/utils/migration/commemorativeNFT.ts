@@ -19,7 +19,11 @@ export type CommemorativeNFT = {
 
 export const commemorativeNFTAssets = (owner: Address) => {
   const tokenId = BigInt(keccak256(owner))
-  return { tokenId, imageUrl: `https://v2.nft-assets.ens.domains/token/${tokenId}/image.webp` }
+  return {
+    tokenId,
+    imageUrl: `https://v2.nft-assets.ens.domains/token/${tokenId}/image.webp`,
+    openSeaUrl: `https://opensea.io/item/ethereum/${COMMEMORATIVE_NFT_ADDRESS}/${tokenId}`,
+  }
 }
 
 export const readCommemorativeNFTClaimed = async (client: PublicClient, owner: Address) => {

@@ -23,6 +23,7 @@ export interface SettingsTransactionCopy {
   title?: string
   successTitle?: string
   successMessage?: string
+  successContent?: React.ReactNode
   errorTitle?: string
 }
 
@@ -223,6 +224,7 @@ export const useSettingsTransaction = (
     index: state.index,
     successTitle: shown.successTitle,
     successMessage: shown.successMessage,
+    successContent: shown.successContent,
     errorTitle: shown.errorTitle,
     submitted: !!queue.current?.hash,
     onRetry: () => void run(),

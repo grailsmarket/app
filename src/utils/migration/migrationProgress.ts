@@ -13,6 +13,8 @@ import {
 
 const INDEXER = 'https://api.bigname.sh'
 
+export class MigrationProgressSyncError extends Error {}
+
 const pageSchema = z.object({
   data: z.array(
     z.object({
@@ -34,6 +36,7 @@ const pageSchema = z.object({
 
 const readPage = async (owner: Address, params: URLSearchParams, signal?: AbortSignal) => {
   const response = await fetch(`${INDEXER}/v1/addresses/${owner.toLowerCase()}/names?${params}`, {
+    cache: 'no-store',
     signal: AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(15_000)]),
   })
   if (!response.ok) throw new Error('Migration progress is unavailable. Please retry.')
@@ -45,20 +48,6 @@ const readPage = async (owner: Address, params: URLSearchParams, signal?: AbortS
 
 export const readMigrationProgress = async (client: PublicClient, owner: Address, signal?: AbortSignal) => {
   if ((await client.getChainId()) !== 1) throw new Error('Migration rewards are available on Ethereum mainnet.')
-  const migratedPage = await readPage(
-    owner,
-    new URLSearchParams({
-      relation: 'owner',
-      is_migrated: 'true',
-      dedupe: 'name',
-      include: 'total_count',
-      page_size: '1',
-    }),
-    signal
-  )
-  const migrated = migratedPage.page.total_count ?? (migratedPage.page.has_more ? null : migratedPage.data.length)
-  if (migrated === null) throw new Error('The ENS indexer could not verify the migrated name count.')
-
   const params = new URLSearchParams({
     namespace: 'ens',
     relation: 'owner',
@@ -76,19 +65,23 @@ export const readMigrationProgress = async (client: PublicClient, owner: Address
   while (true) {
     signal?.throwIfAborted()
     const { data, page } = await readPage(owner, params, signal)
-    if (page.total_count === null || (expectedTotal !== undefined && page.total_count !== expectedTotal))
-      throw new Error('The ENS name count changed while checking migration progress. Please retry.')
+    if (page.total_count === null) throw new Error('The ENS indexer could not verify the remaining name count.')
+    if (expectedTotal !== undefined && page.total_count !== expectedTotal)
+      throw new MigrationProgressSyncError(
+        'The ENS name count changed while checking migration progress. Please retry.'
+      )
     expectedTotal = page.total_count
     for (const row of data) {
-      if (seen.has(row.name)) throw new Error('The ENS name list repeated a name. Please retry.')
+      if (seen.has(row.name)) throw new MigrationProgressSyncError('The ENS name list repeated a name. Please retry.')
       seen.add(row.name)
       if (row.name.endsWith('.reverse') || row.status === 'released' || row.status === 'unregistered') continue
       if (row.owner?.toLowerCase() !== owner.toLowerCase())
-        throw new Error('The ENS owner index changed. Please retry.')
+        throw new MigrationProgressSyncError('The ENS owner index changed. Please retry.')
       names.add(row.name)
     }
     if (!page.has_more) {
-      if (seen.size !== expectedTotal) throw new Error('The ENS name list is incomplete. Please retry.')
+      if (seen.size !== expectedTotal)
+        throw new MigrationProgressSyncError('The ENS name list is incomplete. Please retry.')
       break
     }
     if (!data.length || !page.next_cursor || cursors.has(page.next_cursor))
@@ -96,6 +89,19 @@ export const readMigrationProgress = async (client: PublicClient, owner: Address
     cursors.add(page.next_cursor)
     params.set('cursor', page.next_cursor)
   }
+  const migratedPage = await readPage(
+    owner,
+    new URLSearchParams({
+      relation: 'owner',
+      is_migrated: 'true',
+      dedupe: 'name',
+      include: 'total_count',
+      page_size: '1',
+    }),
+    signal
+  )
+  const migrated = migratedPage.page.total_count ?? (migratedPage.page.has_more ? null : migratedPage.data.length)
+  if (migrated === null) throw new Error('The ENS indexer could not verify the migrated name count.')
   if (!names.size) return { migrated, remaining: 0, remainingNames: [], excluded: 0 }
 
   const deployment = await readMigrationDeployment(client, config.ensV2MigrationHelper, config.ensV2Registry, 1)
@@ -136,7 +142,7 @@ export const readMigrationProgress = async (client: PublicClient, owner: Address
     } catch (error) {
       if (!(error instanceof MigrationEligibilityError)) throw error
       if (error.reason === 'already-migrated' || error.reason === 'not-owner')
-        throw new Error('Migration progress is catching up with onchain changes. Please retry.')
+        throw new MigrationProgressSyncError('Migration progress is catching up with onchain changes. Please retry.')
       if (error.reason !== 'parent-unavailable' || !lockedParents.has(parent)) {
         excluded++
         return
@@ -153,7 +159,7 @@ export const readMigrationProgress = async (client: PublicClient, owner: Address
         return
       }
       if (wrappedOwner.toLowerCase() !== owner.toLowerCase())
-        throw new Error('Migration progress is catching up with onchain changes. Please retry.')
+        throw new MigrationProgressSyncError('Migration progress is catching up with onchain changes. Please retry.')
       const approved = await client.readContract({
         address: deployment.wrapper,
         abi: NAME_WRAPPER_ABI,

@@ -1,7 +1,8 @@
 'use client'
 
-import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useRef } from 'react'
+import { Cross } from 'ethereum-identity-kit'
+import CommemorativeArtwork, { useArtworkTilt } from '@/components/migration/commemorativeArtwork'
 import type { Address } from 'viem'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -9,15 +10,27 @@ import { SettingsTransactionProvider } from '@/context/settingsTransaction'
 import { COMMEMORATIVE_NFT_ADDRESS } from '@/constants/web3/abi/CommemorativeNFT'
 import { activeChain } from '@/constants/web3/chain'
 import { useMigrationReward } from '@/hooks/migration/useMigrationReward'
+import {
+  MIGRATION_REWARD_ID,
+  setMigrationRewardDismissed,
+  useMigrationRewardDismissed,
+} from '@/hooks/migration/useMigrationRewardVisibility'
 import { cn } from '@/utils/tailwind'
 import styles from './migrationReward.module.css'
 
-export const MigrationRewardBanner = ({ reward }: { reward: ReturnType<typeof useMigrationReward> }) => {
+export const MigrationRewardBanner = ({
+  reward,
+  onDismiss,
+}: {
+  reward: ReturnType<typeof useMigrationReward>
+  onDismiss?: () => void
+}) => {
   const {
     nft,
     claimed: claimStatus,
     assets,
     progress,
+    syncing,
     transaction,
     canClaim,
     canMigrate,
@@ -25,10 +38,10 @@ export const MigrationRewardBanner = ({ reward }: { reward: ReturnType<typeof us
     migrate,
     retry,
   } = reward
-  const [failedImage, setFailedImage] = useState<string>()
+  const artwork = useArtworkTilt()
   const claimed = claimStatus.data
   const error = !claimed && (claimStatus.isError || nft.isError || progress.isError)
-  const loading = !claimed && (claimStatus.isPending || nft.isPending || progress.isPending)
+  const loading = !claimed && (claimStatus.isPending || nft.isPending || progress.isPending || syncing)
   const checking = !claimed && (claimStatus.isFetching || nft.isFetching || progress.isFetching)
   const migrated = progress.data?.migrated ?? 0
   const remaining = progress.data?.remaining ?? 0
@@ -42,54 +55,64 @@ export const MigrationRewardBanner = ({ reward }: { reward: ReturnType<typeof us
   return (
     <section
       aria-label='ENS commemorative NFT'
-      className={cn(styles.banner, ready && styles.ready, 'border-tertiary border-b px-5 py-6 md:px-8')}
+      className={cn(styles.banner, ready && styles.ready, 'border-tertiary border-b px-4 py-6 @[40rem]/app:px-8')}
+      onPointerMove={artwork.track}
+      onPointerLeave={artwork.release}
     >
-      <div className='relative grid grid-cols-[80px_minmax(0,1fr)] items-center gap-x-5 gap-y-5 sm:grid-cols-[104px_minmax(0,1fr)] md:grid-cols-[104px_minmax(0,1fr)_auto] md:gap-x-8'>
-        <div className={styles.artwork}>
-          {imageUrl && imageUrl !== failedImage ? (
-            <Image
-              src={imageUrl}
-              alt={nft.data?.name ?? 'ENS commemorative NFT'}
-              width={104}
-              height={132}
-              unoptimized
-              className='h-full w-full object-contain'
-              onError={() => setFailedImage(imageUrl)}
-            />
-          ) : (
-            <div className={styles.placeholder} aria-label='ENS commemorative NFT artwork'>
-              <Image src='/logos/ens-white.svg' alt='' width={34} height={39} />
-              <span>ENS V2</span>
-            </div>
-          )}
-        </div>
-        <div className='min-w-0'>
-          <p className='text-primary mb-2 text-xs font-semibold tracking-[0.16em] uppercase'>
-            ENS V2 · Commemorative NFT
-          </p>
-          <h2 className='text-2xl leading-tight font-semibold md:text-3xl'>
+      {onDismiss && (
+        <button
+          type='button'
+          onClick={onDismiss}
+          disabled={transaction.busy || transaction.pending}
+          aria-label='Dismiss ENS commemorative banner'
+          title='Dismiss banner. Reopen from the wallet menu.'
+          className='text-neutral hover:text-foreground hover:bg-tertiary focus-visible:outline-primary absolute top-2 right-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:outline-2 disabled:cursor-default disabled:opacity-50'
+        >
+          <Cross className='h-3 w-3' />
+        </button>
+      )}
+      <div className='grid grid-cols-[88px_minmax(0,1fr)] items-center gap-x-4 gap-y-5 @[40rem]/app:grid-cols-[112px_minmax(0,600px)] @[40rem]/app:gap-x-8 @[40rem]/app:gap-y-4 @[64rem]/app:grid-cols-[128px_minmax(0,640px)]'>
+        <CommemorativeArtwork
+          artwork={artwork}
+          imageUrl={imageUrl}
+          name={nft.data?.name}
+          className='@[40rem]/app:row-span-2'
+        />
+        <div className={cn('min-w-0 @[40rem]/app:self-end', onDismiss && 'pr-6')}>
+          <h2 className='font-sedan-sc text-2xl leading-tight @[40rem]/app:text-3xl @[64rem]/app:text-4xl'>
             {claimed
               ? 'Your ENS milestone, collected'
               : ready
                 ? 'Your commemorative NFT is ready'
                 : 'Celebrate your move to ENS V2'}
           </h2>
-          <p className='text-neutral mt-2 max-w-2xl text-lg leading-relaxed'>
+          <p className='text-neutral mt-1.5 text-lg leading-normal'>
             {claimed
               ? 'A keepsake for the names you brought into a new chapter of ENS.'
               : ready
                 ? 'All your eligible names have migrated. Claim your piece of ENS history.'
                 : 'Migrate your eligible names to V2 to unlock your commemorative NFT.'}
           </p>
+        </div>
+        <div
+          className={cn(
+            'col-span-2 grid items-center gap-x-6 gap-y-3 @[40rem]/app:col-span-1 @[40rem]/app:col-start-2 @[40rem]/app:self-start',
+            !claimed && '@[40rem]/app:grid-cols-[minmax(0,1fr)_auto]'
+          )}
+        >
           {!claimed && (
-            <div className='mt-4 max-w-xl' aria-live='polite'>
+            <div className='min-w-0' aria-live='polite'>
               {error ? (
                 <p role='alert' className='text-lg'>
                   We couldn’t check your migration progress. Please try again.
                 </p>
               ) : loading ? (
                 <div role='status'>
-                  <span className='text-neutral text-md'>Checking your migration progress…</span>
+                  <span className='text-neutral text-md'>
+                    {syncing
+                      ? 'Updating your names. We’ll recheck automatically…'
+                      : 'Checking your migration progress…'}
+                  </span>
                   <div className='bg-tertiary mt-2 h-1.5 rounded-full' />
                 </div>
               ) : (
@@ -117,7 +140,10 @@ export const MigrationRewardBanner = ({ reward }: { reward: ReturnType<typeof us
                     className='bg-tertiary h-1.5 overflow-hidden rounded-full'
                   >
                     <div
-                      className='bg-primary h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none'
+                      className={cn(
+                        styles.fill,
+                        'h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none'
+                      )}
                       style={{ width: `${total ? (migrated / total) * 100 : 0}%` }}
                     />
                   </div>
@@ -125,48 +151,82 @@ export const MigrationRewardBanner = ({ reward }: { reward: ReturnType<typeof us
               )}
             </div>
           )}
-        </div>
-        {(claimed || error || ready || hasRemaining) && (
-          <div className='col-span-2 flex flex-col items-center gap-2 md:col-span-1 md:items-end'>
-            {claimed ? (
+          {claimed ? (
+            <div className='flex flex-wrap items-center gap-3'>
+              <a
+                href={assets.openSeaUrl}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='border-primary-line text-primary hover:bg-primary-soft flex h-10 w-full items-center justify-center rounded-sm border px-5 text-lg font-bold transition-colors @[40rem]/app:w-fit'
+              >
+                View on OpenSea ↗
+              </a>
               <a
                 href={`https://etherscan.io/nft/${COMMEMORATIVE_NFT_ADDRESS}/${assets.tokenId}`}
                 target='_blank'
                 rel='noopener noreferrer'
-                className='border-primary/30 text-primary hover:bg-primary/10 rounded-sm border px-5 py-2.5 text-lg font-semibold transition-colors'
+                className='text-neutral hover:text-primary text-md mx-auto transition-colors @[40rem]/app:mx-0'
               >
-                View your NFT ↗
+                View on Etherscan ↗
               </a>
-            ) : error ? (
-              <SecondaryButton disabled={checking} onClick={retry}>
-                {checking ? 'Checking…' : 'Try again'}
-              </SecondaryButton>
-            ) : hasRemaining ? (
-              <PrimaryButton className='h-11 w-full px-6 md:w-auto' disabled={!canMigrate} onClick={migrate}>
-                {checking ? 'Checking…' : 'Migrate now'}
-              </PrimaryButton>
-            ) : (
+            </div>
+          ) : error ? (
+            <SecondaryButton className='h-10 w-full px-6' disabled={checking} onClick={retry}>
+              {checking ? 'Checking…' : 'Try again'}
+            </SecondaryButton>
+          ) : hasRemaining ? (
+            <PrimaryButton
+              className='hover:bg-primary-hover disabled:hover:bg-primary h-10 w-full px-6 hover:opacity-100'
+              disabled={!canMigrate}
+              onClick={migrate}
+            >
+              {checking ? 'Checking…' : 'Migrate now'}
+            </PrimaryButton>
+          ) : (
+            ready && (
               <>
                 <PrimaryButton
-                  className={cn(styles.claim, 'h-11 w-full px-6 md:w-auto')}
+                  className={cn(
+                    styles.claim,
+                    'hover:bg-primary-hover disabled:hover:bg-primary h-10 w-full px-6 hover:opacity-100'
+                  )}
                   disabled={!canClaim || checking || transaction.busy || transaction.pending}
                   onClick={() => void claim()}
                 >
                   {transaction.busy ? 'Claiming…' : checking ? 'Checking…' : 'Claim NFT'}
                 </PrimaryButton>
-                <p className='text-neutral text-md'>No mint fee · network gas only</p>
+                <p className='text-neutral text-md text-center @[40rem]/app:col-start-2'>
+                  No mint fee · network gas only
+                </p>
               </>
-            )}
-          </div>
-        )}
+            )
+          )}
+        </div>
       </div>
     </section>
   )
 }
 
-const MigrationRewardContent = ({ owner }: { owner: Address }) => (
-  <MigrationRewardBanner reward={useMigrationReward(owner)} />
-)
+const MigrationRewardContent = ({ owner }: { owner: Address }) => {
+  const dismissed = useMigrationRewardDismissed(owner)
+  const reward = useMigrationReward(owner, !dismissed)
+  const banner = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (window.location.hash !== `#${MIGRATION_REWARD_ID}`) return
+    setMigrationRewardDismissed(owner, false)
+    window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search)
+    requestAnimationFrame(() => banner.current?.scrollIntoView({ block: 'start' }))
+  }, [owner])
+
+  return (
+    <div ref={banner} id={MIGRATION_REWARD_ID} data-owner={owner.toLowerCase()} className='scroll-mt-20'>
+      {!dismissed && (
+        <MigrationRewardBanner reward={reward} onDismiss={() => setMigrationRewardDismissed(owner, true)} />
+      )}
+    </div>
+  )
+}
 
 const MigrationReward = ({ owner }: { owner: Address }) =>
   activeChain.id === 1 ? (

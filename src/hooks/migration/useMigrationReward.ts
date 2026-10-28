@@ -1,28 +1,29 @@
-import { useMemo, useRef } from 'react'
+import { createElement, useMemo, useRef } from 'react'
 import { useAccount } from 'wagmi'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { type Address, encodeFunctionData, parseEventLogs } from 'viem'
 import { activeChain } from '@/constants/web3/chain'
 import { COMMEMORATIVE_NFT_ABI, COMMEMORATIVE_NFT_ADDRESS } from '@/constants/web3/abi/CommemorativeNFT'
 import { useSettingsTransaction } from '@/hooks/settings/useSettingsTransaction'
+import CommemorativeNFTSuccess from '@/components/migration/commemorativeNFTSuccess'
 import {
   commemorativeNFTAssets,
   readCommemorativeNFT,
   readCommemorativeNFTClaimed,
 } from '@/utils/migration/commemorativeNFT'
-import { readMigrationProgress } from '@/utils/migration/migrationProgress'
+import { MigrationProgressSyncError, readMigrationProgress } from '@/utils/migration/migrationProgress'
 import { createV2RecordsClient } from '@/utils/records/client'
 import { useAppDispatch } from '@/state/hooks'
 import { setBulkMigrationModalNames, setBulkMigrationModalOpen } from '@/state/reducers/modals/bulkMigrationModal'
 
-export const useMigrationReward = (owner: Address) => {
+export const useMigrationReward = (owner: Address, visible = true) => {
   const { address } = useAccount()
   const client = useMemo(createV2RecordsClient, [])
   const queries = useQueryClient()
   const dispatch = useAppDispatch()
   const transaction = useSettingsTransaction()
   const claiming = useRef(false)
-  const enabled = activeChain.id === 1 && address?.toLowerCase() === owner.toLowerCase()
+  const enabled = visible && activeChain.id === 1 && address?.toLowerCase() === owner.toLowerCase()
   const key = ['profile', 'migrationReward', owner.toLowerCase(), activeChain.id]
   const claimedKey = ['commemorativeNFT', activeChain.id, COMMEMORATIVE_NFT_ADDRESS, owner.toLowerCase()]
   const assets = commemorativeNFTAssets(owner)
@@ -51,8 +52,17 @@ export const useMigrationReward = (owner: Address) => {
     queryFn: ({ signal }) => readMigrationProgress(client, owner, signal),
     enabled: enabled && !!nft.data?.eligible && claimed.isSuccess && !claimed.data,
     staleTime: 30_000,
-    retry: false,
+    retry: (failures, error) => failures < (error instanceof MigrationProgressSyncError ? 24 : 2),
+    retryDelay: 5_000,
+    refetchInterval: (query) =>
+      query.state.status === 'success' &&
+      query.state.data?.remaining === 0 &&
+      query.state.data.migrated === 0 &&
+      query.state.dataUpdateCount < 24
+        ? 5_000
+        : false,
   })
+  const syncing = !progress.isError && progress.failureReason instanceof MigrationProgressSyncError
   const canAct =
     enabled &&
     claimed.isSuccess &&
@@ -63,6 +73,7 @@ export const useMigrationReward = (owner: Address) => {
     !nft.isFetching &&
     progress.isSuccess &&
     !progress.isFetching &&
+    !progress.isPaused &&
     !transaction.busy &&
     !transaction.pending
   const canClaim = canAct && progress.data.remaining === 0 && progress.data.migrated > 0
@@ -128,8 +139,7 @@ export const useMigrationReward = (owner: Address) => {
         ],
         {
           title: 'Claim Commemorative NFT',
-          successTitle: 'NFT claimed',
-          successMessage: 'Your ENS commemorative NFT has been claimed.',
+          successContent: createElement(CommemorativeNFTSuccess, { ...assets, name: nft.data?.name }),
           errorTitle: 'Unable to claim NFT',
         }
       )
@@ -143,5 +153,5 @@ export const useMigrationReward = (owner: Address) => {
     if (!claimed.data) void queries.invalidateQueries({ queryKey: claimedKey, exact: true })
   }
 
-  return { nft, claimed, assets, progress, transaction, canClaim, canMigrate, claim, migrate, retry }
+  return { nft, claimed, assets, progress, syncing, transaction, canClaim, canMigrate, claim, migrate, retry }
 }

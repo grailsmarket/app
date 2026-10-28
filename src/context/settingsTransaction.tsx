@@ -68,6 +68,7 @@ export const useSettingsTransactionDialog = ({
   index,
   successTitle,
   successMessage,
+  successContent,
   errorTitle,
   submitted,
   onRetry,
@@ -106,6 +107,7 @@ export const useSettingsTransactionDialog = ({
             index,
             successTitle,
             successMessage,
+            successContent,
             errorTitle,
             submitted,
             onRetry: () => callbacks.current.onRetry(),
@@ -132,6 +134,7 @@ export const useSettingsTransactionDialog = ({
     index,
     successTitle,
     successMessage,
+    successContent,
     errorTitle,
     submitted,
   ])

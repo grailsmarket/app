@@ -20,26 +20,9 @@
   pointer-events: none;
 }
 
-.artwork {
-  width: 100%;
-  aspect-ratio: 26 / 33;
-  filter: drop-shadow(0 8px 12px #0005);
-}
-
-.placeholder {
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  border: 1px solid #ffffff24;
-  border-radius: 8px;
-  background: linear-gradient(145deg, #6a6864, #36383b 45%, #45413d);
-  color: var(--primary);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+.fill {
+  background: linear-gradient(90deg, var(--primary-hover), var(--primary));
+  box-shadow: 0 0 10px var(--primary-glow);
 }
 
 .claim:not(:disabled) {

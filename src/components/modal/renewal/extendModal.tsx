@@ -10,14 +10,16 @@ import Input from '@/components/ui/input'
 import Dropdown from '@/components/ui/dropdown'
 import DatePicker from '@/components/ui/datepicker'
 import ModalShell, { modalActionClassName, modalPrimaryActionClassName } from '@/components/ui/modal/modalShell'
+import Segmented from '@/components/ui/modal/segmented'
 import ClaimPoap from '../poap/claimPoap'
 import { cn } from '@/utils/tailwind'
 import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
 import { beautifyName } from '@/lib/ens'
 import { config } from '@/lib/config'
-import { Address, Hex } from 'viem'
+import { Hex } from 'viem'
 import { registrationAssets, TOKENS } from '@/constants/web3/tokens'
+import { ETH_PAYMENT_NOTE, formatPaymentAmount, getPricingAsset } from '@/lib/ethPayment'
 import { timeUnitOptions } from '@/constants/registration'
 import { getSecondsPerUnit } from '@/utils/registration'
 import type { TimeUnit } from '@/types/registration'
@@ -80,7 +82,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     hasSufficientBalance,
     hasSufficientEth,
     hasSufficientAssets,
-    hasV2,
+    payWithEth,
     hasDifferentV1Durations,
     hasPendingTransaction,
     isLoadingQuote,
@@ -416,14 +418,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             <p>Select a custom date</p>
             <Image src={Calendar} alt='calendar' width={18} height={18} />
           </button>
-          {hasV2 && (
-            <Dropdown
-              label='Currency'
-              options={registrationAssets}
-              value={asset}
-              onSelect={(value) => setAsset(value as Address)}
-            />
-          )}
+          <Segmented options={registrationAssets} value={asset} onChange={setAsset} />
         </fieldset>
         {hasDifferentV1Durations && (
           <p className='text-neutral text-sm'>
@@ -440,7 +435,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                   <div className='flex items-center justify-between gap-2 text-green-400'>
                     <p>Duration discount:</p>
                     <p className='text-right font-medium'>
-                      -{calculationResults.durationDiscount.amount.toFixed(2)} {TOKENS[asset]} (
+                      -{calculationResults.durationDiscount.amount.toFixed(2)} {TOKENS[getPricingAsset(asset)]} (
                       {Number(calculationResults.durationDiscount.percentage.toFixed(2))}%)
                     </p>
                   </div>
@@ -448,7 +443,13 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                 <div className='flex items-center justify-between'>
                   <p>Renewal cost:</p>
                   <p className='font-medium'>
-                    {calculationResults.totalPriceAsset.toFixed(2)} {TOKENS[asset]}
+                    {formatPaymentAmount(calculationResults.totalPriceAsset, asset)} {TOKENS[asset]}
+                    {calculationResults.totalPriceUsdc !== undefined && (
+                      <span className='text-neutral font-normal'>
+                        {' '}
+                        (≈ {calculationResults.totalPriceUsdc.toFixed(2)} USDC)
+                      </span>
+                    )}
                   </p>
                 </div>
                 {estimatedGasCost !== null && (
@@ -457,6 +458,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                     <span className='text-right font-medium'>~{Number(estimatedGasCost.toFixed(8))} ETH</span>
                   </div>
                 )}
+                {payWithEth && calculationResults && <p className='text-neutral text-sm'>{ETH_PAYMENT_NOTE}</p>}
               </div>
             </div>
           )}
@@ -473,7 +475,10 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
           {calculationResults && !isLoadingFunds && !quoteError && !hasSufficientBalance && !hasPendingTransaction && (
             <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
               <p className='text-md text-red-400'>
-                {!hasSufficientEth && `Insufficient ETH on ${currentNetwork} for network fees. `}
+                {!hasSufficientEth &&
+                  (payWithEth
+                    ? `Insufficient ETH on ${currentNetwork} for the renewal and network fees. `
+                    : `Insufficient ETH on ${currentNetwork} for network fees. `)}
                 {!hasSufficientAssets && `Insufficient ${TOKENS[asset]} for renewals.`}
               </p>
             </div>

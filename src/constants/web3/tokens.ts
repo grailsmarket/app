@@ -2,6 +2,7 @@ import { config } from '@/lib/config'
 import { Address } from 'viem'
 import usdc from 'public/tokens/usdc.svg'
 import dai from 'public/tokens/dai.svg'
+import eth from 'public/tokens/eth.svg'
 
 export const WETH_ADDRESS = config.wethAddress
 export const USDC_ADDRESS = config.usdcAddress
@@ -48,4 +49,14 @@ export const registrationAssets = [
     label: 'DAI',
     icon: dai,
   },
+  // Paid through GrailsETHRouter (see lib/ethPayment); only offered when it's configured
+  ...(config.ensEthRouter && config.uniswapV4Quoter
+    ? [
+        {
+          value: ETH_ADDRESS,
+          label: 'ETH',
+          icon: eth,
+        },
+      ]
+    : []),
 ]

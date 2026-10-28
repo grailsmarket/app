@@ -3,6 +3,7 @@ import { Address } from 'viem'
 import DetailList, { type DetailRow } from '@/components/ui/modal/detailList'
 import Notice from '@/components/ui/modal/notice'
 import { TOKENS } from '@/constants/web3/tokens'
+import { ETH_PAYMENT_NOTE, formatPaymentAmount, getPricingAsset, isEthPayment } from '@/lib/ethPayment'
 import type { CalculationResults, NameRegistrationEntry, SufficientBalanceResults } from '@/types/registration'
 
 interface CostSummaryProps {
@@ -28,6 +29,9 @@ const CostSummary: React.FC<CostSummaryProps> = ({
   gasPrice,
   asset,
 }) => {
+  const payWithEth = isEthPayment(asset)
+  // Quotes and discounts are in the pricing token: USDC when paying with ETH
+  const pricingLabel = TOKENS[getPricingAsset(asset)]
   const durationDiscount = calculationResults?.durationDiscount
   const hasDurationDiscount = !!durationDiscount && durationDiscount.amount > 0
 
@@ -43,7 +47,7 @@ const CostSummary: React.FC<CostSummaryProps> = ({
     rows.push({
       key: 'discount',
       label: 'Duration discount',
-      value: `-${durationDiscount.amount.toFixed(2)} ${TOKENS[asset]} (${Number(durationDiscount.percentage.toFixed(2))}%)`,
+      value: `-${durationDiscount.amount.toFixed(2)} ${pricingLabel} (${Number(durationDiscount.percentage.toFixed(2))}%)`,
       tone: 'success',
     })
   }
@@ -64,12 +68,18 @@ const CostSummary: React.FC<CostSummaryProps> = ({
             label: 'Registration Cost',
             value: calculationResults.isLoadingPrice ? (
               <SkeletonText label='Loading registration price…' className='w-24' />
+            ) : payWithEth ? (
+              <>
+                {formatPaymentAmount(calculationResults.priceETH, asset)} ETH{' '}
+                <span className='text-neutral font-normal'>(≈ {calculationResults.priceUSD.toFixed(2)} USDC)</span>
+              </>
             ) : (
               `${calculationResults.priceUSD.toFixed(2)} ${TOKENS[asset]}`
             ),
           }}
         />
       )}
+      {payWithEth && <Notice tone='info'>{ETH_PAYMENT_NOTE}</Notice>}
       <Notice tone='info'>
         {totalBatches > 1
           ? `This registration requires ${totalBatches} commit + ${totalBatches} register transactions.`
@@ -79,7 +89,11 @@ const CostSummary: React.FC<CostSummaryProps> = ({
         <Notice tone='warning'>Minimum registration duration is 28 days. Please select a longer duration.</Notice>
       )}
       {calculationResults && !calculationResults.isLoadingPrice && !hasSufficientBalance.hasSufficientEth && (
-        <Notice tone='danger'>Insufficient ETH balance to cover transaction gas.</Notice>
+        <Notice tone='danger'>
+          {payWithEth
+            ? 'Insufficient ETH balance to cover the registration and transaction gas.'
+            : 'Insufficient ETH balance to cover transaction gas.'}
+        </Notice>
       )}
       {calculationResults && !calculationResults.isLoadingPrice && !hasSufficientBalance.hasSufficientAssets && (
         <Notice tone='danger'>

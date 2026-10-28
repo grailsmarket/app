@@ -271,16 +271,6 @@ const useRegistrationModal = () => {
 
   const perNamePrices = !isPriceError && allAvailabilityChecked ? registrationPrice?.prices : undefined
   const perNamePremiums = !isPriceError && allAvailabilityChecked ? registrationPrice?.premiums : undefined
-  const registrationCheckError = isAvailabilityError
-    ? 'Could not check name availability. Please try again.'
-    : isPriceError
-      ? 'Could not load registration prices. Please try again.'
-      : null
-  const refetchRegistrationChecks = () => {
-    if (isAvailabilityError) void refetchAvailability()
-    else void refetchPrice()
-  }
-
   const { data: registrationPricing } = useQuery({
     queryKey: ['registrationPricing', activeChain.id, pricingAsset],
     queryFn: () => getRegistrationPricing(pricingAsset),
@@ -292,14 +282,36 @@ const useRegistrationModal = () => {
 
   // ETH that buys the quoted USDC right now (registering re-quotes, since it comes after the commit wait)
   const registrationUsdc = payWithEth && !isPriceError ? registrationPrice?.total : undefined
-  const { data: ethQuote, isLoading: isLoadingEthQuote } = useQuery({
+  const {
+    data: ethQuote,
+    isLoading: isLoadingEthQuote,
+    isError: isEthQuoteError,
+    refetch: refetchEthQuote,
+  } = useQuery({
     queryKey: ['ethPaymentQuote', activeChain.id, registrationUsdc?.toString()],
-    queryFn: () => quoteEthForUsdc(publicClient, registrationUsdc!),
+    queryFn: () =>
+      quoteEthForUsdc(publicClient, registrationUsdc!).catch((error) => {
+        console.error('Error quoting ETH payment:', error)
+        throw error
+      }),
     enabled: registrationUsdc !== undefined && registrationUsdc > BigInt(0),
     refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
     refetchOnWindowFocus: false,
     staleTime: 5000,
   })
+
+  const registrationCheckError = isAvailabilityError
+    ? 'Could not check name availability. Please try again.'
+    : isPriceError
+      ? 'Could not load registration prices. Please try again.'
+      : isEthQuoteError
+        ? 'Could not get the ETH price from Uniswap. Please try again.'
+        : null
+  const refetchRegistrationChecks = () => {
+    if (isAvailabilityError) void refetchAvailability()
+    else if (isPriceError) void refetchPrice()
+    else void refetchEthQuote()
+  }
 
   const calculationResults: CalculationResults | null = useMemo(() => {
     if (entries.length === 0 || !allDurationsValid) return null

@@ -32,13 +32,19 @@ const useRegisterDomains = () => {
   }
 
   const checkBulkAvailable = async (labels: string[]): Promise<boolean[]> => {
-    const result = await publicClient.readContract({
-      address: config.ensBulkRegistrar,
-      abi: BULK_REGISTRAR_ABI,
-      functionName: 'available',
-      args: [labels],
-    })
-    return result as boolean[]
+    try {
+      const result = await publicClient.readContract({
+        address: config.ensBulkRegistrar,
+        abi: BULK_REGISTRAR_ABI,
+        functionName: 'available',
+        args: [labels],
+      })
+      return result as boolean[]
+    } catch (error) {
+      // react-query keeps the error in state without logging it
+      console.error('Error checking bulk availability:', error)
+      throw error
+    }
   }
 
   const getRegistrationsPrice = async (

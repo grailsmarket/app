@@ -10,15 +10,16 @@ import Input from '@/components/ui/input'
 import Dropdown from '@/components/ui/dropdown'
 import DatePicker from '@/components/ui/datepicker'
 import ModalShell, { modalActionClassName, modalPrimaryActionClassName } from '@/components/ui/modal/modalShell'
+import Segmented from '@/components/ui/modal/segmented'
 import ClaimPoap from '../poap/claimPoap'
 import { cn } from '@/utils/tailwind'
 import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
 import { beautifyName } from '@/lib/ens'
 import { config } from '@/lib/config'
-import { Address, Hex } from 'viem'
+import { Hex } from 'viem'
 import { registrationAssets, TOKENS } from '@/constants/web3/tokens'
-import { ETH_PAYMENT_NOTE, formatPaymentAmount, getPricingAsset, isEthPaymentEnabled } from '@/lib/ethPayment'
+import { ETH_PAYMENT_NOTE, formatPaymentAmount, getPricingAsset } from '@/lib/ethPayment'
 import { timeUnitOptions } from '@/constants/registration'
 import { getSecondsPerUnit } from '@/utils/registration'
 import type { TimeUnit } from '@/types/registration'
@@ -82,7 +83,6 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     hasSufficientEth,
     hasSufficientAssets,
     payWithEth,
-    hasV2,
     hasDifferentV1Durations,
     hasPendingTransaction,
     isLoadingQuote,
@@ -418,14 +418,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             <p>Select a custom date</p>
             <Image src={Calendar} alt='calendar' width={18} height={18} />
           </button>
-          {(hasV2 || isEthPaymentEnabled) && (
-            <Dropdown
-              label='Currency'
-              options={registrationAssets}
-              value={asset}
-              onSelect={(value) => setAsset(value as Address)}
-            />
-          )}
+          <Segmented options={registrationAssets} value={asset} onChange={setAsset} />
         </fieldset>
         {hasDifferentV1Durations && (
           <p className='text-neutral text-sm'>
@@ -465,6 +458,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                     <span className='text-right font-medium'>~{Number(estimatedGasCost.toFixed(8))} ETH</span>
                   </div>
                 )}
+                {payWithEth && calculationResults && <p className='text-neutral text-sm'>{ETH_PAYMENT_NOTE}</p>}
               </div>
             </div>
           )}
@@ -475,7 +469,6 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             ) : (
               <CostSkeleton label='Loading renewal costs…' />
             ))}
-          {payWithEth && calculationResults && <p className='text-neutral text-sm'>{ETH_PAYMENT_NOTE}</p>}
           {quoteError && <p className='text-sm text-red-400'>{quoteError}</p>}
 
           {/* Insufficient balance warning */}

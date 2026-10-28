@@ -45,7 +45,7 @@ export const settingsTransactionScreen = (props: SettingsTransactionModalProps):
       key: 'progress',
       content: <TransactionProgress view={props} title={title} networkName={networkName} />,
       footerHint: isWalletPrompt(props) ? undefined : KEEP_OPEN_HINT,
-      footer: props.phase !== 'processing' && (
+      footer: props.phase === 'preparing' && (
         <SecondaryButton className={modalActionClassName} onClick={onClose}>
           Back to editing
         </SecondaryButton>

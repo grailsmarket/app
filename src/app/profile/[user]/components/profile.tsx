@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Address } from 'viem'
+import React, { useEffect, useState } from 'react'
+import { Address, isAddress } from 'viem'
 import {
   fetchProfileDetails,
   FollowersAndFollowing,
@@ -30,6 +30,7 @@ import { useRouter } from 'next/navigation'
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistor } from '@/state'
 import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import MigrationReward from './migrationReward'
 
 interface Props {
   user: Address | string
@@ -38,12 +39,13 @@ interface Props {
 const Profile: React.FC<Props> = ({ user }) => {
   const [isFollowersAndFollowingOpen, setIsFollowersAndFollowingOpen] = useState(false)
   const [defaultTab, setDefaultTab] = useState<ProfileTabType>('following')
+  const [resolvedOwner, setResolvedOwner] = useState<{ user: string; address: Address }>()
 
   const { windowWidth } = useResponsiveSize()
   const router = useRouter()
   const isClient = useIsClient()
   const dispatch = useAppDispatch()
-  const { userAddress } = useUserContext()
+  const { userAddress, authStatus } = useUserContext()
   const { data: userPoap } = useQuery({
     queryKey: ['userPoap', user],
     queryFn: async () => {
@@ -63,6 +65,14 @@ const Profile: React.FC<Props> = ({ user }) => {
     queryFn: () => (user ? fetchProfileDetails(user) : null),
     refetchOnWindowFocus: false,
   })
+
+  useEffect(() => {
+    if (userProfile?.address) setResolvedOwner({ user, address: userProfile.address })
+  }, [user, userProfile?.address])
+
+  const profileOwner =
+    userProfile?.address ?? (isAddress(user) ? user : resolvedOwner?.user === user ? resolvedOwner.address : undefined)
+  const isMyProfile = authStatus === 'authenticated' && profileOwner?.toLowerCase() === userAddress?.toLowerCase()
 
   const isSubname = userProfile?.ens?.name ? userProfile?.ens?.name.split('.').length > 2 : false
 
@@ -146,6 +156,7 @@ const Profile: React.FC<Props> = ({ user }) => {
             </>
           )}
         </div>
+        {isMyProfile && userAddress && <MigrationReward owner={userAddress} />}
         <div className='w-full'>
           <PersistGate loading={null} persistor={persistor}>
             <MainPanel user={user} />

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
 import type { Address, Hex } from 'viem'
@@ -61,7 +61,16 @@ export const useSettingsTransaction = (
     account: Address
     hash?: Hex
     results: StepResult[]
+    running?: boolean
+    submitting?: boolean
   } | null>(null)
+
+  useEffect(
+    () => () => {
+      queue.current = null
+    },
+    []
+  )
 
   const [state, setState] = useState<{
     phase: 'idle' | 'preparing' | 'confirming' | 'processing' | 'success' | 'error'
@@ -77,6 +86,7 @@ export const useSettingsTransaction = (
   }>({ phase: 'idle' })
 
   const run = async (steps: SettingsTransactionStep[] = [], runCopy?: SettingsTransactionCopy) => {
+    if (queue.current?.running) return false
     if (steps.length) {
       requestedSteps.current = steps
       requestedCopy.current = runCopy ?? {}
@@ -84,6 +94,10 @@ export const useSettingsTransaction = (
 
     const reportCopy = requestedCopy.current
     const queued = queue.current
+    const work = queued ?? (address ? { steps: requestedSteps.current, index: 0, account: address, results: [] } : null)
+    queue.current = work
+    if (work) work.running = true
+    const isCurrent = () => queue.current === work
     const preview = {
       copy: reportCopy,
       label: (queued?.steps ?? requestedSteps.current)[queued?.index ?? 0]?.label,
@@ -102,10 +116,7 @@ export const useSettingsTransaction = (
     }))
 
     try {
-      if (!address) throw new Error('Connect your wallet before continuing.')
-      if (!queue.current) queue.current = { steps: requestedSteps.current, index: 0, account: address, results: [] }
-
-      const work = queue.current
+      if (!address || !work) throw new Error('Connect your wallet before continuing.')
       const report = () => ({
         copy: reportCopy,
         steps: describeSteps(work.steps, work.results),
@@ -116,6 +127,7 @@ export const useSettingsTransaction = (
         throw new Error('Reconnect the wallet that started this transaction.')
 
       while (work.index < work.steps.length) {
+        if (!isCurrent()) return false
         const step = work.steps[work.index]
         const progress = { current: work.index + 1, total: work.steps.length }
 
@@ -126,8 +138,10 @@ export const useSettingsTransaction = (
             client,
             chain: activeChain,
             getWallet,
+            isCurrent,
             onStatus: (status) => setState({ phase: 'preparing', status, label: step.label, progress, ...report() }),
           })
+          if (!isCurrent()) return false
 
           if (!prepared) {
             work.results[work.index] = { skipped: true }
@@ -137,7 +151,12 @@ export const useSettingsTransaction = (
 
           const { request, wallet } = prepared
           setState({ phase: 'confirming', label: step.label, progress, ...report() })
-          work.hash = await wallet.sendTransaction({ ...request, account: wallet.account!, chain: activeChain })
+          work.submitting = true
+          try {
+            work.hash = await wallet.sendTransaction({ ...request, account: wallet.account!, chain: activeChain })
+          } finally {
+            work.submitting = false
+          }
           work.results[work.index] = { hash: work.hash }
         }
 
@@ -146,6 +165,7 @@ export const useSettingsTransaction = (
         work.hash = undefined
 
         if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        step.verifyReceipt?.(receipt)
 
         work.index++
         // Receipt callbacks update local UI only; indexing and preference failures must never resubmit a confirmed write.
@@ -153,13 +173,14 @@ export const useSettingsTransaction = (
         step.confirmed?.(receipt)
       }
 
+      if (!isCurrent()) return false
       queue.current = null
       const done = report()
       setState((previous) => ({ ...previous, ...done, phase: 'success', error: undefined }))
       return true
     } catch (error) {
+      if (!isCurrent()) return false
       const message = roleErrorText(error)
-      const work = queue.current
       const reached = work ? { steps: describeSteps(work.steps, work.results), index: work.index } : {}
       setState((previous) => ({
         ...previous,
@@ -170,10 +191,13 @@ export const useSettingsTransaction = (
         hash: work?.hash ?? previous.hash,
       }))
       return false
+    } finally {
+      if (work) work.running = false
     }
   }
 
   const reset = () => {
+    if (queue.current?.submitting || queue.current?.hash) return
     queue.current = null
     requestedSteps.current = []
     setState({ phase: 'idle' })

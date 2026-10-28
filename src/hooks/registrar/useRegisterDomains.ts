@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { Address, createPublicClient, erc20Abi, Hex, http, maxUint256, toHex } from 'viem'
+import { Address, createPublicClient, erc20Abi, Hex, http, maxUint256, toHex, zeroAddress } from 'viem'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { BULK_REGISTRAR_ABI } from '@/constants/web3/abi/BulkRegistrar'
 import { ensureChain } from '@/utils/web3/ensureChain'
@@ -8,6 +8,15 @@ import { config } from '@/lib/config'
 import { ENS_V2_REGISTRAR } from '@/constants/web3/abi/RegistrarV2'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { useRentPriceOracle } from './useRentPriceOracle'
+import { GRAILS_ETH_ROUTER_ABI } from '@/constants/web3/abi/GrailsETHRouter'
+import {
+  getEthPaymentDeadline,
+  getEthRouterAddress,
+  getPricingAsset,
+  isEthPayment,
+  quoteEthForUsdc,
+  withEthSlippage,
+} from '@/lib/ethPayment'
 
 const useRegisterDomains = () => {
   const getWalletClient = useGetWalletClient()
@@ -43,6 +52,8 @@ const useRegisterDomains = () => {
     premiums?: readonly bigint[]
   } | null> => {
     if (!publicClient) return null
+    // Paying with ETH, prices are in USDC (what the router buys)
+    const pricingAsset = getPricingAsset(asset)
 
     try {
       const blockNumber = await publicClient.getBlockNumber({ cacheTime: 0 })
@@ -50,7 +61,7 @@ const useRegisterDomains = () => {
         address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'registerQuote',
-        args: [labels, durations, asset],
+        args: [labels, durations, pricingAsset],
         blockNumber,
       })
       const quotes = includePremiums
@@ -63,7 +74,7 @@ const useRegisterDomains = () => {
                   address: config.ensV2Registrar,
                   abi: ENS_V2_REGISTRAR,
                   functionName: 'getRegisterPrice',
-                  args: [label, durations[index], asset],
+                  args: [label, durations[index], pricingAsset],
                 }) as const
             ),
           })
@@ -133,6 +144,41 @@ const useRegisterDomains = () => {
     resolver: Address
   ): Promise<Hex> => {
     const walletClient = await getWalletClient()
+
+    // Paying with ETH, `value` is the USDC to buy: the router swaps ETH for exactly that, registers, and
+    // refunds unused ETH (and USDC for failed names). No approval needed.
+    if (isEthPayment(token)) {
+      try {
+        await ensureChain(walletClient, activeChain.id)
+        const ethQuote = await quoteEthForUsdc(publicClient, value)
+        const request = {
+          address: getEthRouterAddress(),
+          abi: GRAILS_ETH_ROUTER_ABI,
+          functionName: 'multiRegisterWithETH',
+          args: [
+            labels,
+            owner,
+            durations,
+            secret,
+            toHex(0, { size: 20 }),
+            resolver,
+            value,
+            getEthPaymentDeadline(),
+            zeroAddress,
+          ],
+          value: withEthSlippage(ethQuote),
+          account: walletClient.account,
+          chain: activeChain,
+        } as const
+
+        const estimatedGas = await publicClient.estimateContractGas(request)
+        const bufferMultiplier = labels.length > 50 ? BigInt(150) : BigInt(125)
+        return await walletClient.writeContract({ ...request, gas: (estimatedGas * bufferMultiplier) / BigInt(100) })
+      } catch (error) {
+        console.error('Error submitting multi register with ETH:', error)
+        throw error
+      }
+    }
 
     const args = {
       address: config.ensBulkRegistrar,

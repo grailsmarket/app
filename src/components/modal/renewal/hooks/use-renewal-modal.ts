@@ -24,6 +24,7 @@ import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import type { TimeUnit } from '@/types/registration'
 import type { RenewalBatch, RenewalEntry, RenewalStage, RenewalTransaction } from '@/types/renewal'
+import { getPricingAsset, isEthPayment, quoteEthForUsdc, withEthSlippage } from '@/lib/ethPayment'
 
 /** One batch of the run in flight, as the progress screen lists it. */
 export interface RenewalRunBatch {
@@ -33,6 +34,8 @@ export interface RenewalRunBatch {
 
 export interface RenewalTotals {
   totalPriceAsset: number
+  /** Paying with ETH: the USDC that ETH buys */
+  totalPriceUsdc?: number
 }
 
 const PENDING_TRANSACTION_ERROR =
@@ -79,6 +82,8 @@ export const useRenewalModal = (onClose: () => void) => {
   const [approvals, setApprovals] = useState<{ version: 1 | 2; hash: Hex }[]>([])
   const [runTotals, setRunTotals] = useState<RenewalTotals | null>(null)
   const [showCancelWarning, setShowCancelWarning] = useState(false)
+  const payWithEth = isEthPayment(asset)
+  const pricingAsset = getPricingAsset(asset)
   const pendingBatch = useRef<{ batch: RenewalBatch; hash: Hex } | null>(null)
   const submitting = useRef(false)
   // Set by "Cancel Renewal": the batch loop stops before its next wallet request.
@@ -150,13 +155,17 @@ export const useRenewalModal = (onClose: () => void) => {
         batches.map(async (batch) => ({ version: batch.version, ...(await getRenewalQuote(batch, asset)) }))
       )
 
-      return results.reduce(
+      const totals = results.reduce(
         (totals, result) => ({
           v1: totals.v1 + (result.version === 1 ? result.total : BigInt(0)),
           v2: totals.v2 + (result.version === 2 ? result.total : BigInt(0)),
         }),
         { v1: BigInt(0), v2: BigInt(0) }
       )
+      // Paying with ETH: the totals are USDC, and this is the ETH that buys them (each batch re-quotes on send)
+      const eth = payWithEth ? await quoteEthForUsdc(publicClient, totals.v1 + totals.v2) : undefined
+
+      return { ...totals, eth }
     },
     enabled: batches.length > 0 && !prepared.error && !isLoading && !success,
     refetchInterval: isLoading || success ? false : 10000,
@@ -166,7 +175,7 @@ export const useRenewalModal = (onClose: () => void) => {
 
   const pricing = useQuery({
     queryKey: ['registrationPricing', activeChain.id, asset],
-    queryFn: () => getPricing(asset),
+    queryFn: () => getPricing(pricingAsset),
     enabled: batches.length > 0 && !isLoading && !success,
     refetchInterval: isLoading || success ? false : 10000,
     refetchOnWindowFocus: false,
@@ -196,7 +205,8 @@ export const useRenewalModal = (onClose: () => void) => {
         args: [address],
       })
     },
-    enabled: !!address && batches.length > 0 && !isLoading && !success,
+    // Paying with ETH, the ETH balance check below covers the payment too
+    enabled: !!address && batches.length > 0 && !isLoading && !success && !payWithEth,
     refetchInterval: isLoading || success ? false : 10000,
     retry: false,
   })
@@ -209,31 +219,42 @@ export const useRenewalModal = (onClose: () => void) => {
           pricing.data
         )
       : null
-  const tokenAmount = (value: bigint) => Number(formatUnits(value, TOKEN_DECIMALS[TOKENS[asset]]))
+  // Quotes and discounts are in the pricing token (USDC when paying with ETH)
+  const tokenAmount = (value: bigint) => Number(formatUnits(value, TOKEN_DECIMALS[TOKENS[pricingAsset]]))
   const totalRenewalCost = quotes.data ? quotes.data.v1 + quotes.data.v2 : undefined
+  const ethPayment = quotes.data?.eth
   const calculationResults =
     totalRenewalCost !== undefined && !quotes.isError && !prepared.error
       ? {
-          totalPriceAsset: tokenAmount(totalRenewalCost),
+          totalPriceAsset: ethPayment !== undefined ? Number(formatEther(ethPayment)) : tokenAmount(totalRenewalCost),
+          totalPriceUsdc: ethPayment !== undefined ? tokenAmount(totalRenewalCost) : undefined,
           durationDiscount: discount ? { amount: tokenAmount(discount.amount), percentage: discount.percentage } : null,
         }
       : null
 
-  const gasEstimate = BigInt(batches.length * 150000 + v1Entries.length * 50000 + v2Entries.length * 150000)
+  // The ETH router's swap and refunds add ~125k gas per transaction
+  const gasEstimate = BigInt(
+    batches.length * (payWithEth ? 275000 : 150000) + v1Entries.length * 50000 + v2Entries.length * 150000
+  )
   const gasPrice = networkFunds.data?.gasPrice
   const gasCost = gasPrice === undefined ? undefined : gasEstimate * gasPrice
   const estimatedGasCost = gasCost === undefined ? null : Number(formatEther(gasCost))
+  // Paying with ETH, the balance covers network fees plus the payment (with its headroom)
+  const ethNeeded =
+    gasCost === undefined ? undefined : gasCost + (ethPayment !== undefined ? withEthSlippage(ethPayment) : BigInt(0))
   const hasSufficientEth =
     !!quotes.data &&
+    (!payWithEth || ethPayment !== undefined) &&
     !networkFunds.isError &&
     networkFunds.data !== undefined &&
-    gasCost !== undefined &&
-    networkFunds.data.balance >= gasCost
+    ethNeeded !== undefined &&
+    networkFunds.data.balance >= ethNeeded
   const hasSufficientAssets =
-    !assetBalance.isError &&
-    assetBalance.data !== undefined &&
-    totalRenewalCost !== undefined &&
-    assetBalance.data >= totalRenewalCost
+    payWithEth ||
+    (!assetBalance.isError &&
+      assetBalance.data !== undefined &&
+      totalRenewalCost !== undefined &&
+      assetBalance.data >= totalRenewalCost)
   const hasSufficientBalance = hasSufficientEth && hasSufficientAssets
   const isLoadingFunds = networkFunds.isLoading || assetBalance.isLoading
   const fundingError = networkFunds.error || assetBalance.error
@@ -268,7 +289,11 @@ export const useRenewalModal = (onClose: () => void) => {
       })
     )
     setRunHashes(pendingBatch.current ? [pendingBatch.current.hash] : [])
-    setRunTotals(calculationResults ? { totalPriceAsset: calculationResults.totalPriceAsset } : null)
+    setRunTotals(
+      calculationResults
+        ? { totalPriceAsset: calculationResults.totalPriceAsset, totalPriceUsdc: calculationResults.totalPriceUsdc }
+        : null
+    )
 
     const succeeded = new Set(completedNames)
 
@@ -321,7 +346,8 @@ export const useRenewalModal = (onClose: () => void) => {
           { hash: receipt.transactionHash, version: batch.version },
         ])
 
-        const failedIndices = batch.version === 2 ? getFailedRenewalIndices(receipt) : new Set<number>()
+        // V2 batches, and every batch paid with ETH, go through the bulk contract, which reports failures
+        const failedIndices = batch.version === 2 || payWithEth ? getFailedRenewalIndices(receipt) : new Set<number>()
         const renewed = batch.entries.filter((_, index) => !failedIndices.has(index))
         renewed.forEach(({ domain }) => {
           succeeded.add(domain.name)
@@ -435,6 +461,7 @@ export const useRenewalModal = (onClose: () => void) => {
     hasSufficientBalance,
     hasSufficientEth,
     hasSufficientAssets,
+    payWithEth,
     hasV1,
     hasV2,
     hasDifferentV1Durations: new Set(v1Entries.map((entry) => entry.duration)).size > 1,

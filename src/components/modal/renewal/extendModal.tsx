@@ -18,6 +18,7 @@ import { beautifyName } from '@/lib/ens'
 import { config } from '@/lib/config'
 import { Address, Hex } from 'viem'
 import { registrationAssets, TOKENS } from '@/constants/web3/tokens'
+import { ETH_PAYMENT_NOTE, formatPaymentAmount, getPricingAsset, isEthPaymentEnabled } from '@/lib/ethPayment'
 import { timeUnitOptions } from '@/constants/registration'
 import { getSecondsPerUnit } from '@/utils/registration'
 import type { TimeUnit } from '@/types/registration'
@@ -80,6 +81,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     hasSufficientBalance,
     hasSufficientEth,
     hasSufficientAssets,
+    payWithEth,
     hasV2,
     hasDifferentV1Durations,
     hasPendingTransaction,
@@ -416,7 +418,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             <p>Select a custom date</p>
             <Image src={Calendar} alt='calendar' width={18} height={18} />
           </button>
-          {hasV2 && (
+          {(hasV2 || isEthPaymentEnabled) && (
             <Dropdown
               label='Currency'
               options={registrationAssets}
@@ -440,7 +442,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                   <div className='flex items-center justify-between gap-2 text-green-400'>
                     <p>Duration discount:</p>
                     <p className='text-right font-medium'>
-                      -{calculationResults.durationDiscount.amount.toFixed(2)} {TOKENS[asset]} (
+                      -{calculationResults.durationDiscount.amount.toFixed(2)} {TOKENS[getPricingAsset(asset)]} (
                       {Number(calculationResults.durationDiscount.percentage.toFixed(2))}%)
                     </p>
                   </div>
@@ -448,7 +450,13 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                 <div className='flex items-center justify-between'>
                   <p>Renewal cost:</p>
                   <p className='font-medium'>
-                    {calculationResults.totalPriceAsset.toFixed(2)} {TOKENS[asset]}
+                    {formatPaymentAmount(calculationResults.totalPriceAsset, asset)} {TOKENS[asset]}
+                    {calculationResults.totalPriceUsdc !== undefined && (
+                      <span className='text-neutral font-normal'>
+                        {' '}
+                        (≈ {calculationResults.totalPriceUsdc.toFixed(2)} USDC)
+                      </span>
+                    )}
                   </p>
                 </div>
                 {estimatedGasCost !== null && (
@@ -467,13 +475,17 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             ) : (
               <CostSkeleton label='Loading renewal costs…' />
             ))}
+          {payWithEth && calculationResults && <p className='text-neutral text-sm'>{ETH_PAYMENT_NOTE}</p>}
           {quoteError && <p className='text-sm text-red-400'>{quoteError}</p>}
 
           {/* Insufficient balance warning */}
           {calculationResults && !isLoadingFunds && !quoteError && !hasSufficientBalance && !hasPendingTransaction && (
             <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
               <p className='text-md text-red-400'>
-                {!hasSufficientEth && `Insufficient ETH on ${currentNetwork} for network fees. `}
+                {!hasSufficientEth &&
+                  (payWithEth
+                    ? `Insufficient ETH on ${currentNetwork} for the renewal and network fees. `
+                    : `Insufficient ETH on ${currentNetwork} for network fees. `)}
                 {!hasSufficientAssets && `Insufficient ${TOKENS[asset]} for renewals.`}
               </p>
             </div>

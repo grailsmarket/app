@@ -35,7 +35,7 @@ import { YEAR_IN_SECONDS } from '@/constants/time'
 import { normalizeName } from '@/lib/ens'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Address, createPublicClient, formatUnits, Hex, http, isAddress, zeroAddress } from 'viem'
+import { Address, createPublicClient, formatEther, formatUnits, Hex, http, isAddress, zeroAddress } from 'viem'
 import { fetchAccount, useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -51,6 +51,7 @@ import { activeChain } from '@/constants/web3/chain'
 import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
 import { calculateDurationDiscount } from '@/utils/registrationPricing'
 import { useRegistrationResolver } from './use-registration-resolver'
+import { getPricingAsset, isEthPayment, quoteEthForUsdc, withEthSlippage } from '@/lib/ethPayment'
 
 const useRegistrationModal = () => {
   const isClient = useIsClient()
@@ -82,6 +83,9 @@ const useRegistrationModal = () => {
   const parameters = registrationState.parameters
   const [selectedAsset, setAsset] = useState<Address>(TOKEN_ADDRESSES.USDC)
   const asset = parameters?.asset ?? selectedAsset
+  // Paying with ETH, ENS prices are in USDC and the router buys that USDC with ETH
+  const payWithEth = isEthPayment(asset)
+  const pricingAsset = getPricingAsset(asset)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showCancelWarning, setShowCancelWarning] = useState(false)
   const [waitTimeRemaining, setWaitTimeRemaining] = useState<number>(60)
@@ -213,7 +217,8 @@ const useRegistrationModal = () => {
 
       return Number(balance.formatted)
     },
-    enabled: !!address && registrationState.isOpen,
+    // Paying with ETH, the ETH balance check covers the payment too
+    enabled: !!address && registrationState.isOpen && !payWithEth,
   })
 
   const entryDurations = useMemo(() => {
@@ -277,9 +282,20 @@ const useRegistrationModal = () => {
   }
 
   const { data: registrationPricing } = useQuery({
-    queryKey: ['registrationPricing', activeChain.id, asset],
-    queryFn: () => getRegistrationPricing(asset),
+    queryKey: ['registrationPricing', activeChain.id, pricingAsset],
+    queryFn: () => getRegistrationPricing(pricingAsset),
     enabled: shouldFetchRegistrationPrices && availableLabels.length > 0,
+    refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
+    refetchOnWindowFocus: false,
+    staleTime: 5000,
+  })
+
+  // ETH that buys the quoted USDC right now (registering re-quotes, since it comes after the commit wait)
+  const registrationUsdc = payWithEth && !isPriceError ? registrationPrice?.total : undefined
+  const { data: ethQuote, isLoading: isLoadingEthQuote } = useQuery({
+    queryKey: ['ethPaymentQuote', activeChain.id, registrationUsdc?.toString()],
+    queryFn: () => quoteEthForUsdc(publicClient, registrationUsdc!),
+    enabled: registrationUsdc !== undefined && registrationUsdc > BigInt(0),
     refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
     refetchOnWindowFocus: false,
     staleTime: 5000,
@@ -294,8 +310,9 @@ const useRegistrationModal = () => {
     const discount = registrationPricing
       ? calculateDurationDiscount(availableLabels, availableDurations, registrationPricing)
       : null
-    const toPaymentAmount = (value: bigint) => Number(formatUnits(value, TOKEN_DECIMALS[TOKENS[asset]]))
-    const hasQuote = !!registrationPrice && !isPriceError && allAvailabilityChecked
+    const toPaymentAmount = (value: bigint) => Number(formatUnits(value, TOKEN_DECIMALS[TOKENS[pricingAsset]]))
+    const hasQuote =
+      !!registrationPrice && !isPriceError && allAvailabilityChecked && (!payWithEth || ethQuote !== undefined)
     const totalPriceUSD = hasQuote ? toPaymentAmount(registrationPrice.total) : 0
 
     const anyBelowMinimum = entryDurations.some((d) => d !== null && d < MIN_REGISTRATION_DURATION)
@@ -303,13 +320,14 @@ const useRegistrationModal = () => {
     return {
       durationSeconds: BigInt(baseDurationSeconds),
       durationYears: baseDurationSeconds / YEAR_IN_SECONDS,
-      priceETH: 0,
+      // Paying with ETH: the ETH cost, before headroom. priceUSD stays the USDC total.
+      priceETH: payWithEth && hasQuote && ethQuote !== undefined ? Number(formatEther(ethQuote)) : 0,
       priceUSD: totalPriceUSD,
       // Only show confirmed savings; premiums are already included in the quote and never discounted.
       durationDiscount:
         hasQuote && discount ? { amount: toPaymentAmount(discount.amount), percentage: discount.percentage } : null,
       isBelowMinimum: anyBelowMinimum,
-      isLoadingPrice: isLoadingPrice || !hasQuote,
+      isLoadingPrice: isLoadingPrice || (payWithEth && isLoadingEthQuote) || !hasQuote,
     }
   }, [
     isPriceError,
@@ -323,20 +341,27 @@ const useRegistrationModal = () => {
     registrationPricing,
     isLoadingPrice,
     availableEntries,
-    asset,
+    pricingAsset,
+    payWithEth,
+    ethQuote,
+    isLoadingEthQuote,
   ])
 
   const hasSufficientBalance = useMemo(() => {
+    // Paying with ETH, the balance covers gas plus the payment (with its headroom)
+    const ethPayment = payWithEth ? (ethQuote === undefined ? undefined : withEthSlippage(ethQuote)) : BigInt(0)
     return {
       hasSufficientAssets:
-        assetBalance !== undefined && calculationResults !== null && assetBalance >= calculationResults.priceUSD,
+        payWithEth ||
+        (assetBalance !== undefined && calculationResults !== null && assetBalance >= calculationResults.priceUSD),
       hasSufficientEth:
         ethBalance !== undefined &&
         gasPrice !== undefined &&
         gasEstimate !== null &&
-        ethBalance >= gasEstimate * gasPrice,
+        ethPayment !== undefined &&
+        ethBalance >= gasEstimate * gasPrice + ethPayment,
     }
-  }, [ethBalance, assetBalance, calculationResults, gasPrice, gasEstimate])
+  }, [ethBalance, assetBalance, calculationResults, gasPrice, gasEstimate, payWithEth, ethQuote])
 
   useEffect(() => {
     if (availability && entries.some((entry, index) => entry.isAvailable !== availability[index]))
@@ -748,7 +773,9 @@ const useRegistrationModal = () => {
           dispatch(setRegistrationError(`Failed to get price for batch ${batchIndex + 1}`))
           return
         }
-        const valueWithBuffer = (totalPrice * BigInt(105)) / BigInt(100)
+        // Token payments pull up to 5% extra and refund it. Paying with ETH, that extra would be bought and
+        // refunded as USDC, so buy the exact total: premiums only decay, so it can't fall short.
+        const valueWithBuffer = isEthPayment(asset) ? totalPrice : (totalPrice * BigInt(105)) / BigInt(100)
 
         const tx = await submitMultiRegister(
           batchLabels,

@@ -6,6 +6,7 @@ import { beautifyName } from '@/lib/ens'
 import { MIN_REGISTRATION_DURATION } from '@/constants/registration'
 import { TOKEN_DECIMALS, TOKENS } from '@/constants/web3/tokens'
 import type { NameRegistrationEntry, TimeUnit } from '@/types/registration'
+import { getPricingAsset } from '@/lib/ethPayment'
 
 interface PerNameDurationEditorProps {
   entries: NameRegistrationEntry[]
@@ -43,6 +44,8 @@ const PerNameDurationEditor: React.FC<PerNameDurationEditorProps> = ({
   onEntryQuantityChange,
   onEntryDurationReset,
 }) => {
+  // Per-name quotes are in USDC when paying with ETH
+  const pricingAsset = getPricingAsset(asset)
   const [openKey, setOpenKey] = useState<string | null>(null)
 
   const items: NameListItem[] = entries.map((entry, index) => {
@@ -70,7 +73,7 @@ const PerNameDurationEditor: React.FC<PerNameDurationEditorProps> = ({
               : 'available',
       price:
         price !== null && price !== undefined
-          ? `${Number(formatUnits(price, TOKEN_DECIMALS[TOKENS[asset]])).toFixed(2)} ${TOKENS[asset]}`
+          ? `${Number(formatUnits(price, TOKEN_DECIMALS[TOKENS[pricingAsset]])).toFixed(2)} ${TOKENS[pricingAsset]}`
           : undefined,
       duration: isCustomUnit
         ? entryCustomDuration

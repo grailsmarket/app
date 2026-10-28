@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { Address, createPublicClient, erc20Abi, Hex, http, labelhash, pad } from 'viem'
+import { Address, createPublicClient, erc20Abi, Hex, http, labelhash, pad, zeroAddress } from 'viem'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { RENEWER_V1_ABI } from '@/constants/web3/abi/ensRenewerV1'
 import { BaseRegistrarAbi } from '@/constants/web3/abi/BaseRegistrar'
@@ -10,6 +10,15 @@ import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { config } from '@/lib/config'
 import type { RenewalBatch, RenewalStage } from '@/types/renewal'
 import { withGasBuffer } from '@/lib/seaport/gas'
+import { GRAILS_ETH_ROUTER_ABI } from '@/constants/web3/abi/GrailsETHRouter'
+import {
+  getEthPaymentDeadline,
+  getEthRouterAddress,
+  getPricingAsset,
+  isEthPayment,
+  quoteEthForUsdc,
+  withEthSlippage,
+} from '@/lib/ethPayment'
 
 const useExtendDomains = () => {
   const getWalletClient = useGetWalletClient()
@@ -24,7 +33,9 @@ const useExtendDomains = () => {
         throw new Error('Select a positive renewal duration for every name.')
       }
 
-      if (batch.version === 1) {
+      // Paying with ETH, V1 batches also go through the bulk contract (via the router), which routes
+      // them to ETHRenewerV1 with v1Bitmap. Otherwise they go to ETHRenewerV1.renewBatch directly.
+      if (batch.version === 1 && !isEthPayment(asset)) {
         if (durations.some((duration) => duration !== durations[0])) {
           throw new Error('V1 names in the same transaction must have the same renewal duration.')
         }
@@ -74,10 +85,10 @@ const useExtendDomains = () => {
         address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'renewQuote',
-        args: [labels, durations, asset],
+        args: [labels, durations, getPricingAsset(asset)],
       })
 
-      if (v1Bitmap.some((word) => word !== BigInt(0))) {
+      if (batch.version === 2 && v1Bitmap.some((word) => word !== BigInt(0))) {
         throw new Error('A selected name is still on ENS V1. Refresh your selection before renewing.')
       }
 
@@ -104,6 +115,25 @@ const useExtendDomains = () => {
     const durations = batch.entries.map((entry) => entry.duration)
 
     await ensureChain(walletClient, activeChain.id)
+
+    if (isEthPayment(asset)) {
+      // No approval: the router buys exactly quote.total USDC with ETH and refunds what's unused.
+      onProgress('confirming', null)
+
+      const ethQuote = await quoteEthForUsdc(publicClient, quote.total)
+      const request = {
+        address: getEthRouterAddress(),
+        abi: GRAILS_ETH_ROUTER_ABI,
+        functionName: 'multiRenewWithETH',
+        args: [labels, durations, quote.v1Bitmap, quote.total, getEthPaymentDeadline(), zeroAddress],
+        value: withEthSlippage(ethQuote),
+        account: walletClient.account,
+        chain: activeChain,
+      } as const
+
+      const gas = await publicClient.estimateContractGas(request)
+      return walletClient.writeContract({ ...request, gas: withGasBuffer(gas) })
+    }
 
     if (batch.version === 1) {
       const allowanceArgs = {

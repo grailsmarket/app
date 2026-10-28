@@ -34,7 +34,13 @@ const RenewalSubject: React.FC<RenewalSubjectProps> = ({
   tokenLabel,
   compact,
 }) => {
-  const assetLabel = totals ? `${totals.totalPriceAsset.toFixed(2)} ${tokenLabel}` : null
+  // ETH amounts need more than 2 decimals; stablecoins don't
+  const amount = totals
+    ? tokenLabel === 'ETH'
+      ? Number(totals.totalPriceAsset.toFixed(6))
+      : totals.totalPriceAsset.toFixed(2)
+    : null
+  const assetLabel = totals ? `${amount} ${tokenLabel}` : null
   const price = totals ? <p className='text-xl font-bold'>{assetLabel}</p> : undefined
   const imageSize = compact ? 40 : 48
 

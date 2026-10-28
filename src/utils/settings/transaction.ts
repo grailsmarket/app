@@ -3,6 +3,7 @@ import { ensureChain } from '@/utils/web3/ensureChain'
 
 export interface SettingsTransactionStep {
   label: string
+  readTimeoutMs?: number
   prepare: (account: Address) => Promise<{ to: Address; data: Hex } | null>
   confirmed?: (receipt: TransactionReceipt) => void
 }
@@ -45,7 +46,7 @@ export const prepareSettingsTransaction = async ({
   const request = await readWithDeadline(
     () => step.prepare(account),
     'Onchain checks timed out. No transaction was requested. Please retry.',
-    readTimeoutMs
+    step.readTimeoutMs ?? readTimeoutMs
   )
 
   if (!request) return null

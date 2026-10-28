@@ -5,6 +5,7 @@ import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import { setBulkEditRecordsModalNames, setBulkEditRecordsModalOpen } from '@/state/reducers/modals/bulkEditRecordsModal'
+import { setBulkMigrationModalNames, setBulkMigrationModalOpen } from '@/state/reducers/modals/bulkMigrationModal'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 import {
   clearBulkSelect,
@@ -112,6 +113,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           )
       )
     : []
+  const namesMigrate = namesTransfer.filter((domain) => domain.version === 1)
   const namesRegister = selectedDomains.filter((domain) =>
     REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain))
   )
@@ -238,6 +240,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const handleEditRecordsAction = () => {
     dispatch(setBulkEditRecordsModalNames(namesTransfer.map(({ name, version }) => ({ name, version }))))
     dispatch(setBulkEditRecordsModalOpen(true))
+  }
+
+  const handleMigrateAction = () => {
+    if (pageType !== 'profile' || !isMyProfile || namesMigrate.length === 0) return
+    dispatch(setBulkMigrationModalNames(namesMigrate.map(({ name }) => name)))
+    dispatch(setBulkMigrationModalOpen(true))
   }
 
   const handleCancelListingsAction = () => {
@@ -381,7 +389,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
       {!isSelectAllLoading &&
         (isSelecting ? (
-          <div className='border-tertiary hidden flex-col justify-start border-l-2 p-1.5 @[1280px]/app:flex'>
+          <div className='border-tertiary hidden flex-col justify-start border-l-2 p-1.5 @[1536px]/app:flex'>
             <p className='text-neutral -translate-y-0.75 text-sm font-semibold text-nowrap'>
               Select a domain & Hold{' '}
               <span className='bg-secondary rounded-md py-0.75 pr-1.5 pl-1 text-white'>⇧SHIFT</span> to select range
@@ -463,6 +471,16 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                     <p>Edit&nbsp;Records</p>
                     <Label label={namesTransfer.length} className='bg-tertiary w-7 min-w-fit text-white' />
                   </PrimaryButton>
+                  {isProfileTab && isMyProfile && (
+                    <PrimaryButton
+                      onClick={handleMigrateAction}
+                      disabled={namesMigrate.length === 0}
+                      className='flex items-center gap-1.5'
+                    >
+                      <p>Migrate</p>
+                      <Label label={namesMigrate.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                    </PrimaryButton>
+                  )}
                   <PrimaryButton
                     onClick={handleListAction}
                     disabled={selectedDomains.length === 0 || !canListDomains || namesList.length === 0}

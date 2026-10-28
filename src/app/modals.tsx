@@ -30,6 +30,8 @@ import EditRecordsModal from '@/components/modal/records/editRecordsModal'
 import { selectEditRecordsModal, setEditRecordsModalOpen } from '@/state/reducers/modals/editRecordsModal'
 import BulkEditRecordsModal from '@/components/modal/records/bulkEditRecordsModal'
 import { selectBulkEditRecordsModal, setBulkEditRecordsModalOpen } from '@/state/reducers/modals/bulkEditRecordsModal'
+import BulkMigrationModal from '@/components/modal/migration/bulkMigrationModal'
+import { selectBulkMigrationModal, setBulkMigrationModalOpen } from '@/state/reducers/modals/bulkMigrationModal'
 import { useGlobalSearchShortcut } from '@/hooks/useGlobalSearchShortcut'
 import { useOpenSettingsFromUrl } from '@/hooks/useOpenSettingsFromUrl'
 import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reducers/modals/listSettingsModal'
@@ -92,6 +94,7 @@ const Modals: React.FC = () => {
   } = useAppSelector(selectEditRecordsModal)
   const { open: bulkEditRecordsModalOpen, names: bulkEditRecordsModalNames } =
     useAppSelector(selectBulkEditRecordsModal)
+  const { open: bulkMigrationModalOpen, names: bulkMigrationModalNames } = useAppSelector(selectBulkMigrationModal)
   const {
     open: listSettingsModalOpen,
     user: listSettingsModalUser,
@@ -112,6 +115,7 @@ const Modals: React.FC = () => {
     transferModalOpen ||
     shareModalOpen ||
     editRecordsModalOpen ||
+    bulkMigrationModalOpen ||
     listSettingsModalOpen ||
     registrationModalOpen
 
@@ -242,6 +246,15 @@ const Modals: React.FC = () => {
             key='bulk-edit-records-modal'
             names={bulkEditRecordsModalNames}
             onClose={() => dispatch(setBulkEditRecordsModalOpen(false))}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {bulkMigrationModalOpen && bulkMigrationModalNames.length > 0 && (
+          <BulkMigrationModal
+            key='bulk-migration-modal'
+            names={bulkMigrationModalNames}
+            onClose={() => dispatch(setBulkMigrationModalOpen(false))}
           />
         )}
       </AnimatePresence>

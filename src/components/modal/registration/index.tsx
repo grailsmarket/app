@@ -19,6 +19,7 @@ import { beautifyName } from '@/lib/ens'
 import { cn } from '@/utils/tailwind'
 import { MAX_BATCH_SIZE } from '@/constants/registration'
 import { TOKENS } from '@/constants/web3/tokens'
+import { formatPaymentAmount, isEthPayment } from '@/lib/ethPayment'
 import ClaimPoap from '../poap/claimPoap'
 import useRegistrationModal from './hooks/use-registration-modal'
 import SuccessView from './components/success-view'
@@ -148,6 +149,7 @@ const RegistrationModal: React.FC = () => {
         })),
         priceETH: modal.calculationResults?.priceETH ?? 0,
         priceUSD: modal.calculationResults?.priceUSD ?? 0,
+        asset: modal.asset,
       })
       dispatch(clearBulkSelect())
     }
@@ -158,6 +160,7 @@ const RegistrationModal: React.FC = () => {
     availableEntries,
     modal.entryDurations,
     modal.calculationResults,
+    modal.asset,
     dispatch,
   ])
 
@@ -174,6 +177,12 @@ const RegistrationModal: React.FC = () => {
 
   const currentBatch = modal.currentBatch
   const tokenLabel = TOKENS[modal.asset]
+  // Paying with ETH, priceUSD is the USDC quote; the ETH cost is priceETH
+  const headerPrice = modal.calculationResults
+    ? isEthPayment(modal.asset)
+      ? `${formatPaymentAmount(modal.calculationResults.priceETH, modal.asset)} ETH`
+      : `${modal.calculationResults.priceUSD.toFixed(2)} ${tokenLabel}`
+    : null
   const expectedBatches = modal.totalBatches || Math.ceil(availableEntries.length / MAX_BATCH_SIZE)
   const steps = getRegistrationSteps({
     flowState,
@@ -285,7 +294,7 @@ const RegistrationModal: React.FC = () => {
         price={
           modal.calculationResults && !modal.calculationResults.isLoadingPrice ? (
             <p className='text-xl font-bold'>
-              {modal.calculationResults.priceUSD.toFixed(2)} {tokenLabel}
+              {headerPrice}
             </p>
           ) : flowState === 'review' ? (
             <SkeletonText label='Loading registration price…' className='w-24' />
@@ -322,7 +331,7 @@ const RegistrationModal: React.FC = () => {
         price={
           modal.calculationResults && !modal.calculationResults.isLoadingPrice ? (
             <p className='text-xl font-bold'>
-              {modal.calculationResults.priceUSD.toFixed(2)} {tokenLabel}
+              {headerPrice}
             </p>
           ) : flowState === 'review' ? (
             <SkeletonText label='Loading registration price…' className='w-24' />

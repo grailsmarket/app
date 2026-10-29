@@ -23,8 +23,8 @@ import { buildRecordCalls, dnsEncodeName, recordPermission } from '@/utils/recor
 import { readResolverState } from '@/utils/records/v2Resolver'
 import { newResolverVersion } from '@/utils/records/resolverDeployment'
 import { createdConfigurationId } from '@/utils/settings/configurations'
-import { readMigrationDeployment, readMigrationName, type MigrationName } from '@/utils/migration/migration'
-import { bulkMigrationTransfer, migrationApproval } from '@/utils/migration/bulkMigration'
+import { readMigrationDeployment, readMigrationNames } from '@/utils/migration/migration'
+import { bulkMigrationTransfer, groupBulkMigrations, migrationApproval } from '@/utils/migration/bulkMigration'
 import { resetMigrationQueries } from '@/utils/migration/resetMigrationQueries'
 import {
   publicResolverCopyCalls,
@@ -54,7 +54,8 @@ export const useBulkMigration = (names: string[]) => {
   const [resolverInput, setResolverInput] = useState<string | null>(null)
   const [configuration, setConfiguration] = useState('0')
   const [acknowledged, setAcknowledged] = useState(false)
-  const [migrated, setMigrated] = useState(false)
+  const [migratedCount, setMigratedCount] = useState(0)
+  const migrated = migratedCount > 0
   const session = useId()
   const client = useMemo(createV2RecordsClient, [])
   const queries = useQueryClient()
@@ -81,19 +82,11 @@ export const useBulkMigration = (names: string[]) => {
     retry: false,
     refetchOnWindowFocus: false,
     queryFn: async ({ signal }) => {
-      const eligible: MigrationName[] = []
-      const errors: { name: string; message: string }[] = []
-      const unique = [...new Set(names)]
-      await inBatches(unique, async (name) => {
-        signal.throwIfAborted()
-        try {
-          eligible.push(await readMigrationName(client, deployment.data!, name, account!))
-        } catch (error) {
-          errors.push({ name, message: roleErrorText(error) })
-        }
-      })
-      signal.throwIfAborted()
-      return { names: eligible.sort((a, b) => a.name.localeCompare(b.name)), errors }
+      const result = await readMigrationNames(client, deployment.data!, names, account!, signal)
+      return {
+        names: result.names,
+        errors: result.errors.map(({ name, error }) => ({ name, message: roleErrorText(error) })),
+      }
     },
   })
 
@@ -159,23 +152,36 @@ export const useBulkMigration = (names: string[]) => {
     )
     let target = !flexible.length || selectedMode === 'none' ? zeroAddress : resolver
     const preparedIds = new Map<string, bigint>()
+    const completed = new Set<string>()
     const steps: SettingsTransactionStep[] = []
 
     const recheck = async (sender: Address) => {
       if (sender.toLowerCase() !== account.toLowerCase())
         throw new Error('Reconnect the wallet that opened this migration.')
 
-      await inBatches(snapshot, async (name) => {
-        const current = await readMigrationName(client, contracts, name.name, sender)
+      const remaining = snapshot.filter((name) => !completed.has(name.name))
+      const currentNames = await readMigrationNames(
+        client,
+        contracts,
+        remaining.map((name) => name.name),
+        sender
+      )
+      const failure = currentNames.errors[0]
+      if (failure) throw new Error(`${failure.name}: ${roleErrorText(failure.error)}`)
+      const checked = new Map(currentNames.names.map((name) => [name.name, name]))
+      for (const name of remaining) {
+        const current = checked.get(name.name)
         if (
+          !current ||
           current.tokenContract.toLowerCase() !== name.tokenContract.toLowerCase() ||
           current.receiver.toLowerCase() !== name.receiver.toLowerCase() ||
+          current.requiresDirectMigration !== name.requiresDirectMigration ||
           current.fuses !== name.fuses ||
           current.resolver.toLowerCase() !== name.resolver.toLowerCase() ||
           current.fixedResolver?.toLowerCase() !== name.fixedResolver?.toLowerCase()
         )
           throw new Error(`Migration settings changed for ${name.name}. Return to review before continuing.`)
-      })
+      }
     }
 
     if (!target) {
@@ -284,7 +290,9 @@ export const useBulkMigration = (names: string[]) => {
       })
     }
 
-    for (const tokenContract of new Set(snapshot.map((name) => name.tokenContract))) {
+    for (const tokenContract of new Set(
+      snapshot.filter((name) => !name.requiresDirectMigration).map((name) => name.tokenContract)
+    )) {
       steps.push({
         label: tokenContract === contracts.wrapper ? 'Approve Wrapped Names' : 'Approve Unwrapped Names',
         pendingLabel: 'Approving Migration Helper',
@@ -295,46 +303,50 @@ export const useBulkMigration = (names: string[]) => {
       })
     }
 
-    steps.push({
-      label: `Migrate ${snapshot.length} Names to ENS V2`,
-      pendingLabel: 'Migrating Names',
-      prepare: async (sender) => {
-        await recheck(sender)
+    for (const group of groupBulkMigrations(snapshot))
+      steps.push({
+        label: `Migrate ${group.length} ${group.length === 1 ? 'Name' : 'Names'} to ENS V2`,
+        pendingLabel: 'Migrating Names',
+        prepare: async (sender) => {
+          const remaining = group.filter((name) => !completed.has(name.name))
+          if (!remaining.length) return null
+          await recheck(sender)
 
-        if (!target) throw new Error('Select a resolver before migrating.')
+          if (!target) throw new Error('Select a resolver before migrating.')
 
-        const preparedTarget = target
-        await inBatches(snapshot, async (name) => {
-          if (captured[name.name]?.length)
-            await verifyReviewedMigrationRecords(client, name.resolver, name.name, captured[name.name])
+          const preparedTarget = target
+          await inBatches(remaining, async (name) => {
+            if (captured[name.name]?.length)
+              await verifyReviewedMigrationRecords(client, name.resolver, name.name, captured[name.name])
 
-          if (name.fixedResolver === null && selectedMode !== 'none') {
-            const state = await readResolverState(client, preparedTarget, name.name, sender)
-            if (
-              !preparedIds.has(name.name) ||
-              state.linkedRecordId !== preparedIds.get(name.name) ||
-              (selectedMode === 'existing' && id === BigInt(0) && state.defaultRecordId !== reviewedDefault)
-            )
-              throw new Error(`The configuration for ${name.name} changed. Return to review before continuing.`)
-          }
-        })
+            if (name.fixedResolver === null && selectedMode !== 'none') {
+              const state = await readResolverState(client, preparedTarget, name.name, sender)
+              if (
+                !preparedIds.has(name.name) ||
+                state.linkedRecordId !== preparedIds.get(name.name) ||
+                (selectedMode === 'existing' && id === BigInt(0) && state.defaultRecordId !== reviewedDefault)
+              )
+                throw new Error(`The configuration for ${name.name} changed. Return to review before continuing.`)
+            }
+          })
 
-        return bulkMigrationTransfer(snapshot, target, config.ensV2MigrationHelper)
-      },
-      confirmed: () => {
-        setMigrated(true)
-        dispatch(removeBulkSelectNames(snapshot.map((name) => name.name)))
+          return bulkMigrationTransfer(remaining, target, config.ensV2MigrationHelper)
+        },
+        confirmed: () => {
+          for (const name of group) completed.add(name.name)
+          setMigratedCount(completed.size)
+          dispatch(removeBulkSelectNames(group.map((name) => name.name)))
 
-        for (const name of snapshot)
-          queries.setQueryData(['name', 'recordEditorVersion', activeChain.id, config.ensV2Registry, name.name], 2)
+          for (const name of group)
+            queries.setQueryData(['name', 'recordEditorVersion', activeChain.id, config.ensV2Registry, name.name], 2)
 
-        resetMigrationQueries(
-          queries,
-          snapshot.map((name) => name.name),
-          account
-        ).catch(() => {})
-      },
-    })
+          resetMigrationQueries(
+            queries,
+            group.map((name) => name.name),
+            account
+          ).catch(() => {})
+        },
+      })
 
     const restores = snapshot.filter((name) => name.replacesResolver && captured[name.name]?.length)
     for (const publicResolver of new Set(restores.map((name) => name.fixedResolver!))) {
@@ -390,6 +402,7 @@ export const useBulkMigration = (names: string[]) => {
     migrate,
     transaction,
     migrated,
-    complete: migrated && transaction.phase === 'success',
+    migratedCount,
+    complete: migrated && migratedCount === eligible.length && transaction.phase === 'success',
   }
 }

@@ -16,6 +16,8 @@ import { RegistryAbi } from '@/constants/web3/abi/RegistryAbi'
 import { VERIFIABLE_FACTORY_ABI } from '@/constants/web3/abi/VerifiableFactory'
 import { MIGRATION_DATA } from '@/constants/ens/migration'
 import { migrationAbi } from '@/constants/web3/abi/Migration'
+import { ENS_V2_REGISTRAR } from '@/constants/web3/abi/RegistrarV2'
+import { config } from '@/lib/config'
 
 export interface MigrationDeployment {
   chainId: number
@@ -25,6 +27,9 @@ export interface MigrationDeployment {
   ethRegistry: Address
   unlockedController: Address
   lockedController: Address
+  factory: Address
+  wrapperRegistryImpl: Address
+  parentGracePeriod: bigint
 }
 
 export interface MigrationName {
@@ -42,6 +47,7 @@ export interface MigrationName {
   resolver: Address
   fixedResolver: Address | null
   replacesResolver: boolean
+  requiresDirectMigration: boolean
 }
 
 const sameAddress = (left: Address, right: Address) => left.toLowerCase() === right.toLowerCase()
@@ -80,18 +86,41 @@ export const readMigrationDeployment = async (
       client.readContract({ address: helper, abi: MIGRATION_HELPER_ABI, functionName })
     )
   )
-  const [baseRegistrar, v1Registry, unlockedRegistry, lockedRegistry, rootEthRegistry] = await Promise.all([
+  const [
+    baseRegistrar,
+    v1Registry,
+    unlockedRegistry,
+    lockedRegistry,
+    rootEthRegistry,
+    factory,
+    wrapperRegistryImpl,
+    parentGracePeriod,
+  ] = await Promise.all([
     client.readContract({ address: wrapper, abi: NAME_WRAPPER_ABI, functionName: 'registrar' }),
     client.readContract({ address: wrapper, abi: NAME_WRAPPER_ABI, functionName: 'ens' }),
     client.readContract({ address: unlockedController, abi: migrationAbi, functionName: 'ETH_REGISTRY' }),
     client.readContract({ address: lockedController, abi: migrationAbi, functionName: 'ETH_REGISTRY' }),
     client.readContract({ address: root, abi: REGISTRY_V2_ABI, functionName: 'getSubregistry', args: ['eth'] }),
+    client.readContract({ address: lockedController, abi: migrationAbi, functionName: 'VERIFIABLE_FACTORY' }),
+    client.readContract({ address: lockedController, abi: migrationAbi, functionName: 'WRAPPER_REGISTRY_IMPL' }),
+    client.readContract({ address: config.ensV2Registrar, abi: ENS_V2_REGISTRAR, functionName: 'GRACE_PERIOD' }),
   ])
 
   if ([unlockedRegistry, lockedRegistry, rootEthRegistry].some((registry) => !sameAddress(registry, ethRegistry)))
     throw new Error('The migration contracts do not match the configured ENS V2 registry.')
 
-  return { chainId, wrapper, baseRegistrar, v1Registry, ethRegistry, unlockedController, lockedController }
+  return {
+    chainId,
+    wrapper,
+    baseRegistrar,
+    v1Registry,
+    ethRegistry,
+    unlockedController,
+    lockedController,
+    factory,
+    wrapperRegistryImpl,
+    parentGracePeriod,
+  }
 }
 
 export const assertMigrationRestrictions = (fuses: number, approved: Address, isSubname: boolean) => {
@@ -115,29 +144,19 @@ const assertMigrationReceiver = async (
   receiver: Address,
   parent: string
 ) => {
-  const [factory, implementation, parentNode, wrapper] = await Promise.all([
-    client.readContract({
-      address: deployment.lockedController,
-      abi: migrationAbi,
-      functionName: 'VERIFIABLE_FACTORY',
-    }),
-    client.readContract({
-      address: deployment.lockedController,
-      abi: migrationAbi,
-      functionName: 'WRAPPER_REGISTRY_IMPL',
-    }),
+  const [parentNode, wrapper] = await Promise.all([
     client.readContract({ address: receiver, abi: migrationAbi, functionName: 'getWrappedNode' }),
     client.readContract({ address: receiver, abi: migrationAbi, functionName: 'NAME_WRAPPER' }),
   ])
   const verified = await client.readContract({
-    address: factory,
+    address: deployment.factory,
     abi: VERIFIABLE_FACTORY_ABI,
     functionName: 'verifyContract',
     args: [receiver],
   })
 
   if (
-    !sameAddress(verified, implementation) ||
+    !sameAddress(verified, deployment.wrapperRegistryImpl) ||
     !sameAddress(wrapper, deployment.wrapper) ||
     parentNode !== namehash(parent)
   )
@@ -152,8 +171,10 @@ export const readMigrationName = async (
   deployment: MigrationDeployment,
   input: string,
   account: Address,
-  { parentGracePeriod = BigInt(0) }: { parentGracePeriod?: bigint } = {}
+  { parents }: { parents?: ReadonlyMap<string, MigrationName> } = {}
 ): Promise<MigrationName> => {
+  if (/\[[0-9a-f]{64}\]/i.test(input))
+    throw new MigrationEligibilityError('unsupported-name', 'The full name is required to migrate this token.')
   const name = normalize(input)
   const labels = name.split('.')
 
@@ -166,73 +187,82 @@ export const readMigrationName = async (
   const labelId = BigInt(labelhash(label))
   const now = (await client.getBlock()).timestamp
   let registry = deployment.ethRegistry
+  const parent = parents?.get(labels.slice(1).join('.'))
+  const pendingParent = parent?.locked ? parent : undefined
+  let requiresDirectMigration = pendingParent?.requiresDirectMigration ?? false
 
-  for (let index = labels.length - 2; index > 0; index--) {
+  if (pendingParent) {
+    registry = await client.readContract({
+      address: deployment.factory,
+      abi: VERIFIABLE_FACTORY_ABI,
+      functionName: 'predictProxyAddress',
+      args: [pendingParent.receiver, BigInt(namehash(pendingParent.name))],
+    })
+  } else
+    for (let index = labels.length - 2; index > 0; index--) {
+      const state = await client.readContract({
+        address: registry,
+        abi: REGISTRY_V2_ABI,
+        functionName: 'getState',
+        args: [BigInt(labelhash(labels[index]))],
+      })
+
+      if (state.status !== 2 || state.expiry <= now) {
+        if (
+          index !== labels.length - 2 ||
+          state.latestOwner === zeroAddress ||
+          state.expiry > now ||
+          now >= state.expiry + deployment.parentGracePeriod
+        )
+          throw new MigrationEligibilityError(
+            'parent-unavailable',
+            'Migrate and renew the parent name before this subname.'
+          )
+        const parent = labels.slice(index).join('.')
+        registry = await client.readContract({
+          address: deployment.factory,
+          abi: VERIFIABLE_FACTORY_ABI,
+          functionName: 'predictProxyAddress',
+          args: [deployment.lockedController, BigInt(namehash(parent))],
+        })
+        const code = await client.getCode({ address: registry })
+        if (!code || code === '0x')
+          throw new MigrationEligibilityError('unsupported-parent', 'The parent has no migration wrapper registry.')
+        await assertMigrationReceiver(client, deployment, registry, parent)
+        requiresDirectMigration = true
+        continue
+      }
+
+      registry = await client.readContract({
+        address: registry,
+        abi: REGISTRY_V2_ABI,
+        functionName: 'getSubregistry',
+        args: [labels[index]],
+      })
+
+      if (registry === zeroAddress)
+        throw new MigrationEligibilityError(
+          'unsupported-parent',
+          'The parent name does not have a migration subregistry.'
+        )
+    }
+
+  if (!pendingParent) {
     const state = await client.readContract({
       address: registry,
       abi: REGISTRY_V2_ABI,
       functionName: 'getState',
-      args: [BigInt(labelhash(labels[index]))],
+      args: [labelId],
     })
 
-    if (state.status !== 2 || state.expiry <= now) {
-      if (
-        index !== labels.length - 2 ||
-        state.latestOwner === zeroAddress ||
-        state.expiry > now ||
-        now >= state.expiry + parentGracePeriod
-      )
-        throw new MigrationEligibilityError(
-          'parent-unavailable',
-          'Migrate and renew the parent name before this subname.'
-        )
-      const parent = labels.slice(index).join('.')
-      const factory = await client.readContract({
-        address: deployment.lockedController,
-        abi: migrationAbi,
-        functionName: 'VERIFIABLE_FACTORY',
-      })
-      registry = await client.readContract({
-        address: factory,
-        abi: VERIFIABLE_FACTORY_ABI,
-        functionName: 'predictProxyAddress',
-        args: [deployment.lockedController, BigInt(namehash(parent))],
-      })
-      const code = await client.getCode({ address: registry })
-      if (!code || code === '0x')
-        throw new MigrationEligibilityError('unsupported-parent', 'The parent has no migration wrapper registry.')
-      await assertMigrationReceiver(client, deployment, registry, parent)
-      continue
-    }
-
-    registry = await client.readContract({
-      address: registry,
-      abi: REGISTRY_V2_ABI,
-      functionName: 'getSubregistry',
-      args: [labels[index]],
-    })
-
-    if (registry === zeroAddress)
+    if (state.status === 2)
       throw new MigrationEligibilityError(
-        'unsupported-parent',
-        'The parent name does not have a migration subregistry.'
+        'already-migrated',
+        'This name is already registered in ENS V2 on this network.'
       )
+    if (!isSubname && state.status !== 1)
+      throw new MigrationEligibilityError('not-reserved', 'This name has no active V2 reservation on this network.')
   }
-
-  const state = await client.readContract({
-    address: registry,
-    abi: REGISTRY_V2_ABI,
-    functionName: 'getState',
-    args: [labelId],
-  })
-
-  if (state.status === 2)
-    throw new MigrationEligibilityError(
-      'already-migrated',
-      'This name is already registered in ENS V2 on this network.'
-    )
-  if (!isSubname && state.status !== 1)
-    throw new MigrationEligibilityError('not-reserved', 'This name has no active V2 reservation on this network.')
 
   const [wrappedData, resolver] = await Promise.all([
     client.readContract({
@@ -298,20 +328,26 @@ export const readMigrationName = async (
 
   const receiver = isSubname ? registry : locked ? deployment.lockedController : deployment.unlockedController
 
-  if (isSubname) await assertMigrationReceiver(client, deployment, receiver, labels.slice(1).join('.'))
+  if (isSubname && !pendingParent)
+    await assertMigrationReceiver(client, deployment, receiver, labels.slice(1).join('.'))
 
   let fixedResolver: Address | null = null
 
   if (locked && fuses & 8) {
     fixedResolver = resolver
-    const set = await client.readContract({ address: receiver, abi: migrationAbi, functionName: 'PUBLIC_RESOLVER_SET' })
+    const receiverConfig = pendingParent ? deployment.wrapperRegistryImpl : receiver
+    const set = await client.readContract({
+      address: receiverConfig,
+      abi: migrationAbi,
+      functionName: 'PUBLIC_RESOLVER_SET',
+    })
 
     if (
       resolver !== zeroAddress &&
       (await client.readContract({ address: set, abi: migrationAbi, functionName: 'includes', args: [resolver] }))
     )
       fixedResolver = await client.readContract({
-        address: receiver,
+        address: receiverConfig,
         abi: migrationAbi,
         functionName: 'PUBLIC_RESOLVER',
       })
@@ -330,8 +366,44 @@ export const readMigrationName = async (
     registry,
     fixedResolver,
     replacesResolver: fixedResolver !== null && !sameAddress(fixedResolver, resolver),
+    requiresDirectMigration,
     tokenId: wrapped ? BigInt(node) : labelId,
     tokenContract: wrapped ? deployment.wrapper : deployment.baseRegistrar,
+  }
+}
+
+export const readMigrationNames = async (
+  client: PublicClient,
+  deployment: MigrationDeployment,
+  inputs: readonly string[],
+  account: Address,
+  signal?: AbortSignal
+) => {
+  const ordered = [...new Set(inputs)].sort((a, b) => a.split('.').length - b.split('.').length || a.localeCompare(b))
+  const names = new Map<string, MigrationName>()
+  const errors: { name: string; error: unknown }[] = []
+  for (const depth of new Set(ordered.map((name) => name.split('.').length))) {
+    const level = ordered.filter((name) => name.split('.').length === depth)
+    for (let offset = 0; offset < level.length; offset += 5) {
+      signal?.throwIfAborted()
+      await Promise.all(
+        level.slice(offset, offset + 5).map(async (name) => {
+          try {
+            const candidate = await readMigrationName(client, deployment, name, account, { parents: names })
+            names.set(candidate.name, candidate)
+          } catch (error) {
+            errors.push({ name, error })
+          }
+        })
+      )
+    }
+  }
+  signal?.throwIfAborted()
+  return {
+    names: [...names.values()].sort(
+      (a, b) => a.name.split('.').length - b.name.split('.').length || a.name.localeCompare(b.name)
+    ),
+    errors,
   }
 }
 

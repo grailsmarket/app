@@ -39,6 +39,7 @@ const BulkMigrationForm = ({ names, onClose }: BulkMigrationModalProps) => {
   const { transaction, loading, source, catalog } = migration
   const eligible = loading.data?.names ?? []
   const excluded = loading.data?.errors ?? []
+  const allMigrated = migration.migrated && migration.migratedCount === eligible.length
   const flexible = eligible.some((name) => name.fixedResolver === null)
   const copies = eligible.some(
     (name) => name.replacesResolver || (name.fixedResolver === null && migration.mode === 'copy')
@@ -132,11 +133,12 @@ const BulkMigrationForm = ({ names, onClose }: BulkMigrationModalProps) => {
                 </p>
                 <p className='text-neutral text-md'>
                   Your wallet stays the owner. Migration permanently retires these V1 tokens; they cannot be moved back.
-                  Subnames migrate separately. Managers, resolver delegates, and token approvals are not copied.
+                  Selected parents migrate before their subnames. Managers, resolver delegates, and token approvals are
+                  not copied.
                 </p>
                 <p className='text-neutral text-sm'>
                   The migration helper may require approval to transfer all your tokens in the V1 registrar and
-                  NameWrapper.
+                  NameWrapper. Subnames under a parent in its grace period require separate transactions.
                 </p>
               </div>
               {flexible && (
@@ -335,7 +337,14 @@ const BulkMigrationForm = ({ names, onClose }: BulkMigrationModalProps) => {
   )
 
   if (view && transaction.busy) {
-    content = <TransactionProgress view={view} title='Bulk Migration' />
+    content = (
+      <TransactionProgress
+        view={view}
+        title={
+          migration.migrated ? `${migration.migratedCount} of ${eligible.length} Names Migrated` : 'Bulk Migration'
+        }
+      />
+    )
     footer = null
   } else if (migration.complete) {
     content = (
@@ -364,20 +373,30 @@ const BulkMigrationForm = ({ names, onClose }: BulkMigrationModalProps) => {
     content = view ? (
       <TransactionFailure
         view={view}
-        title={migration.migrated ? 'Records Not Restored' : 'Migration Not Completed'}
+        title={
+          allMigrated
+            ? 'Records Not Restored'
+            : migration.migrated
+              ? 'Migration Partially Completed'
+              : 'Migration Not Completed'
+        }
         message={
-          migration.migrated
+          allMigrated
             ? 'Your names have migrated. Keep this window open to finish restoring their records. Retrying resumes the remaining work.'
-            : 'Your names have not migrated. Confirmed steps are saved for retry.'
+            : migration.migrated
+              ? `${migration.migratedCount} of ${eligible.length} names have migrated. Keep this window open to migrate the remaining names and finish any record restoration. Retrying skips confirmed migrations.`
+              : 'Your names have not migrated. Confirmed steps are saved for retry.'
         }
       />
     ) : (
-      <Notice tone='warning'>Your names have migrated. Finish restoring their records before closing.</Notice>
+      <Notice tone='warning'>
+        {migration.migratedCount} of {eligible.length} names have migrated. Finish the remaining steps before closing.
+      </Notice>
     )
     footer = (
       <>
         <PrimaryButton className={modalPrimaryActionClassName} onClick={() => void transaction.run()}>
-          {migration.migrated ? 'Finish Copying Records' : 'Retry Remaining Steps'}
+          {allMigrated ? 'Finish Copying Records' : 'Retry Remaining Steps'}
         </PrimaryButton>
         <SecondaryButton className={modalActionClassName} onClick={migration.migrated ? close : transaction.reset}>
           {migration.migrated ? 'Close' : 'Back to Review'}
@@ -429,7 +448,7 @@ const BulkMigrationForm = ({ names, onClose }: BulkMigrationModalProps) => {
           pendingTransaction={migration.migrated}
           description={
             migration.migrated
-              ? 'Your names have already migrated. Closing discards the remaining record-copy work in this window. Those records will need to be restored separately; migration cannot be undone.'
+              ? `${migration.migratedCount} of ${eligible.length} names have already migrated. Closing discards the remaining migration and record-copy work in this window. Unfinished work must be completed separately; confirmed migrations cannot be undone.`
               : undefined
           }
         />

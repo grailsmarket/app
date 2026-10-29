@@ -1,15 +1,7 @@
-import { type Address, type PublicClient, isAddress, labelhash, namehash, zeroAddress } from 'viem'
+import { type Address, type PublicClient, isAddress } from 'viem'
 import { z } from 'zod'
 import { config } from '@/lib/config'
-import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
-import { BaseRegistrarAbi } from '@/constants/web3/abi/BaseRegistrar'
-import { ENS_V2_REGISTRAR } from '@/constants/web3/abi/RegistrarV2'
-import {
-  assertMigrationRestrictions,
-  MigrationEligibilityError,
-  readMigrationDeployment,
-  readMigrationName,
-} from './migration'
+import { MigrationEligibilityError, readMigrationDeployment, readMigrationNames } from './migration'
 
 const INDEXER = 'https://api.bigname.sh'
 
@@ -105,87 +97,16 @@ export const readMigrationProgress = async (client: PublicClient, owner: Address
   if (!names.size) return { migrated, remaining: 0, remainingNames: [], excluded: 0 }
 
   const deployment = await readMigrationDeployment(client, config.ensV2MigrationHelper, config.ensV2Registry, 1)
-  const parentGracePeriod = await client.readContract({
-    address: config.ensV2Registrar,
-    abi: ENS_V2_REGISTRAR,
-    functionName: 'GRACE_PERIOD',
-  })
-  const now = (await client.getBlock()).timestamp
-  const remaining = new Set<string>()
-  const lockedParents = new Set<string>()
-  let excluded = 0
-  const ordered = [...names].sort((a, b) => a.split('.').length - b.split('.').length || a.localeCompare(b))
-
-  const checkName = async (name: string) => {
-    signal?.throwIfAborted()
-    if (!name.endsWith('.eth') || /\[[0-9a-f]{64}\]/i.test(name)) {
-      excluded++
-      return
-    }
-    const parent = name.slice(name.indexOf('.') + 1)
-    if (parent === 'eth') {
-      const expiry = await client.readContract({
-        address: deployment.baseRegistrar,
-        abi: BaseRegistrarAbi,
-        functionName: 'nameExpires',
-        args: [BigInt(labelhash(name.split('.')[0]))],
-      })
-      if (expiry <= now) {
-        excluded++
-        return
-      }
-    }
-    try {
-      const candidate = await readMigrationName(client, deployment, name, owner, { parentGracePeriod })
-      remaining.add(name)
-      if (candidate.locked) lockedParents.add(name)
-    } catch (error) {
-      if (!(error instanceof MigrationEligibilityError)) throw error
-      if (error.reason === 'already-migrated' || error.reason === 'not-owner')
-        throw new MigrationProgressSyncError('Migration progress is catching up with onchain changes. Please retry.')
-      if (error.reason !== 'parent-unavailable' || !lockedParents.has(parent)) {
-        excluded++
-        return
-      }
-      const node = BigInt(namehash(name))
-      const [wrappedOwner, fuses, expiry] = await client.readContract({
-        address: deployment.wrapper,
-        abi: NAME_WRAPPER_ABI,
-        functionName: 'getData',
-        args: [node],
-      })
-      if (wrappedOwner === zeroAddress || !(fuses & 65536) || expiry <= now) {
-        excluded++
-        return
-      }
-      if (wrappedOwner.toLowerCase() !== owner.toLowerCase())
-        throw new MigrationProgressSyncError('Migration progress is catching up with onchain changes. Please retry.')
-      const approved = await client.readContract({
-        address: deployment.wrapper,
-        abi: NAME_WRAPPER_ABI,
-        functionName: 'getApproved',
-        args: [node],
-      })
-      try {
-        assertMigrationRestrictions(fuses, approved, true)
-        remaining.add(name)
-        if (fuses & 1) lockedParents.add(name)
-      } catch (restriction) {
-        if (!(restriction instanceof MigrationEligibilityError)) throw restriction
-        excluded++
-      }
-    }
+  const result = await readMigrationNames(client, deployment, [...names], owner, signal)
+  for (const { error } of result.errors) {
+    if (!(error instanceof MigrationEligibilityError)) throw error
+    if (error.reason === 'already-migrated' || error.reason === 'not-owner')
+      throw new MigrationProgressSyncError('Migration progress is catching up with onchain changes. Please retry.')
   }
-  for (const depth of new Set(ordered.map((name) => name.split('.').length))) {
-    const level = ordered.filter((name) => name.split('.').length === depth)
-    for (let offset = 0; offset < level.length; offset += 5)
-      await Promise.all(level.slice(offset, offset + 5).map(checkName))
-  }
-  signal?.throwIfAborted()
   return {
     migrated,
-    remaining: remaining.size,
-    remainingNames: ordered.filter((name) => remaining.has(name)),
-    excluded,
+    remaining: result.names.length,
+    remainingNames: result.names.map(({ name }) => name),
+    excluded: result.errors.length,
   }
 }

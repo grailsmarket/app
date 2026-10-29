@@ -16,6 +16,7 @@ import { createdConfigurationId } from '@/utils/settings/configurations'
 import { migrationTransfer, readMigrationDeployment, readMigrationName } from '@/utils/migration/migration'
 import { resetMigrationQueries } from '@/utils/migration/resetMigrationQueries'
 import {
+  linkedConfigurationHasRecords,
   publicResolverCopyCalls,
   readV1MigrationRecords,
   verifyReviewedMigrationRecords,
@@ -203,6 +204,12 @@ export const useMigration = (name: string) => {
                 args: [dnsEncodeName(name), id],
               }),
             }
+          }
+
+          // A retry after a failed migration: these records are already on the resolver
+          if (selectedMode === 'copy' && (await linkedConfigurationHasRecords(client, target, state, name, captured))) {
+            preparedRecordId = state.linkedRecordId
+            return null
           }
 
           if (state.linkedRecordId && !state.canLink)

@@ -12,9 +12,9 @@ import {
   zeroAddress,
 } from 'viem'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
-import { findDeploymentBlock, readLogs } from '@/utils/records/v2Resolver'
+import { findDeploymentBlock, readConfiguration, readLogs } from '@/utils/records/v2Resolver'
 import { decodeRecordValue, encodeRecordGetter, encodeRecordSetter, recordKey } from '@/utils/records/v2Records'
-import type { V2Record, V2RecordField } from '@/types/records'
+import type { V2Record, V2RecordField, V2ResolverCatalog } from '@/types/records'
 import { migrationEventsAbi } from '@/constants/web3/abi/Migration'
 import { PublicResolverAbi } from '@/constants/web3/abi/PublicResolverAbi'
 import { DEFAULT_V2_FIELDS } from '@/constants/ens/records'
@@ -232,4 +232,42 @@ export const verifyReviewedMigrationRecords = async (
         throw new Error('The V1 records changed after your review. Reload the migration before continuing.')
     })
   )
+}
+
+const sameRecordValue = (field: V2RecordField, a: string, b: string) =>
+  field.kind === 'address' && a.startsWith('0x') ? a.toLowerCase() === b.toLowerCase() : a === b
+
+/**
+ * True when the name's linked configuration on a V2 resolver already holds every record to copy
+ * (or there is nothing to copy), e.g. after an earlier attempt whose migration step failed.
+ * Copying again would only pay for a duplicate configuration.
+ */
+export const linkedConfigurationHasRecords = async (
+  client: PublicClient,
+  resolver: Address,
+  state: V2ResolverCatalog,
+  name: string,
+  records: V2Record[]
+) => {
+  if (state.linkedRecordId === BigInt(0)) return false
+  // Nothing to copy: any configuration already linked will do
+  if (records.length === 0) return true
+  try {
+    const current = await readConfiguration({
+      client,
+      resolver,
+      catalog: state,
+      name,
+      selectedId: state.linkedRecordId,
+      onlyFields: records,
+      readPermissions: false,
+    })
+    const values = new Map(current.map((record) => [recordKey(record), record.value]))
+    return records.every((record) => {
+      const value = values.get(recordKey(record))
+      return value !== undefined && sameRecordValue(record, value, record.value)
+    })
+  } catch {
+    return false
+  }
 }

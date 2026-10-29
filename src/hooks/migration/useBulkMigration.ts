@@ -27,6 +27,7 @@ import { readMigrationDeployment, readMigrationNames } from '@/utils/migration/m
 import { bulkMigrationTransfer, groupBulkMigrations, migrationApproval } from '@/utils/migration/bulkMigration'
 import { resetMigrationQueries } from '@/utils/migration/resetMigrationQueries'
 import {
+  linkedConfigurationHasRecords,
   publicResolverCopyCalls,
   readV1MigrationRecords,
   verifyReviewedMigrationRecords,
@@ -153,6 +154,8 @@ export const useBulkMigration = (names: string[]) => {
     let target = !flexible.length || selectedMode === 'none' ? zeroAddress : resolver
     const preparedIds = new Map<string, bigint>()
     const completed = new Set<string>()
+    // Names the records step writes; the rest reuse their linked configuration
+    const written = new Set<string>()
     const steps: SettingsTransactionStep[] = []
 
     const recheck = async (sender: Address) => {
@@ -230,6 +233,7 @@ export const useBulkMigration = (names: string[]) => {
           await recheck(sender)
           if (!target) throw new Error('The resolver deployment has not completed.')
           const preparedTarget = target
+          written.clear()
           const calls = (
             await inBatches(flexible, async (name): Promise<Hex[]> => {
               const state = await readResolverState(client, preparedTarget, name.name, sender)
@@ -248,9 +252,18 @@ export const useBulkMigration = (names: string[]) => {
                   }),
                 ]
               }
+              const copied = selectedMode === 'copy' ? (captured[name.name] ?? []) : []
+              // A retry after a failed migration: these records are already on the resolver
+              if (
+                selectedMode === 'copy' &&
+                (await linkedConfigurationHasRecords(client, preparedTarget, state, name.name, copied))
+              ) {
+                preparedIds.set(name.name, state.linkedRecordId)
+                return []
+              }
               if (state.linkedRecordId && !state.canLink)
                 throw new Error('You need Link permission to create separate configurations.')
-              const copied = selectedMode === 'copy' ? (captured[name.name] ?? []) : []
+              written.add(name.name)
               const records = copied.length
                 ? copied
                 : DEFAULT_V2_FIELDS.map((field) => ({ ...field, value: '', initialValue: '', editable: true }))
@@ -284,8 +297,8 @@ export const useBulkMigration = (names: string[]) => {
         },
         confirmed: (receipt) => {
           if (selectedMode !== 'existing' && target)
-            for (const name of flexible)
-              preparedIds.set(name.name, createdConfigurationId(receipt.logs, target, namehash(name.name)))
+            for (const name of written)
+              preparedIds.set(name, createdConfigurationId(receipt.logs, target, namehash(name)))
         },
       })
     }

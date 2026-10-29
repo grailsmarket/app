@@ -4,6 +4,9 @@ import { cn } from '@/utils/tailwind'
 import { formatDuration } from '@/utils/time/formatDuration'
 import { Check, Cross } from 'ethereum-identity-kit'
 import { useEffect, useState } from 'react'
+import type { Address } from 'viem'
+import { TOKENS } from '@/constants/web3/tokens'
+import { formatPaymentAmount, isEthPayment } from '@/lib/ethPayment'
 
 export interface SuccessSummaryEntry {
   name: string
@@ -14,6 +17,7 @@ export interface SuccessSummary {
   entries: SuccessSummaryEntry[]
   priceETH: number
   priceUSD: number
+  asset: Address
 }
 
 interface SuccessToastProps {
@@ -63,8 +67,14 @@ const SuccessToast: React.FC<SuccessToastProps> = ({ summary, onClose }) => {
       </div>
 
       <div className='border-line-subtle text-md mx-4 mt-1 border-t pt-2 pb-3 font-semibold'>
-        {summary.priceETH.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')} ETH{' '}
-        <span className='text-neutral'>(~${summary.priceUSD.toFixed(2)})</span>
+        {isEthPayment(summary.asset) ? (
+          <>
+            {formatPaymentAmount(summary.priceETH, summary.asset)} ETH{' '}
+            <span className='text-neutral'>(~${summary.priceUSD.toFixed(2)})</span>
+          </>
+        ) : (
+          `${summary.priceUSD.toFixed(2)} ${TOKENS[summary.asset]}`
+        )}
       </div>
     </div>
   )

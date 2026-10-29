@@ -293,9 +293,7 @@ const RegistrationModal: React.FC = () => {
         meta={`${expectedBatches * 2} transactions`}
         price={
           modal.calculationResults && !modal.calculationResults.isLoadingPrice ? (
-            <p className='text-xl font-bold'>
-              {headerPrice}
-            </p>
+            <p className='text-xl font-bold'>{headerPrice}</p>
           ) : flowState === 'review' ? (
             <SkeletonText label='Loading registration price…' className='w-24' />
           ) : undefined
@@ -330,9 +328,7 @@ const RegistrationModal: React.FC = () => {
         }
         price={
           modal.calculationResults && !modal.calculationResults.isLoadingPrice ? (
-            <p className='text-xl font-bold'>
-              {headerPrice}
-            </p>
+            <p className='text-xl font-bold'>{headerPrice}</p>
           ) : flowState === 'review' ? (
             <SkeletonText label='Loading registration price…' className='w-24' />
           ) : undefined

@@ -42,6 +42,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
     isRolesLoading,
     openEditMetadataModal,
     openMigrationModal,
+    isRecordEditorReady,
   } = useName(name)
 
   // // Pre-warm the OG image cache in the background
@@ -112,6 +113,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             registrationExpiryDate={registrationPrice?.expiryDate}
             isSubname={isSubname}
             openEditMetadataModal={openEditMetadataModal}
+            isRecordEditorReady={isRecordEditorReady}
             openMigrationModal={openMigrationModal}
           />
           <div className='hidden @[64rem]/app:block'>
@@ -172,6 +174,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
                 roles={roles}
                 isRolesLoading={isRolesLoading}
                 openEditMetadataModal={openEditMetadataModal}
+                isRecordEditorReady={isRecordEditorReady}
               />
             </div>
           </div>

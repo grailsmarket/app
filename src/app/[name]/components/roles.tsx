@@ -30,6 +30,7 @@ interface NameDetailsProps {
   roles?: RolesType | null
   isRolesLoading: boolean
   metadata?: MetadataType[]
+  isRecordEditorReady: boolean
 }
 
 const Roles: React.FC<NameDetailsProps> = ({
@@ -40,6 +41,7 @@ const Roles: React.FC<NameDetailsProps> = ({
   metadata = [],
   roles,
   isRolesLoading,
+  isRecordEditorReady,
 }) => {
   const [isRolesOpen, setIsRolesOpen] = useState(false)
   const { userAddress, authStatus } = useUserContext()
@@ -59,9 +61,12 @@ const Roles: React.FC<NameDetailsProps> = ({
           <h3 className='font-sedan-sc text-3xl'>Roles</h3>
           {canEditRoles && (
             <button
-              className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
+              className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+              disabled={!isRecordEditorReady}
               onClick={(e) => {
                 e.stopPropagation()
+                if (!isRecordEditorReady) return
+
                 const metadataRecord = metadata.reduce(
                   (acc, row) => {
                     acc[row.label] = row.value

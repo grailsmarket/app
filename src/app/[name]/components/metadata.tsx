@@ -26,6 +26,7 @@ interface NameDetailsProps {
   metadata?: MetadataType[]
   isMetadataLoading: boolean
   openEditMetadataModal: () => void
+  isRecordEditorReady: boolean
 }
 
 const Metadata: React.FC<NameDetailsProps> = ({
@@ -36,6 +37,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
   metadata = [],
   isMetadataLoading,
   openEditMetadataModal,
+  isRecordEditorReady,
 }) => {
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
   const { userAddress, authStatus } = useUserContext()
@@ -68,7 +70,8 @@ const Metadata: React.FC<NameDetailsProps> = ({
           <h3 className='font-sedan-sc text-3xl'>Records</h3>
           {canEditMetadata && (
             <button
-              className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
+              className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+              disabled={!isRecordEditorReady}
               onClick={(e) => {
                 e.stopPropagation()
                 openEditMetadataModal()

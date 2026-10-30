@@ -1,9 +1,8 @@
 import Image from 'next/image'
 import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import Link from 'next/link'
-import { hexToBigInt, namehash, numberToHex, type Address } from 'viem'
-import { MetadataType, RolesType } from '@/types/api'
-import { DomainListingType, DomainOfferType, MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
+import { hexToBigInt, namehash, type Address } from 'viem'
+import { DomainListingType, MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
 import { REGISTERED, UNKNOWN, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { TOKENS } from '@/constants/web3/tokens'
@@ -16,9 +15,6 @@ import { localizeNumber } from '@/utils/localizeNumber'
 interface ServerPanelsProps {
   name: string
   nameDetails?: MarketplaceDomainType | null
-  offers?: DomainOfferType[]
-  metadata?: MetadataType[]
-  roles?: RolesType | null
 }
 
 const formatSummaryDate = (date: string | null | undefined, includeTime = true) => {
@@ -66,7 +62,7 @@ const CopyableText = ({ value, truncate = true }: { value: string; truncate?: bo
   <p className='max-w-full truncate text-xl font-medium'>{truncate ? truncateAddress(value) : value}</p>
 )
 
-export default function ServerPanels({ name, nameDetails, offers = [], metadata = [], roles }: ServerPanelsProps) {
+export default function ServerPanels({ name, nameDetails }: ServerPanelsProps) {
   const isSubname = name.split('.').length > 2
   const registrationStatus: RegistrationStatus = nameDetails?.id
     ? isSubname
@@ -104,38 +100,19 @@ export default function ServerPanels({ name, nameDetails, offers = [], metadata 
           <div className='hidden @[64rem]/app:block'>
             <ServerCategories nameDetails={nameDetails} />
           </div>
-          <div className='hidden @[64rem]/app:block'>
-            <ServerMetadata name={name} metadata={metadata} />
-          </div>
-          <div className='hidden @[64rem]/app:block'>
-            <ServerRoles roles={roles} />
-          </div>
-          <div className='hidden @[64rem]/app:block'>
-            <ServerSecondaryDetails nameDetails={nameDetails} roles={roles} />
-          </div>
         </div>
         <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4 @[64rem]/app:w-3/5'>
+          <div className='@[64rem]/app:hidden'>
+            <ServerCategories nameDetails={nameDetails} />
+          </div>
           {isRegistered ? (
             <>
               <ServerListings domain={nameDetails} listings={nameDetails?.listings || []} />
-              <ServerOffers domain={nameDetails} offers={offers} />
+              <ServerOffersSkeleton />
             </>
           ) : (
             <ServerRegisterSummary nameDetails={nameDetails} registrationStatus={registrationStatus} />
           )}
-          <div className='@[64rem]/app:hidden'>
-            <ServerCategories nameDetails={nameDetails} />
-          </div>
-          <div className='@[64rem]/app:hidden'>
-            <ServerMetadata name={name} metadata={metadata} />
-          </div>
-          <div className='@[64rem]/app:hidden'>
-            <ServerRoles roles={roles} />
-          </div>
-          <div className='@[64rem]/app:hidden'>
-            <ServerSecondaryDetails nameDetails={nameDetails} roles={roles} />
-          </div>
-          <ServerClientOnlyPlaceholder title='Activity' description='Activity loads in the interactive app.' />
           <ServerClientOnlyPlaceholder title='Comments' description='Comments load in the interactive app.' />
           <ServerClientOnlyPlaceholder title='Recommended' description='Recommendations load in the interactive app.' />
         </div>
@@ -264,92 +241,6 @@ const ServerCategories = ({ nameDetails }: { nameDetails?: MarketplaceDomainType
   </section>
 )
 
-const ServerMetadata = ({ name, metadata = [] }: { name: string; metadata?: MetadataType[] }) => (
-  <section className='bg-secondary border-tertiary p-lg flex flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
-    <div className='flex flex-row items-center justify-between'>
-      <h2 className='font-sedan-sc text-3xl'>Records</h2>
-      <p className='text-xl font-bold'>{metadata.length}</p>
-    </div>
-    {metadata.length > 0 ? (
-      <div className='grid grid-cols-1 gap-4 @[40rem]/app:grid-cols-2'>
-        {metadata.map((row) => (
-          <div
-            key={`${name}-${row.label}`}
-            className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'
-          >
-            <p className='max-w-full truncate text-xl font-medium'>{row.value}</p>
-            <p className='text-neutral text-lg font-medium'>{row.label.toLowerCase()}</p>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <div className='text-neutral pb-2 text-center text-xl font-medium'>No records found</div>
-    )}
-  </section>
-)
-
-const ServerRoles = ({ roles }: { roles?: RolesType | null }) => (
-  <section className='bg-secondary border-tertiary p-lg flex flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
-    <div className='flex flex-row items-center justify-between'>
-      <h2 className='font-sedan-sc text-3xl'>Roles</h2>
-    </div>
-    {roles ? (
-      <div className='grid grid-cols-1 gap-4 @[40rem]/app:grid-cols-2'>
-        <div className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
-          <CopyableText value={roles.owner} />
-          <p className='text-neutral text-lg font-medium'>Owner</p>
-        </div>
-        <div className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
-          <CopyableText value={roles.manager} />
-          <p className='text-neutral text-lg font-medium'>Manager</p>
-        </div>
-      </div>
-    ) : (
-      <div className='text-neutral pb-2 text-center text-xl font-medium'>No records found</div>
-    )}
-  </section>
-)
-
-const ServerSecondaryDetails = ({
-  nameDetails,
-  roles,
-}: {
-  nameDetails?: MarketplaceDomainType | null
-  roles?: RolesType | null
-}) => {
-  const rows = [
-    {
-      label: 'Last Sale',
-      value: formatTokenPrice(nameDetails?.last_sale_price, nameDetails?.last_sale_currency as Address | null),
-    },
-    { label: 'Token ID', value: nameDetails?.token_id || null },
-    { label: 'Namehash', value: nameDetails?.token_id ? numberToHex(BigInt(nameDetails.token_id)).toString() : null },
-    { label: 'Creation Date', value: formatSummaryDate(nameDetails?.creation_date) },
-  ].filter((row) => row.value)
-
-  return (
-    <section className='bg-secondary border-tertiary p-lg flex flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
-      <div className='flex flex-row items-center justify-between'>
-        <h2 className='font-sedan-sc text-3xl'>Details</h2>
-      </div>
-      <div className='grid grid-cols-1 gap-4 @[40rem]/app:grid-cols-2'>
-        {rows.map((row) => (
-          <div key={row.label} className='bg-secondary border-neutral pl-md flex w-full flex-col border-l-2'>
-            <p className='max-w-full truncate text-xl font-medium'>{row.value}</p>
-            <p className='text-neutral text-lg font-medium'>{row.label}</p>
-          </div>
-        ))}
-        {roles && (
-          <div className='bg-secondary border-neutral pl-md flex w-full flex-col border-l-2'>
-            <CopyableText value={roles.resolver || '-'} />
-            <p className='text-neutral text-lg font-medium'>Resolver</p>
-          </div>
-        )}
-      </div>
-    </section>
-  )
-}
-
 const ServerListings = ({
   domain,
   listings,
@@ -423,61 +314,14 @@ const ServerListingRow = ({
   </div>
 )
 
-const ServerOffers = ({ domain, offers }: { domain?: MarketplaceDomainType | null; offers: DomainOfferType[] }) => {
-  const sortedOffers = [...offers].sort((a, b) => {
-    const priceDiff = Number(b.offer_amount_wei) - Number(a.offer_amount_wei)
-    if (priceDiff !== 0) return priceDiff
-    if (a.source === 'grails' && b.source !== 'grails') return -1
-    if (b.source === 'grails' && a.source !== 'grails') return 1
-    return 0
-  })
-
-  return (
-    <section className='p-lg @[64rem]/app:px-xl @[40rem]/app:border-tertiary bg-secondary flex w-full flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
-      <div className='flex w-full items-center justify-between'>
-        <h2 className='font-sedan-sc text-3xl'>Offers</h2>
-      </div>
-      {sortedOffers.slice(0, 2).map((offer) => (
-        <ServerOfferRow key={offer.id} offer={offer} domain={domain} />
-      ))}
-      {sortedOffers.length === 0 && (
-        <div className='flex w-full flex-row items-center justify-center gap-2'>
-          <p className='text-neutral text-lg'>No offers found</p>
-        </div>
-      )}
-    </section>
-  )
-}
-
-const ServerOfferRow = ({ offer, domain }: { offer: DomainOfferType; domain?: MarketplaceDomainType | null }) => {
-  const fee = offer.source === 'opensea' ? 0.01 : 0
-
-  return (
-    <div className='flex flex-row items-center justify-between gap-2'>
-      <div className='flex flex-row items-center gap-2 @[40rem]/app:gap-4'>
-        <Image
-          src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
-          width={32}
-          height={32}
-          alt={offer.source}
-          className='h-auto min-w-7 @[40rem]/app:w-8'
-        />
-        <div className='flex flex-col gap-1'>
-          <div className='flex flex-row items-center gap-1.5'>
-            <p className='text-2xl font-semibold'>{formatTokenPrice(offer.offer_amount_wei, offer.currency_address)}</p>
-            <p className={`text-md ${fee > 0 ? 'text-red-400' : 'text-green-500'}`}>({fee * 100}% fee)</p>
-          </div>
-          <p className='@[40rem]/app:text-md text-neutral text-sm'>{formatSummaryDate(offer.expires_at)}</p>
-        </div>
-      </div>
-      <p className='text-neutral hidden max-w-[35%] truncate text-sm @[40rem]/app:block'>
-        {domain?.owner && offer.buyer_address.toLowerCase() === domain.owner.toLowerCase()
-          ? 'Owner offer'
-          : truncateAddress(offer.buyer_address)}
-      </p>
+const ServerOffersSkeleton = () => (
+  <section className='p-lg @[64rem]/app:px-xl @[40rem]/app:border-tertiary bg-secondary flex w-full flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
+    <div className='flex w-full items-center justify-between'>
+      <h2 className='font-sedan-sc text-3xl'>Offers</h2>
     </div>
-  )
-}
+    <div role='status' aria-label='Loading offers' className='bg-tertiary h-[60px] w-full animate-pulse rounded' />
+  </section>
+)
 
 const ServerRegisterSummary = ({
   nameDetails,

@@ -56,6 +56,7 @@ interface NameDetailsProps {
   registrationExpiryDate?: string | null
   isSubname: boolean
   openEditMetadataModal: () => void
+  isRecordEditorReady: boolean
   openMigrationModal: () => void
 }
 
@@ -68,6 +69,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   registrationExpiryDate,
   isSubname,
   openEditMetadataModal,
+  isRecordEditorReady,
   openMigrationModal,
 }) => {
   const [isOwnerCopied, setIsOwnerCopied] = useState(false)
@@ -188,7 +190,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           <PrimaryButton
             onClick={openMigrationModal}
             className='w-full text-lg'
-            disabled={authStatus !== 'authenticated'}
+            disabled={authStatus !== 'authenticated' || !isRecordEditorReady}
           >
             Migrate to V2
           </PrimaryButton>
@@ -212,7 +214,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                 <SecondaryButton
                   onClick={openEditMetadataModal}
                   className='w-full text-lg'
-                  disabled={authStatus !== 'authenticated'}
+                  disabled={authStatus !== 'authenticated' || !isRecordEditorReady}
                 >
                   Edit
                 </SecondaryButton>

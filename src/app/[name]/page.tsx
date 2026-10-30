@@ -1,14 +1,14 @@
 import type { Metadata } from 'next'
 import type { SearchParams } from 'next/dist/server/request/search-params'
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
+import { cache } from 'react'
 import NamePage from './components/name'
 import ClientOnly from './components/ClientOnly'
 import HideOnClient from './components/HideOnClient'
 import ServerPanels from './components/serverPanels'
 import { beautifyName } from '@/lib/ens'
 import { notFound } from 'next/navigation'
-import { fetchNameBundle } from '@/api/name/bundle'
-import { formatNameMetadata } from '@/api/name/metadata'
+import { fetchNameDetails } from '@/api/name/details'
 import { headers } from 'next/headers'
 
 interface Props {
@@ -16,10 +16,13 @@ interface Props {
   searchParams: Promise<SearchParams>
 }
 
+// Share details between metadata and rendering within this request, without caching mutable token IDs across requests.
+const getNameDetails = cache(fetchNameDetails)
+
 export const generateMetadata = async (props: Props): Promise<Metadata> => {
   const params = await props.params
   const name = beautifyName(decodeURIComponent(params.name))
-  const { details } = await fetchNameBundle(name)
+  const details = await getNameDetails(name)
   const imageParams = new URLSearchParams({ name })
 
   if (details.id > 0 && details.token_id) {
@@ -75,39 +78,17 @@ const Name = async (props: Props) => {
     return notFound()
   }
 
+  const nameDetails = await getNameDetails(normalizedName)
   const queryClient = new QueryClient()
-
-  if (isInAppNavigation) {
-    return (
-      <main className='min-h-[calc(100dvh-56px)] w-full pb-4 md:min-h-[calc(100dvh-78px)] @[40rem]/app:px-4'>
-        <ClientOnly>
-          <HydrationBoundary state={dehydrate(queryClient)}>
-            <NamePage name={normalizedName} />
-          </HydrationBoundary>
-        </ClientOnly>
-      </main>
-    )
-  }
-
-  const bundle = await fetchNameBundle(normalizedName)
-  const metadata = formatNameMetadata(bundle.details.metadata)
-
-  queryClient.setQueryData(['name', 'details', normalizedName], bundle.details)
-  queryClient.setQueryData(['name', 'offers', normalizedName], bundle.offers)
-  queryClient.setQueryData(['name', 'roles', normalizedName], bundle.roles)
-  queryClient.setQueryData(['name', 'metadata', normalizedName], metadata)
+  queryClient.setQueryData(['name', 'details', normalizedName], nameDetails)
 
   return (
     <main className='min-h-[calc(100dvh-56px)] w-full pb-4 md:min-h-[calc(100dvh-78px)] @[40rem]/app:px-4'>
-      <HideOnClient>
-        <ServerPanels
-          name={normalizedName}
-          nameDetails={bundle.details}
-          offers={bundle.offers}
-          metadata={metadata}
-          roles={bundle.roles}
-        />
-      </HideOnClient>
+      {!isInAppNavigation && (
+        <HideOnClient>
+          <ServerPanels name={normalizedName} nameDetails={nameDetails} />
+        </HideOnClient>
+      )}
       <ClientOnly>
         <HydrationBoundary state={dehydrate(queryClient)}>
           <NamePage name={normalizedName} />

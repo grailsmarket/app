@@ -1,6 +1,5 @@
 import React from 'react'
 import NameImage from '@/components/ui/nameImage'
-import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import { beautifyName } from '@/lib/ens'
 import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import { normalizeName } from '@/lib/ens'
@@ -36,10 +35,7 @@ const Name: React.FC<NameProps> = ({ name, version, tokenId, clubs }) => {
           className='h-8 w-8 shrink-0 rounded-sm'
         />
         <div className='flex max-w-[calc(100%-40px)] min-w-0 flex-col'>
-          <div className='flex min-w-0 items-center gap-1.5'>
-            <p className='text-md truncate leading-[18px] font-bold'>{beautifyName(name)}</p>
-            <NameVersionBadge version={version} />
-          </div>
+          <p className='text-md truncate leading-[18px] font-bold'>{beautifyName(name)}</p>
           {category && categoryDetails && (
             <div className='flex max-w-full flex-row items-center gap-1 truncate'>
               <div className='flex max-w-fit min-w-fit items-center gap-1'>

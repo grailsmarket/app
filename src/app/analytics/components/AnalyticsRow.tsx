@@ -9,7 +9,6 @@ import { normalizeName, beautifyName } from '@/lib/ens'
 import Price from '@/components/ui/price'
 import User from '@/components/ui/user'
 import NameImage from '@/components/ui/nameImage'
-import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import OpenSea from 'public/logos/opensea.svg'
 import Grails from 'public/logo.svg'
 import EthGray from 'public/icons/eth-gray.svg'
@@ -38,10 +37,9 @@ const SourceIcon: React.FC<SourceIconProps> = ({ source }) => {
 interface ListingRowProps {
   listing: AnalyticsListing
   index: number
-  showVersionBadge?: boolean
 }
 
-export const ListingRow: React.FC<ListingRowProps> = ({ listing, index, showVersionBadge }) => {
+export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
   const { categories } = useCategories()
   const category =
     listing.clubs && listing.clubs.length > 0 ? categories?.find((c) => c.name === listing.clubs?.[0]) : null
@@ -66,10 +64,7 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index, showVers
           className='h-8 w-8 shrink-0 rounded-sm'
         />
         <div className='min-w-0 flex-1'>
-          <div className='flex min-w-0 items-center gap-1.5'>
-            <p className='text-md truncate font-semibold'>{beautifyName(listing.name)}</p>
-            {showVersionBadge && <NameVersionBadge version={listing.version} />}
-          </div>
+          <p className='text-md truncate font-semibold'>{beautifyName(listing.name)}</p>
           {category && categoryDetails && (
             <div className='text-md text-foreground/60 flex items-center gap-1 overflow-hidden font-semibold text-nowrap'>
               <Image
@@ -108,10 +103,9 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index, showVers
 interface OfferRowProps {
   offer: AnalyticsOffer
   index: number
-  showVersionBadge?: boolean
 }
 
-export const OfferRow: React.FC<OfferRowProps> = ({ offer, index, showVersionBadge }) => {
+export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
   const { categories } = useCategories()
   const category = offer.clubs && offer.clubs.length > 0 ? categories?.find((c) => c.name === offer.clubs?.[0]) : null
   const categoryDetails = category ? getCategoryDetails(category.name) : null
@@ -135,10 +129,7 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index, showVersionBad
           className='h-8 w-8 shrink-0 rounded-sm'
         />
         <div className='min-w-0 flex-1'>
-          <div className='flex min-w-0 items-center gap-1.5'>
-            <p className='text-md truncate font-semibold'>{beautifyName(offer.name)}</p>
-            {showVersionBadge && <NameVersionBadge version={offer.version} />}
-          </div>
+          <p className='text-md truncate font-semibold'>{beautifyName(offer.name)}</p>
           {category && categoryDetails && (
             <div className='text-md text-foreground/60 flex items-center gap-1 overflow-hidden font-semibold text-nowrap'>
               <Image
@@ -179,10 +170,9 @@ interface SaleRowProps {
   index: number
   hideSeller?: boolean
   className?: string
-  showVersionBadge?: boolean
 }
 
-export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = false, className, showVersionBadge }) => {
+export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = false, className }) => {
   const { categories } = useCategories()
   const category = sale.clubs && sale.clubs.length > 0 ? categories?.find((c) => c.name === sale.clubs?.[0]) : null
   const categoryDetails = category ? getCategoryDetails(category.name) : null
@@ -207,10 +197,7 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
           className='h-8 w-8 shrink-0 rounded-sm'
         />
         <div className='min-w-0 flex-1'>
-          <div className='flex min-w-0 items-center gap-1.5'>
-            <p className='text-md truncate font-semibold'>{beautifyName(sale.name)}</p>
-            {showVersionBadge && <NameVersionBadge version={sale.version} />}
-          </div>
+          <p className='text-md truncate font-semibold'>{beautifyName(sale.name)}</p>
           {category && categoryDetails && (
             <div className='text-md text-foreground/60 flex items-center gap-1 overflow-hidden font-semibold text-nowrap'>
               <Image
@@ -260,10 +247,9 @@ interface RegistrationRowProps {
   registration: AnalyticsRegistration
   index: number
   className?: string
-  showVersionBadge?: boolean
 }
 
-export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, index, className, showVersionBadge }) => {
+export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, index, className }) => {
   const { categories } = useCategories()
   const category =
     registration.clubs && registration.clubs.length > 0
@@ -291,10 +277,7 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
           className='h-8 w-8 shrink-0 rounded-sm'
         />
         <div className='min-w-0 flex-1'>
-          <div className='flex min-w-0 items-center gap-1.5'>
-            <p className='text-md truncate font-semibold'>{beautifyName(registration.name)}</p>
-            {showVersionBadge && <NameVersionBadge version={registration.version} />}
-          </div>
+          <p className='text-md truncate font-semibold'>{beautifyName(registration.name)}</p>
           {category && categoryDetails && (
             <div className='text-md text-foreground/60 flex items-center gap-1 overflow-hidden font-semibold text-nowrap'>
               <Image

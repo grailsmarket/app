@@ -1,6 +1,5 @@
 'use client'
 
-import useCartDomains from '@/hooks/useCartDomains'
 import { cn } from '@/utils/tailwind'
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
@@ -16,7 +15,6 @@ interface ActionButtonsProps {
 const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
   const { filterType, categoryTab } = useFilterContext()
   const { selectedTab: marketplaceTab } = useAppSelector(selectMarketplace)
-  const { cartIsEmpty } = useCartDomains()
   const [showScrollTop, setShowScrollTop] = useState(false)
 
   useEffect(() => {
@@ -43,9 +41,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
         className={cn(
           'bg-secondary hover:bg-tertiary border-tertiary fixed right-[calc(var(--chat-sidebar-width,0)+0.5rem)] z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0)+1rem)] @[80rem]/app:right-[calc(var(--chat-sidebar-width,0)+1.25rem)]',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
-          isActionBarVisible
-            ? 'bottom-16 @[48rem]/app:bottom-18'
-            : 'bottom-4 @[48rem]/app:bottom-5',
+          isActionBarVisible ? 'bottom-16 @[48rem]/app:bottom-18' : 'bottom-4 @[48rem]/app:bottom-5'
         )}
         aria-label='Scroll to top'
       >

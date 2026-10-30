@@ -10,7 +10,6 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import Image from 'next/image'
 import ArrowDown from 'public/icons/arrow-down.svg'
-import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 
 const ActionButtons = () => {
   const { cartIsEmpty, clearCart } = useCartDomains()
@@ -45,7 +44,7 @@ const ActionButtons = () => {
         className={cn(
           'bg-secondary hover:bg-tertiary border-tertiary fixed right-[calc(var(--chat-sidebar-width,0)+0.5rem)] z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0)+1rem)]',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
-          isActionBarVisible ? 'bottom-16 @[48rem]/app:bottom-18' : 'bottom-4 @[48rem]/app:bottom-5'
+          isActionBarVisible ? 'bottom-14 @[48rem]/app:bottom-18' : 'bottom-4 @[48rem]/app:bottom-5'
         )}
         aria-label='Scroll to top'
       >

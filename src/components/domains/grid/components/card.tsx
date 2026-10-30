@@ -4,10 +4,17 @@ import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import Tooltip from '@/components/ui/tooltip'
 import { MarketplaceDomainType } from '@/types/domains'
-import { REGISTERED, GRACE_PERIOD, PREMIUM, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import {
+  REGISTERED,
+  GRACE_PERIOD,
+  PREMIUM,
+  UNREGISTERED,
+  REGISTERABLE_STATUSES,
+} from '@/constants/domains/registrationStatuses'
 import { cn } from '@/utils/tailwind'
 import Actions from './actions'
 import NameImage from '@/components/ui/nameImage'
+import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import Price from '@/components/ui/price'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { useFilterContext } from '@/context/filters'
@@ -237,24 +244,27 @@ const Card: React.FC<CardProps> = ({
             className='h-full w-full rounded-t-sm rounded-b-none object-cover'
           />
         )}
-        {domain.compromised && (
-          <div className='absolute top-0 left-0 z-10 flex flex-row items-center rounded-tl-[3px] rounded-br-sm bg-red-900/80 px-1.5 py-0.5'>
-            <Tooltip position='bottom' label='Reported stolen — only the original owner can trade it' align='left'>
-              <p className='text-xs font-bold text-red-300'>🚨 Stolen</p>
-            </Tooltip>
-          </div>
-        )}
-        {domainIsValid ? null : (
-          <div className='bg-secondary absolute top-0 right-0 z-10 flex flex-row items-center gap-0 rounded-tr-[3px] rounded-bl-sm'>
-            <Tooltip
-              position='bottom'
-              label='Name contains invalid character(s)'
-              align={isFirstInRow ? 'left' : 'right'}
-            >
-              <p className='pl-1.5'>⚠️</p>
-            </Tooltip>
-          </div>
-        )}
+        <div className='absolute inset-x-2 top-2 z-10 flex flex-row-reverse flex-wrap items-start gap-1.5'>
+          <NameVersionBadge version={domain.version} align={isFirstInRow ? 'left' : 'right'} />
+          {!domainIsValid && (
+            <div className='bg-secondary pointer-events-auto shrink-0 rounded-sm px-1.5'>
+              <Tooltip
+                position='bottom'
+                label='Name contains invalid character(s)'
+                align={isFirstInRow ? 'left' : 'right'}
+              >
+                <p>⚠️</p>
+              </Tooltip>
+            </div>
+          )}
+          {domain.compromised && (
+            <div className='pointer-events-auto mr-auto shrink-0 rounded-sm bg-red-900/80 px-1.5 py-0.5'>
+              <Tooltip position='bottom' label='Reported stolen — only the original owner can trade it' align='left'>
+                <p className='text-xs font-bold text-red-300'>🚨 Stolen</p>
+              </Tooltip>
+            </div>
+          )}
+        </div>
       </div>
       <div className='flex justify-between'>
         <Actions
@@ -393,6 +403,7 @@ const Card: React.FC<CardProps> = ({
         </div>
         <div className='flex flex-col'>
           {domain.owner &&
+            !REGISTERABLE_STATUSES.includes(registrationStatus) &&
             (filterType !== 'profile' || profileTab.value === 'watchlist' || profileTab.value === 'broker') && (
               <User
                 address={domain.owner as Address}

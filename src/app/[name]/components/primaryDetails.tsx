@@ -19,6 +19,7 @@ import {
 } from '@/constants/domains/registrationStatuses'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
+import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
@@ -164,7 +165,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
 
   return (
     <div className='bg-secondary border-tertiary flex flex-col @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
-      <div className='bg-tertiary h-fit w-full'>
+      <div className='bg-tertiary relative h-fit w-full'>
         {nameDetails?.token_id && (
           <NameImage
             name={nameDetails.name}
@@ -177,6 +178,9 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           />
         )}
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
+        <div className='absolute top-2 right-2 z-10'>
+          <NameVersionBadge version={nameDetails?.version} align='right' />
+        </div>
       </div>
 
       <div className='p-lg flex flex-col items-center gap-3 @[64rem]/app:pt-5'>

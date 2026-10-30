@@ -7,6 +7,7 @@ import { cn } from '@/utils/tailwind'
 import React from 'react'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
+import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import Image from 'next/image'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { useResponsiveSize } from '@/hooks/useResponsiveSize'
@@ -36,10 +37,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['domain'].getWidth(columnCount))}>
       <div className='flex h-[54px] w-full max-w-full flex-row items-center'>
-        <div
-          className='flex flex-row items-center justify-start gap-2 truncate'
-          style={{ maxWidth: domainIsValid ? 'calc(100% - 8px)' : 'calc(100% - 12px)' }}
-        >
+        <div className='flex min-w-0 flex-row items-center justify-start gap-2 pr-2'>
           <NameImage
             name={domain.name}
             version={domain.version}
@@ -48,15 +46,36 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             registrationStatus={domain.registration_status}
             className='pointer-events-none aspect-square h-[42px] min-h-[42px] w-[42px] min-w-[42px] rounded-sm'
           />
-          <div className='flex max-w-full flex-col gap-px truncate'>
-            <p
-              className={cn(
-                'text-md max-w-full truncate leading-[18px] font-bold',
-                registrationStatus === GRACE_PERIOD ? 'text-grace' : 'text-foreground'
+          <div className='flex min-w-0 flex-col gap-px'>
+            <div className='flex min-w-0 items-center gap-1.5'>
+              <p
+                className={cn(
+                  'text-md truncate leading-[18px] font-bold',
+                  registrationStatus === GRACE_PERIOD ? 'text-grace' : 'text-foreground'
+                )}
+              >
+                {beautifyName(domain.name)}
+              </p>
+              <NameVersionBadge version={domain.version} />
+              {domain.compromised && (
+                <div className='pointer-events-auto shrink-0'>
+                  <Tooltip
+                    position='right'
+                    label='Reported stolen — only the original owner can trade it'
+                    align='center'
+                  >
+                    <p className='text-xs'>🚨</p>
+                  </Tooltip>
+                </div>
               )}
-            >
-              {beautifyName(domain.name)}
-            </p>
+              {!domainIsValid && (
+                <div className='pointer-events-auto shrink-0'>
+                  <Tooltip position='right' label='Name contains invalid character(s)' align='center'>
+                    <p className='text-xs'>⚠️</p>
+                  </Tooltip>
+                </div>
+              )}
+            </div>
             <div className='text-md text-neutral flex w-fit max-w-full flex-row items-center gap-1 truncate font-semibold @[40rem]/app:gap-1.5'>
               {displayedCategories?.map((club, index) => {
                 const isRankClub = club.includes('prepunk') || club.includes('short_name_auction')
@@ -81,20 +100,6 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             </div>
           </div>
         </div>
-        {domain.compromised && (
-          <div>
-            <Tooltip position='right' label='Reported stolen — only the original owner can trade it' align='center'>
-              <p className='pl-2 text-xs'>🚨</p>
-            </Tooltip>
-          </div>
-        )}
-        {!domainIsValid && (
-          <div>
-            <Tooltip position='right' label='Name contains invalid character(s)' align='center'>
-              <p className='pl-2 text-xs'>⚠️</p>
-            </Tooltip>
-          </div>
-        )}
       </div>
     </div>
   )

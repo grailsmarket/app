@@ -83,6 +83,9 @@ export interface AnalyticsRegistration {
   base_cost_wei: string
   premium_wei: string
   total_cost_wei: string
+  // null means ETH (v1 controllers); ENSv2 registrations are paid in USDC/DAI
+  currency_address: string | null
+  total_cost_usd: string | null
   name_length: number
   registration_date: string
   clubs: string[] | null

@@ -2,7 +2,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { hexToBigInt, namehash, type Address } from 'viem'
 import { DomainListingType, MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
-import LoadingCell from '@/components/ui/loadingCell'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
 import { REGISTERED, UNKNOWN, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { TOKENS } from '@/constants/web3/tokens'
@@ -316,7 +315,7 @@ const ServerOffersSkeleton = () => (
     <div className='flex w-full items-center justify-between'>
       <h2 className='font-sedan-sc text-3xl'>Offers</h2>
     </div>
-    <LoadingCell height='60px' width='100%' />
+    <div role='status' aria-label='Loading offers' className='bg-tertiary h-[60px] w-full animate-pulse rounded' />
   </section>
 )
 

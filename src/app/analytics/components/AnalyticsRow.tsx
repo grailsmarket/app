@@ -298,7 +298,8 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
       <div className='flex w-[20%] flex-1 items-center'>
         <Price
           price={registration.total_cost_wei}
-          currencyAddress={ETH_ADDRESS}
+          currencyAddress={(registration.currency_address ?? ETH_ADDRESS) as Address}
+          usdPrice={registration.total_cost_usd ? Number(registration.total_cost_usd) : undefined}
           fontSize='text-md font-medium'
           iconSize='16px'
         />

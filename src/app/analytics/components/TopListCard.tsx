@@ -29,7 +29,7 @@ interface TopListCardProps {
 const LoadingSkeleton = () => (
   <div className='flex flex-col'>
     {Array.from({ length: 10 }).map((_, i) => (
-      <div key={i} className='border-tertiary flex h-[52px] items-center gap-3 border-b px-3'>
+      <div key={i} className='border-tertiary flex h-13 items-center gap-3 border-b px-3'>
         <LoadingCell width='24px' height='24px' radius='4px' />
         <LoadingCell width='32px' height='32px' radius='4px' />
         <LoadingCell width='100px' height='20px' />
@@ -42,7 +42,7 @@ const LoadingSkeleton = () => (
 )
 
 const EmptyState = ({ title }: { title: string }) => (
-  <div className='flex h-[200px] items-center justify-center'>
+  <div className='flex h-50 items-center justify-center'>
     <p className='text-neutral'>No {title.toLowerCase()} found</p>
   </div>
 )

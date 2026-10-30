@@ -32,10 +32,10 @@ const Name: React.FC<NameProps> = ({ name, version, tokenId, clubs }) => {
           tokenId={tokenId}
           expiryDate={null}
           forceRegStatus={REGISTERED}
-          className='h-8 w-8 rounded-sm'
+          className='h-8 w-8 shrink-0 rounded-sm'
         />
-        <div className='flex max-w-[calc(100%-40px)] flex-col'>
-          <p className='text-md w-full max-w-full truncate leading-[18px] font-bold'>{beautifyName(name)}</p>
+        <div className='flex max-w-[calc(100%-40px)] min-w-0 flex-col'>
+          <p className='text-md truncate leading-[18px] font-bold'>{beautifyName(name)}</p>
           {category && categoryDetails && (
             <div className='flex max-w-full flex-row items-center gap-1 truncate'>
               <div className='flex max-w-fit min-w-fit items-center gap-1'>

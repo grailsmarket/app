@@ -9,6 +9,7 @@ import { useAppDispatch } from '@/state/hooks'
 import Link from 'next/link'
 import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import NameImage from '@/components/ui/nameImage'
+import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import NoResults from '@/components/ui/noResults'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import NameLoadingRow from './components/loading-rows/nameLoadingRow'
@@ -48,12 +49,15 @@ const DomainSearchResult: React.FC<DomainSearchResultProps> = ({ domain, categor
           tokenId={domain.token_id}
           expiryDate={domain.expiry_date}
           registrationStatus={domain.registration_status}
-          className='h-9 w-9 rounded-sm sm:h-[34px] sm:w-[34px]'
+          className='h-9 w-9 shrink-0 rounded-sm sm:h-[34px] sm:w-[34px]'
         />
-        <div className='flex flex-col gap-px truncate' style={{ maxWidth: 'calc(100% - 60px)' }}>
-          <div className='text-foreground truncate font-semibold'>{beautifyName(domain.name)}</div>
+        <div className='flex min-w-0 flex-col gap-px' style={{ maxWidth: 'calc(100% - 60px)' }}>
+          <div className='flex min-w-0 items-center gap-1.5'>
+            <div className='text-foreground truncate font-semibold'>{beautifyName(domain.name)}</div>
+            <NameVersionBadge version={domain.version} />
+          </div>
           {domain.clubs && domain.clubs.length > 0 && (
-            <div className='text-md text-foreground/60 font-semibold'>
+            <div className='text-md text-foreground/60 truncate font-semibold'>
               {domain.clubs.map((club) => categories?.find((c) => c.name === club)?.display_name).join(', ')}
             </div>
           )}

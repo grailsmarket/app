@@ -17,6 +17,7 @@ import Sold from 'public/icons/sold.svg'
 import PriceChange from 'public/icons/transfer.svg'
 import Bell from 'public/icons/bell.svg'
 import NameImage from '@/components/ui/nameImage'
+import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import { beautifyName } from '@/lib/ens'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import ArrowRight from 'public/icons/arrow-back.svg'
@@ -230,7 +231,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
         </div>
       </div>
 
-      <div className='flex w-2/5 items-center gap-1.5 sm:gap-2'>
+      <div className='flex w-2/5 min-w-0 items-center gap-1.5 sm:gap-2'>
         <NameImage
           name={notification.ensName ?? ''}
           version={notification.version}
@@ -238,10 +239,12 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
           expiryDate={new Date().toISOString()}
           height={32}
           width={32}
+          className='shrink-0'
         />
-        <span className='text-foreground text-lg font-semibold sm:text-xl'>
+        <span className='text-foreground truncate text-lg font-semibold sm:text-xl'>
           {beautifyName(notification.ensName ?? '')}
         </span>
+        <NameVersionBadge version={notification.version} />
       </div>
 
       <div className='flex w-1/5 justify-end'>{getContextualData()}</div>

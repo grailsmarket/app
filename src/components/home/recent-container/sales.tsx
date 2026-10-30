@@ -29,16 +29,13 @@ const Sales = () => {
       <div className='border-tertiary bg-secondary flex flex-col gap-0 rounded-md border-2 border-t'>
         {isLoading
           ? new Array(7).fill(null).map((_, index) => (
-              <div
-                key={index}
-                className='@[48rem]/app:px-md border-tertiary flex h-[60px] w-full items-center border-b'
-              >
+              <div key={index} className='@[48rem]/app:px-md border-tertiary flex h-15 w-full items-center border-b'>
                 <TableLoadingRow displayedColumns={['domain', 'last_sale', 'actions']} />
               </div>
             ))
           : sales?.data?.results?.slice(0, 7).map((sale, index) => (
               <div key={sale.id} className='w-full'>
-                <SaleRow sale={sale} index={index} hideSeller={true} className='h-[60px] w-full' />
+                <SaleRow sale={sale} index={index} hideSeller={true} className='h-15 w-full' />
               </div>
             ))}
       </div>

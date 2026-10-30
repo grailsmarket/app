@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import Link from 'next/link'
 import { hexToBigInt, namehash, numberToHex, type Address } from 'viem'
 import { MetadataType, RolesType } from '@/types/api'
@@ -170,7 +171,7 @@ const ServerPrimaryDetails = ({
   isSubname: boolean
 }) => (
   <div className='bg-secondary border-tertiary flex flex-col @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
-    <div className='bg-tertiary h-fit w-full'>
+    <div className='bg-tertiary relative h-fit w-full'>
       <Image
         src={getNameImageUrl(name, nameDetails?.expiry_date, nameDetails?.version ?? 1, registrationStatus)}
         alt={`${name} preview`}
@@ -179,6 +180,9 @@ const ServerPrimaryDetails = ({
         className='bg-tertiary mx-auto aspect-square w-full max-w-lg object-cover'
         priority
       />
+      <div className='absolute top-2 right-2 z-10'>
+        <NameVersionBadge version={nameDetails?.version} align='right' />
+      </div>
     </div>
     <div className='p-lg flex flex-col items-center gap-3 @[64rem]/app:pt-5'>
       <div className='flex w-full flex-row items-center justify-between gap-2'>

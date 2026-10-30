@@ -27,6 +27,7 @@ interface Props {
   roles?: RolesType | null
   isRolesLoading: boolean
   openEditMetadataModal: () => void
+  isRecordEditorReady: boolean
 }
 
 const NamePageTabContent: React.FC<Props> = ({
@@ -43,6 +44,7 @@ const NamePageTabContent: React.FC<Props> = ({
   roles,
   isRolesLoading,
   openEditMetadataModal,
+  isRecordEditorReady,
 }) => {
   switch (selectedTab) {
     case 'market':
@@ -73,6 +75,7 @@ const NamePageTabContent: React.FC<Props> = ({
             metadata={metadata}
             isMetadataLoading={isMetadataLoading}
             openEditMetadataModal={openEditMetadataModal}
+            isRecordEditorReady={isRecordEditorReady}
           />
           <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           <Roles
@@ -83,6 +86,7 @@ const NamePageTabContent: React.FC<Props> = ({
             metadata={metadata}
             roles={roles}
             isRolesLoading={isRolesLoading}
+            isRecordEditorReady={isRecordEditorReady}
           />
         </>
       )

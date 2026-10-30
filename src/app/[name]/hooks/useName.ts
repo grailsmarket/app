@@ -60,7 +60,11 @@ export const useName = (name: string) => {
   })
 
   const dispatch = useAppDispatch()
+  // V1 editing snapshots these records, including when returning from the migration review.
+  const isRecordEditorReady = nameDetails?.version === 2 || metadata !== undefined
   const openRecordEditor = (startWithMigration = false) => {
+    if (!isRecordEditorReady) return
+
     const metadataRecord = (metadata ?? []).reduce(
       (acc, row) => {
         acc[row.label] = row.value
@@ -89,5 +93,6 @@ export const useName = (name: string) => {
     isRolesLoading,
     openEditMetadataModal,
     openMigrationModal,
+    isRecordEditorReady,
   }
 }

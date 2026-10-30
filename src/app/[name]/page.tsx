@@ -9,7 +9,6 @@ import ServerPanels from './components/serverPanels'
 import { beautifyName } from '@/lib/ens'
 import { notFound } from 'next/navigation'
 import { fetchNameDetails } from '@/api/name/details'
-import { headers } from 'next/headers'
 
 interface Props {
   params: Promise<{ name: string }>
@@ -71,8 +70,6 @@ const Name = async (props: Props) => {
   const { name } = await props.params
   const decodedName = decodeURIComponent(name)
   const normalizedName = beautifyName(decodedName)
-  const requestHeaders = await headers()
-  const isInAppNavigation = requestHeaders.get('rsc') === '1'
 
   if (!normalizedName.includes('.eth')) {
     return notFound()
@@ -84,11 +81,9 @@ const Name = async (props: Props) => {
 
   return (
     <main className='min-h-[calc(100dvh-56px)] w-full pb-4 md:min-h-[calc(100dvh-78px)] @[40rem]/app:px-4'>
-      {!isInAppNavigation && (
-        <HideOnClient>
-          <ServerPanels name={normalizedName} nameDetails={nameDetails} />
-        </HideOnClient>
-      )}
+      <HideOnClient>
+        <ServerPanels name={normalizedName} nameDetails={nameDetails} />
+      </HideOnClient>
       <ClientOnly>
         <HydrationBoundary state={dehydrate(queryClient)}>
           <NamePage name={normalizedName} />

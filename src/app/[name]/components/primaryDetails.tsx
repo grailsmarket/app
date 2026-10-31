@@ -98,6 +98,11 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
     queryFn: () => checkIfWrapped(name),
   })
 
+  // v2 names are ERC1155 tokens on the ETHRegistry; v1 names live on the BaseRegistrar or NameWrapper
+  const tokenContract = (
+    nameDetails?.version === 2 ? config.ensV2Registry : isWrapped ? config.ensNameWrapper : config.ensRegistrar
+  ).toLowerCase()
+
   const { data: ownerAccount } = useQuery({
     queryKey: accountQueryKey(nameDetails?.owner),
     queryFn: () => fetchAccount(nameDetails?.owner as `0x${string}`),
@@ -385,7 +390,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
-                `https://opensea.io/item/ethereum/${isWrapped ? config.ensNameWrapper.toLowerCase() : config.ensRegistrar.toLowerCase()}/${nameDetails?.token_id}`,
+                `https://opensea.io/item/ethereum/${tokenContract}/${nameDetails?.token_id}`,
                 '_blank'
               )
             }}
@@ -416,7 +421,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
-                `${activeChain.blockExplorers.default.url}/token/${isWrapped ? config.ensNameWrapper.toLowerCase() : config.ensRegistrar.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
+                `${activeChain.blockExplorers.default.url}/token/${tokenContract}?a=${nameDetails?.token_id as `0x${string}`}`,
                 '_blank'
               )
             }}

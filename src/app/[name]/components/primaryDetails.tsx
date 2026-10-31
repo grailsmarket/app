@@ -389,10 +389,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           <button
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
-              window.open(
-                `https://opensea.io/item/ethereum/${tokenContract}/${nameDetails?.token_id}`,
-                '_blank'
-              )
+              window.open(`https://opensea.io/item/ethereum/${tokenContract}/${nameDetails?.token_id}`, '_blank')
             }}
           >
             <Image

@@ -17,7 +17,10 @@ const BATCH_SIZE = 100
 
 const useTransferDomains = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: transports[activeChain.id] }), [])
+  const publicClient = useMemo(
+    () => createPublicClient({ chain: activeChain, transport: transports[activeChain.id] }),
+    []
+  )
 
   const prepareBatches = async (domains: TransferDomainType[], sender: Address): Promise<TransferBatch[]> => {
     const uniqueDomains = new Map<string, TransferDomainType>()

@@ -8,7 +8,10 @@ import { config } from '@/lib/config'
 import type { RegistrationPricing } from '@/utils/registrationPricing'
 
 export const useRentPriceOracle = () => {
-  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: transports[activeChain.id] }), [])
+  const publicClient = useMemo(
+    () => createPublicClient({ chain: activeChain, transport: transports[activeChain.id] }),
+    []
+  )
 
   return useCallback(
     async (asset: Address): Promise<RegistrationPricing> => {

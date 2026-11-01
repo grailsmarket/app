@@ -23,7 +23,10 @@ import {
 
 const useExtendDomains = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: transports[activeChain.id] }), [])
+  const publicClient = useMemo(
+    () => createPublicClient({ chain: activeChain, transport: transports[activeChain.id] }),
+    []
+  )
 
   const getRenewalQuote = useCallback(
     async (batch: RenewalBatch, asset: Address) => {

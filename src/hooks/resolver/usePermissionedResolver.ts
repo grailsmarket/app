@@ -6,11 +6,11 @@ import {
   encodeAbiParameters,
   encodeFunctionData,
   getCreate2Address,
-  http,
   keccak256,
   parseEventLogs,
   stringToHex,
 } from 'viem'
+import { transports } from '@/lib/wagmi'
 import { useAccount } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
@@ -23,7 +23,7 @@ import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 
-const publicClient = createPublicClient({ chain: activeChain, transport: http() })
+const publicClient = createPublicClient({ chain: activeChain, transport: transports[activeChain.id] })
 
 interface PredictProxyAddressProps {
   factoryAddress: Address

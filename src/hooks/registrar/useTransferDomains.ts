@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { Address, createPublicClient, erc721Abi, http, labelhash, namehash, zeroAddress } from 'viem'
+import { Address, createPublicClient, erc721Abi, labelhash, namehash, zeroAddress } from 'viem'
+import { transports } from '@/lib/wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { BULK_TRANSFER_ABI } from '@/constants/web3/abi/BulkTransfer'
 import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
@@ -16,7 +17,7 @@ const BATCH_SIZE = 100
 
 const useTransferDomains = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: http() }), [])
+  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: transports[activeChain.id] }), [])
 
   const prepareBatches = async (domains: TransferDomainType[], sender: Address): Promise<TransferBatch[]> => {
     const uniqueDomains = new Map<string, TransferDomainType>()

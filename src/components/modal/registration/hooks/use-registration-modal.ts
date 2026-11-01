@@ -35,7 +35,8 @@ import { YEAR_IN_SECONDS } from '@/constants/time'
 import { normalizeName } from '@/lib/ens'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Address, createPublicClient, formatEther, formatUnits, Hex, http, isAddress, zeroAddress } from 'viem'
+import { Address, createPublicClient, formatEther, formatUnits, Hex, isAddress, zeroAddress } from 'viem'
+import { transports } from '@/lib/wagmi'
 import { fetchAccount, useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -62,7 +63,7 @@ const useRegistrationModal = () => {
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
   const { address } = useAccount()
   const { data: gasPrice } = useGasPrice({ chainId: activeChain.id })
-  const publicClient = createPublicClient({ chain: activeChain, transport: http() })
+  const publicClient = createPublicClient({ chain: activeChain, transport: transports[activeChain.id] })
 
   const queryClient = useQueryClient()
   const {

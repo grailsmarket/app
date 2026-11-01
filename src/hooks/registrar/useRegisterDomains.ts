@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
-import { Address, createPublicClient, erc20Abi, Hex, http, maxUint256, toHex, zeroAddress } from 'viem'
+import { Address, createPublicClient, erc20Abi, Hex, maxUint256, toHex, zeroAddress } from 'viem'
+import { transports } from '@/lib/wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { BULK_REGISTRAR_ABI } from '@/constants/web3/abi/BulkRegistrar'
 import { ensureChain } from '@/utils/web3/ensureChain'
@@ -21,7 +22,7 @@ import {
 const useRegisterDomains = () => {
   const getWalletClient = useGetWalletClient()
   const getRegistrationPricing = useRentPriceOracle()
-  const publicClient = createPublicClient({ chain: activeChain, transport: http() })
+  const publicClient = createPublicClient({ chain: activeChain, transport: transports[activeChain.id] })
   const [isApproving, setIsApproving] = useState(false)
   const [approvalTxHash, setApprovalTxHash] = useState<Hex | null>(null)
 

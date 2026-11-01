@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import { Address, createPublicClient, erc20Abi, Hex, http, labelhash, pad, zeroAddress } from 'viem'
+import { Address, createPublicClient, erc20Abi, Hex, labelhash, pad, zeroAddress } from 'viem'
+import { transports } from '@/lib/wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { RENEWER_V1_ABI } from '@/constants/web3/abi/ensRenewerV1'
 import { BaseRegistrarAbi } from '@/constants/web3/abi/BaseRegistrar'
@@ -22,7 +23,7 @@ import {
 
 const useExtendDomains = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: http() }), [])
+  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: transports[activeChain.id] }), [])
 
   const getRenewalQuote = useCallback(
     async (batch: RenewalBatch, asset: Address) => {

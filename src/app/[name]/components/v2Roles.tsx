@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ShortArrow } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { useV2Roles } from '@/hooks/records/useV2Roles'
+import { adminRole, hasRole, roleDefinitions } from '@/utils/records/v2Roles'
 import RolesPanel from '@/components/modal/records/v2/rolesPanel'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { useAppDispatch } from '@/state/hooks'
@@ -18,6 +19,24 @@ const V2Roles = ({ name }: { name: string }) => {
   const [open, setOpen] = useState(false)
   const data = useV2Roles(name, open)
   const dispatch = useAppDispatch()
+  const viewer = data.address?.toLowerCase()
+  const canManagePermissions =
+    !!viewer &&
+    data.binding.isSuccess &&
+    [data.nameRoles, data.resolverRoles].some(({ snapshot, assignments }) => {
+      if (!snapshot.isSuccess) return false
+      if (snapshot.data.kind === 'name') {
+        if (!data.binding.data?.registered) return false
+        if (snapshot.data.owner?.toLowerCase() === viewer) return true
+      }
+
+      // Include scoped resolver admins as well as effective name and resolver-wide permissions.
+      const viewerRoles = assignments
+        .filter((assignment) => assignment.account.toLowerCase() === viewer)
+        .reduce((bitmap, assignment) => bitmap | assignment.bitmap, snapshot.data.viewerRoles)
+
+      return roleDefinitions(snapshot.data.kind).some((role) => hasRole(viewerRoles, adminRole(role.bit)))
+    })
 
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
@@ -36,7 +55,7 @@ const V2Roles = ({ name }: { name: string }) => {
       {open && (
         <>
           <RolesPanel data={data} />
-          {data.address && (
+          {canManagePermissions && (
             <SecondaryButton
               className='w-full'
               onClick={() => {

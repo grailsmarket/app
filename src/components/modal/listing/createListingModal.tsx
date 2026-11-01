@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import DatePicker from '@/components/ui/datepicker'
@@ -62,9 +62,11 @@ import {
   getBusyHint,
 } from './seaport-views'
 import { getListingBusyScreen, getListingSuccess, getOldListingsNotCancelled } from './listing-screens'
+import { useListingRoleRemoval } from '@/hooks/useListingRoleRemoval'
 
 export type ListingStatus =
   | 'review'
+  | 'removing_roles'
   | 'checking_approval'
   | 'approving'
   | 'submitting'
@@ -99,6 +101,8 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   // Set when the new listings went through and only cancelling the old ones failed
   const [failedStep, setFailedStep] = useState<'cancel' | null>(null)
   const [status, setStatus] = useState<ListingStatus>('review')
+  const roleRemoval = useListingRoleRemoval(domains, status === 'review')
+  const submitting = useRef(false)
   const [approveTxHash, setApproveTxHash] = useState<string | null>(null)
   // What the Seaport client reported: per-marketplace approvals and signatures, then the API save
   const [run, setRun] = useState<SeaportRun>(EMPTY_RUN)
@@ -208,8 +212,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     setStatus('error')
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const submitListing = async () => {
     setStatus('checking_approval')
     setError(null)
     setErrorDetails(null)
@@ -260,7 +263,14 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     let result: Awaited<ReturnType<typeof createListing>>
 
     try {
-      const params: any = {
+      if (roleRemoval.hasV2Names) {
+        if (selectedMarketplace.includes('opensea')) throw new Error('ENSv2 names can only be listed on Grails for now')
+        setStatus('removing_roles')
+        await roleRemoval.remove()
+        setStatus('checking_approval')
+      }
+
+      const params: Parameters<typeof createListing>[0] = {
         domains,
         prices: prices.map((price) => price.toString()),
         expiryDate,
@@ -316,6 +326,17 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     setStatus('success')
     queryClient.refetchQueries({ queryKey: ['profile', 'listings'] })
     queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
+  }
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (submitting.current || !roleRemoval.ready) return
+    submitting.current = true
+    try {
+      await submitListing()
+    } finally {
+      submitting.current = false
+    }
   }
 
   // Calculate fees to show user
@@ -837,11 +858,52 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
           </div>
         </div>
       ) : null}
+      {roleRemoval.hasV2Names &&
+        userAddress &&
+        (!roleRemoval.query.isSuccess || roleRemoval.query.isFetching || roleRemoval.removals.length > 0) && (
+          <div className='border-tertiary bg-secondary flex flex-col gap-3 rounded-md border p-4'>
+            {roleRemoval.query.isFetching || roleRemoval.query.isPending ? (
+              <p role='status' className='text-neutral text-md'>
+                Checking for blocking roles…
+              </p>
+            ) : roleRemoval.query.isError ? (
+              <>
+                <p role='alert' className='text-md'>
+                  {getErrorParts(roleRemoval.query.error, 'Could not check blocking roles.').message}
+                </p>
+                <SecondaryButton onClick={() => void roleRemoval.query.refetch()}>Check again</SecondaryButton>
+              </>
+            ) : roleRemoval.removals.length > 0 ? (
+              <>
+                <p id='listing-blocking-roles-description' className='text-neutral text-md break-words'>
+                  Other addresses have roles that block transfers of{' '}
+                  {Array.from(new Set(roleRemoval.removals.map((removal) => beautifyName(removal.name)))).join(', ')}.
+                  These roles must be removed before listing. Each removal requires an onchain transaction and stays in
+                  effect if listing is cancelled or fails.
+                </p>
+                <label className='text-md flex cursor-pointer items-center gap-2'>
+                  <input
+                    type='checkbox'
+                    aria-describedby='listing-blocking-roles-description'
+                    className='accent-primary h-4 w-4 shrink-0 cursor-pointer'
+                    checked={roleRemoval.acknowledged}
+                    onChange={(event) => roleRemoval.setAcknowledged(event.target.checked)}
+                  />
+                  <span>Remove blocking roles and list</span>
+                </label>
+              </>
+            ) : null}
+          </div>
+        )}
     </div>
   )
 
   const isBusy =
-    status === 'checking_approval' || status === 'approving' || status === 'submitting' || status === 'cancelling'
+    status === 'removing_roles' ||
+    status === 'checking_approval' ||
+    status === 'approving' ||
+    status === 'submitting' ||
+    status === 'cancelling'
   const isEditing = previousListings.length > 0
   const showPoapClaim = status === 'success' && config.canClaimPoap && !poapClaimed
   const isDatePickerOpen = status === 'review' && expiryDate === 0 && showDatePicker
@@ -894,6 +956,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         oldListingCount,
         oldOpenSeaCount,
         approveTxHash,
+        roleRemoval: roleRemoval.progress,
       })
     : null
 
@@ -932,7 +995,21 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
           )
         }
 
-        return <ErrorView title='Transaction Failed' error={error} details={errorDetails} />
+        return (
+          <ErrorView
+            title='Transaction Failed'
+            error={error}
+            details={errorDetails}
+            warning={
+              roleRemoval.progress?.hashes.length
+                ? {
+                    title: 'Some blocking roles were removed.',
+                    body: 'Confirmed removals remain in effect. Retrying only removes roles that are still present.',
+                  }
+                : undefined
+            }
+          />
+        )
     }
   }
 
@@ -944,6 +1021,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             <PrimaryButton
               disabled={
                 isLoading ||
+                !roleRemoval.ready ||
                 !prices.every((price) => Number(price) > 0) ||
                 selectedMarketplace.length === 0 ||
                 expiryDate < currentTimestamp ||

@@ -1,6 +1,7 @@
 import type { TxStep } from '@/components/ui/modal/txSteps'
 import type { NameChip } from '@/components/ui/modal/nameChips'
 import type { MarketplaceType } from '@/lib/seaport/seaportClient'
+import type { ListingRoleProgress } from '@/lib/seaport/listingRoles'
 import type { ListingStatus } from './createListingModal'
 import {
   MARKETPLACE_NAMES,
@@ -37,6 +38,7 @@ export interface ListingRunInput {
   oldOpenSeaCount: number
   /** Fallback for a run that reported nothing yet. */
   approveTxHash: string | null
+  roleRemoval?: ListingRoleProgress | null
 }
 
 const getApprovalStep = (marketplace: MarketplaceType, progress: MarketplaceProgress, label: string): TxStep => {
@@ -70,10 +72,25 @@ export const getListingSteps = ({
   marketplaces,
   names,
   oldListingCount,
+  roleRemoval,
 }: ListingRunInput): TxStep[] => {
   const isMulti = marketplaces.length > 1
   const listingWord = plural(names.length, 'Listing', 'Listings')
   const steps: TxStep[] = []
+
+  if (roleRemoval && roleRemoval.total > 0) {
+    steps.push({
+      key: 'remove-roles',
+      label: 'Remove Blocking Roles',
+      status: roleRemoval.phase === 'done' ? 'done' : 'active',
+      batch:
+        roleRemoval.total > 1 && roleRemoval.phase !== 'done'
+          ? `${Math.min(roleRemoval.completed + 1, roleRemoval.total)} / ${roleRemoval.total}`
+          : undefined,
+      hash: roleRemoval.hash,
+      links: roleRemoval.hashes.map((hash) => ({ key: hash, hash })),
+    })
+  }
 
   marketplaces.forEach((marketplace) => {
     const progress = getMarketProgress(run, marketplace)
@@ -113,11 +130,32 @@ const getListingStatus = ({
   oldListingCount,
   oldOpenSeaCount,
   approveTxHash,
+  roleRemoval,
 }: ListingRunInput): BusyScreen['status'] => {
   const isMulti = marketplaces.length > 1
   const isMany = names.length > 1
   const listingWord = isMany ? 'Listings' : 'Listing'
   const selectedLabel = marketplaceLabel(marketplaces)
+
+  if (status === 'removing_roles') {
+    if (roleRemoval?.phase === 'wallet')
+      return {
+        state: 'wallet',
+        title: 'Remove Blocking Roles',
+        message: 'Confirm the role removal transaction in your wallet',
+      }
+    if (roleRemoval?.phase === 'pending')
+      return {
+        state: 'pending',
+        title: 'Removing Blocking Roles',
+        message: 'Waiting for onchain confirmation before listing',
+      }
+    return {
+      state: 'checking',
+      title: 'Checking Name Permissions',
+      message: 'Checking ownership and blocking roles before listing',
+    }
+  }
 
   if (status === 'cancelling') {
     const oldWord = plural(oldListingCount, 'Cancel Old Listing', 'Cancel Old Listings')

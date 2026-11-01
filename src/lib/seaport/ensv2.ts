@@ -19,7 +19,9 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export const isEnsV2Name = (domain: { version?: number | null }) => domain.version === 2
 
-export type EnsV2TransferCheck = { ok: true; tokenId: bigint } | { ok: false; tokenId: bigint; message: string }
+export type EnsV2TransferCheck =
+  | { ok: true; tokenId: bigint }
+  | { ok: false; tokenId: bigint; reason: 'unavailable' | 'blocking_roles'; message: string }
 
 /**
  * Whether `owner` can sell each name through Seaport right now. Takes any token ID the name has
@@ -28,20 +30,23 @@ export type EnsV2TransferCheck = { ok: true; tokenId: bigint } | { ok: false; to
 export async function checkEnsV2Transferable(
   publicClient: PublicClient,
   names: { name: string; tokenId: string }[],
-  owner: Address
+  owner: Address,
+  blockNumber?: bigint
 ): Promise<EnsV2TransferCheck[]> {
   const contract = { address: config.ensV2Registry, abi: ETH_REGISTRY_ABI } as const
 
   const currentIds = await publicClient.multicall({
     contracts: names.map((n) => ({ ...contract, functionName: 'getTokenId', args: [BigInt(n.tokenId)] }) as const),
     allowFailure: false,
+    blockNumber,
   })
 
   const [emancipated, owners, canTransfer, onlyAssignee] = await Promise.all([
-    publicClient.readContract({ ...contract, functionName: 'isEmancipated' }),
+    publicClient.readContract({ ...contract, functionName: 'isEmancipated', blockNumber }),
     publicClient.multicall({
       contracts: currentIds.map((tokenId) => ({ ...contract, functionName: 'ownerOf', args: [tokenId] }) as const),
       allowFailure: false,
+      blockNumber,
     }),
     publicClient.multicall({
       contracts: currentIds.map(
@@ -49,19 +54,26 @@ export async function checkEnsV2Transferable(
           ({ ...contract, functionName: 'hasRoles', args: [tokenId, ROLE_CAN_TRANSFER_ADMIN, owner] }) as const
       ),
       allowFailure: false,
+      blockNumber,
     }),
     publicClient.multicall({
       contracts: currentIds.map(
         (tokenId) => ({ ...contract, functionName: 'isOnlyAssignee', args: [tokenId, ALL_ROLES, owner] }) as const
       ),
       allowFailure: false,
+      blockNumber,
     }),
   ])
 
   return names.map((n, i) => {
     const tokenId = currentIds[i]
     const currentOwner = owners[i]
-    const fail = (message: string): EnsV2TransferCheck => ({ ok: false, tokenId, message })
+    const fail = (message: string, reason: 'unavailable' | 'blocking_roles' = 'unavailable'): EnsV2TransferCheck => ({
+      ok: false,
+      tokenId,
+      reason,
+      message,
+    })
 
     if (currentOwner === ZERO_ADDRESS) return fail(`${n.name} has expired`)
     if (currentOwner.toLowerCase() !== owner.toLowerCase()) return fail(`You don't own ${n.name}`)
@@ -69,7 +81,8 @@ export async function checkEnsV2Transferable(
     if (!canTransfer[i]) return fail(`${n.name} can't be transferred: its owner doesn't hold the transfer role`)
     if (!onlyAssignee[i]) {
       return fail(
-        `Another account holds a role on ${n.name}. Remove other accounts' roles on the name before selling it`
+        `Another account holds a role on ${n.name}. Remove other accounts' roles on the name before selling it`,
+        'blocking_roles'
       )
     }
     return { ok: true, tokenId }

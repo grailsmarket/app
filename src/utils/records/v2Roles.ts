@@ -179,9 +179,10 @@ export const readRoleSnapshot = async (
   contract: Address,
   resource: bigint,
   kind: RoleKind,
-  viewer?: Address
+  viewer?: Address,
+  atBlock?: bigint
 ): Promise<RoleSnapshot> => {
-  const blockNumber = await client.getBlockNumber({ cacheTime: 0 })
+  const blockNumber = atBlock ?? (await client.getBlockNumber({ cacheTime: 0 }))
   // Verify the EAC interface even when no wallet is connected.
   await client.readContract({
     address: contract,

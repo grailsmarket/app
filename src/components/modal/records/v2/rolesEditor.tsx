@@ -269,7 +269,7 @@ const RolesEditor = ({ editor, transaction }: { editor: V2RoleEditor; transactio
       {editor.hasChanges && (
         <button
           type='button'
-          className='text-neutral hover:text-foreground cursor-pointer self-start text-lg underline'
+          className='text-neutral hover:text-foreground mx-auto cursor-pointer self-start text-lg underline'
           disabled={disabled}
           onClick={editor.reset}
         >

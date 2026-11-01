@@ -225,7 +225,7 @@ body {
 .profile-card-details .profile-link,
 .profile-card-details .social-link {
   display: inline-flex;
-  min-height: 40px;
+  min-height: 30px !important;
   align-items: center;
 }
 
@@ -604,4 +604,8 @@ body {
 
 .activity-feed-card > .tooltip-wrapper {
   width: fit-content !important;
+}
+
+.socials-container {
+  gap: 2px !important;
 }

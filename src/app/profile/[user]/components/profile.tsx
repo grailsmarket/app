@@ -135,7 +135,7 @@ const Profile: React.FC<Props> = ({ user }) => {
                           dispatch(setEditRecordsModalOpen(true))
                         }
                       : undefined,
-                  hideSocials: ['grails'],
+                  hideSocials: ['grails', 'vision'],
                   hideEFPPoaps: true,
                   customPoaps: userPoap?.badges
                     ? userPoap.badges.map((badge) => ({

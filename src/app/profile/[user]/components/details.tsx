@@ -65,7 +65,7 @@ const Details: React.FC<Props> = ({ user }) => {
                 currencyAddress={ETH_ADDRESS}
                 iconSize='18px'
                 fontSize='text-lg @[40rem]/app:text-xl font-semibold'
-                alignTooltip='right'
+                alignTooltip='left'
                 tooltipPosition='bottom'
               />
             ) : (

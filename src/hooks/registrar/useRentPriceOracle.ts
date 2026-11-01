@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import { Address, createPublicClient, http } from 'viem'
+import { Address, createPublicClient } from 'viem'
+import { transports } from '@/lib/wagmi'
 import { activeChain } from '@/constants/web3/chain'
 import { ENS_V2_REGISTRAR } from '@/constants/web3/abi/RegistrarV2'
 import { STANDARD_RENT_PRICE_ORACLE_ABI } from '@/constants/web3/abi/StandardRentPriceOracle'
@@ -7,7 +8,10 @@ import { config } from '@/lib/config'
 import type { RegistrationPricing } from '@/utils/registrationPricing'
 
 export const useRentPriceOracle = () => {
-  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: http() }), [])
+  const publicClient = useMemo(
+    () => createPublicClient({ chain: activeChain, transport: transports[activeChain.id] }),
+    []
+  )
 
   return useCallback(
     async (asset: Address): Promise<RegistrationPricing> => {

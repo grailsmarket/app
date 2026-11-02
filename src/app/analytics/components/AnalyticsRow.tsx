@@ -58,7 +58,7 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
         <NameImage
           name={listing.name}
           version={listing.version}
-          tokenId=''
+          tokenId={listing.token_id}
           expiryDate={null}
           forceRegStatus={REGISTERED}
           className='h-8 w-8 shrink-0 rounded-sm'
@@ -123,7 +123,7 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
         <NameImage
           name={offer.name}
           version={offer.version}
-          tokenId=''
+          tokenId={offer.token_id}
           expiryDate={null}
           forceRegStatus={REGISTERED}
           className='h-8 w-8 shrink-0 rounded-sm'
@@ -191,7 +191,7 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
         <NameImage
           name={sale.name}
           version={sale.version}
-          tokenId=''
+          tokenId={sale.token_id}
           expiryDate={null}
           forceRegStatus={REGISTERED}
           className='h-8 w-8 shrink-0 rounded-sm'
@@ -271,7 +271,7 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
         <NameImage
           name={registration.name}
           version={registration.version}
-          tokenId=''
+          tokenId={registration.token_id}
           forceRegStatus={REGISTERED}
           expiryDate={null}
           className='h-8 w-8 shrink-0 rounded-sm'

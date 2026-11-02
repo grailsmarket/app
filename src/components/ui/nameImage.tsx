@@ -67,7 +67,7 @@ const NameImage = ({
     () => `${DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image${cacheParam}`,
     [labelHash, cacheParam]
   )
-  const v2Src = useMemo(() => `${DOMAIN_IMAGE_URL_V2}/${tokenId}/image${cacheParam}`, [labelHash, cacheParam])
+  const v2Src = useMemo(() => `${DOMAIN_IMAGE_URL_V2}/${tokenId}/image${cacheParam}`, [tokenId, cacheParam])
 
   const status =
     forceRegStatus ??

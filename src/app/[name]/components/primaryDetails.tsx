@@ -185,9 +185,11 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           />
         )}
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
-        <div className='absolute top-2 right-2 z-10'>
-          <NameVersionBadge version={nameDetails?.version} align='right' />
-        </div>
+        {!REGISTERABLE_STATUSES.includes(registrationStatus) && (
+          <div className='absolute top-2 right-2 z-10'>
+            <NameVersionBadge version={nameDetails?.version} align='right' />
+          </div>
+        )}
       </div>
 
       <div className='p-lg flex flex-col items-center gap-3 @[64rem]/app:pt-5'>

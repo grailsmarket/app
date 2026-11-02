@@ -245,7 +245,9 @@ const Card: React.FC<CardProps> = ({
           />
         )}
         <div className='absolute inset-x-2 top-2 z-10 flex flex-row-reverse flex-wrap items-start gap-1.5'>
-          <NameVersionBadge version={domain.version} align={isFirstInRow ? 'left' : 'right'} />
+          {!REGISTERABLE_STATUSES.includes(registrationStatus) && (
+            <NameVersionBadge version={domain.version} align={isFirstInRow ? 'left' : 'right'} />
+          )}
           {!domainIsValid && (
             <div className='bg-secondary pointer-events-auto shrink-0 rounded-sm px-1.5'>
               <Tooltip

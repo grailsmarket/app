@@ -25,7 +25,7 @@ export const calculateRegistrationPrice = (name: MarketplaceDomainNameType, ethU
   // ENS pricing tiers (USD per year)
   let usdPrice: number
   if (length >= 5) {
-    usdPrice = 5
+    usdPrice = 8
   } else if (length === 4) {
     usdPrice = 160
   } else {

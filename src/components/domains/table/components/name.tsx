@@ -1,6 +1,6 @@
 import Tooltip from '@/components/ui/tooltip'
 import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
-import { GRACE_PERIOD } from '@/constants/domains/registrationStatuses'
+import { GRACE_PERIOD, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
 import { MarketplaceDomainType } from '@/types/domains'
 import { RegistrationStatus } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
@@ -36,7 +36,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
 
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['domain'].getWidth(columnCount))}>
-      <div className='flex h-[54px] w-full max-w-full flex-row items-center'>
+      <div className='flex h-13.5 w-full max-w-full flex-row items-center'>
         <div className='flex min-w-0 flex-row items-center justify-start gap-2 pr-2'>
           <NameImage
             name={domain.name}
@@ -44,19 +44,19 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             tokenId={domain.token_id}
             expiryDate={domain.expiry_date}
             registrationStatus={domain.registration_status}
-            className='pointer-events-none aspect-square h-[42px] min-h-[42px] w-[42px] min-w-[42px] rounded-sm'
+            className='pointer-events-none aspect-square h-10.5 min-h-10.5 w-10.5 min-w-10.5 rounded-sm'
           />
           <div className='flex min-w-0 flex-col gap-px'>
             <div className='flex min-w-0 items-center gap-1.5'>
               <p
                 className={cn(
-                  'text-md truncate leading-[18px] font-bold',
+                  'text-md truncate leading-4.5 font-bold',
                   registrationStatus === GRACE_PERIOD ? 'text-grace' : 'text-foreground'
                 )}
               >
                 {beautifyName(domain.name)}
               </p>
-              <NameVersionBadge version={domain.version} />
+              {!REGISTERABLE_STATUSES.includes(registrationStatus) && <NameVersionBadge version={domain.version} />}
               {domain.compromised && (
                 <div className='pointer-events-auto shrink-0'>
                   <Tooltip

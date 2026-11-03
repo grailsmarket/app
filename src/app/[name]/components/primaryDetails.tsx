@@ -271,32 +271,35 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             </button>
           </Tooltip>
         </div>
-        <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
-          {nameDetailsIsLoading ? (
+        {nameDetailsIsLoading ? (
+          <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
             <LoadingCell height='26px' width='128px' />
-          ) : (
-            <div className='flex flex-col items-start gap-0.5'>
-              <div className='flex flex-row items-center gap-2'>
-                {nameDetails?.owner && <User address={nameDetails.owner} alignTooltip='left' />}
-                {nameDetails?.owner && ownerAccount?.ens?.name && (
-                  <Image
-                    src={isOwnerCopied ? CheckIcon : CopyIcon}
-                    alt='Copy'
-                    className='h-4 w-4 cursor-pointer hover:opacity-80'
-                    width={16}
-                    height={16}
-                    onClick={async () => {
-                      if (!ownerAccount?.ens?.name) return
-                      navigator.clipboard.writeText(ownerAccount?.ens?.name)
-                      setIsOwnerCopied(true)
-                      setTimeout(() => {
-                        setIsOwnerCopied(false)
-                      }, 2000)
-                    }}
-                  />
-                )}
-              </div>
-              {nameDetails?.owner && (
+            <LoadingCell height='20px' width='110px' />
+          </div>
+        ) : (
+          nameDetails?.owner && (
+            <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
+              <div className='flex flex-col items-start gap-0.5'>
+                <div className='flex flex-row items-center gap-2'>
+                  {nameDetails?.owner && <User address={nameDetails.owner} alignTooltip='left' />}
+                  {nameDetails?.owner && ownerAccount?.ens?.name && (
+                    <Image
+                      src={isOwnerCopied ? CheckIcon : CopyIcon}
+                      alt='Copy'
+                      className='h-4 w-4 cursor-pointer hover:opacity-80'
+                      width={16}
+                      height={16}
+                      onClick={async () => {
+                        if (!ownerAccount?.ens?.name) return
+                        navigator.clipboard.writeText(ownerAccount?.ens?.name)
+                        setIsOwnerCopied(true)
+                        setTimeout(() => {
+                          setIsOwnerCopied(false)
+                        }, 2000)
+                      }}
+                    />
+                  )}
+                </div>
                 <div className='pt-1 @[40rem]/app:hidden'>
                   <CopyValue
                     value={nameDetails.owner}
@@ -305,22 +308,16 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                     className='text-neutral text-lg'
                   />
                 </div>
-              )}
-              <p className='text-neutral text-lg font-medium'>
-                {REGISTERABLE_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner'}
-              </p>
-            </div>
-          )}
-          {nameDetailsIsLoading ? (
-            <LoadingCell height='20px' width='110px' />
-          ) : (
-            nameDetails?.owner && (
+                <p className='text-neutral text-lg font-medium'>
+                  {REGISTERABLE_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner'}
+                </p>
+              </div>
               <div className='hidden @[40rem]/app:block'>
                 <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral' />
               </div>
-            )
-          )}
-        </div>
+            </div>
+          )
+        )}
         <div className='grid w-full grid-cols-2 gap-2 py-2'>
           <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
             {nameDetailsIsLoading ? (

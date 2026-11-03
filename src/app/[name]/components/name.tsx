@@ -14,7 +14,6 @@ import SimilarNames from './similarNames'
 import { cn } from '@/utils/tailwind'
 import CompromisedBanner from '@/components/compromised/compromisedBanner'
 import { useRegistrationPrice } from '@/hooks/registrar/useRegistrationPrice'
-// import Metadata from './metadata'
 
 interface Props {
   name: string
@@ -44,24 +43,6 @@ const NamePage: React.FC<Props> = ({ name }) => {
     openMigrationModal,
     isRecordEditorReady,
   } = useName(name)
-
-  // // Pre-warm the OG image cache in the background
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined' && name) {
-  //     // Small delay to not block initial page load
-  //     const timer = setTimeout(() => {
-  //       try {
-  //         const img = new Image()
-  //         img.src = `/api/og/name?name=${encodeURIComponent(name)}`
-  //         // We don't need to do anything with the image, just trigger the request
-  //       } catch (error) {
-  //         console.error('Error pre-warming OG image cache:', error)
-  //       }
-  //     }, 1000)
-
-  //     return () => clearTimeout(timer)
-  //   }
-  // }, [name])
 
   useEffect(() => {
     setSelectedTab('market')

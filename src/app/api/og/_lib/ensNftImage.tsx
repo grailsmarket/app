@@ -41,7 +41,7 @@ export function renderEnsNftImage({ name, tokenId, width, height, style }: EnsNf
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            zIndex: i
+            zIndex: i,
           }}
         />
       ))}

@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
               height: '100%',
               borderRadius: 16,
               marginRight: 16,
-            }
+            },
           })}
         </div>
         <div style={{ height: 80, width: 2, backgroundColor: '#ffffff' }} />

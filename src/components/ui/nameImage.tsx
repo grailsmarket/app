@@ -162,7 +162,7 @@ const NameImage = ({
     return () => {
       cancelled = true
     }
-  }, [attempt, wrappedSrc, unwrappedSrc, status, refreshKey])
+  }, [attempt, wrappedSrc, unwrappedSrc, v2Src, version, status, refreshKey])
 
   // Wrap the fetched SVG markup in a same-origin blob URL so we can render it
   // through an <img> element. That way the browser exposes the normal image

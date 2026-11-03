@@ -2,17 +2,29 @@
 
 import Image from 'next/image'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { hexToBigInt, labelhash, namehash } from 'viem'
+import { hexToBigInt, namehash } from 'viem'
 import { cn } from '@/utils/tailwind'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { applyStateGradient } from '@/utils/ensImage/applyStateGradient'
+import { getNameImageSources } from '@/utils/ensImage/getNameImageSources'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 import LoadingCell from './loadingCell'
 import { DomainRegistrationDetails, RegistrationStatus } from '@/types/domains'
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
+import {
+  DOMAIN_DEFAULT_IMAGE_URL_V2,
+  DOMAIN_IMAGE_URL,
+  DOMAIN_IMAGE_URL_V2,
+  WRAPPED_DOMAIN_IMAGE_URL,
+} from '@/constants/ens'
 
 const INTRINSIC_SIZE = 540
+const IMAGE_BASE_URLS = {
+  unwrapped: DOMAIN_IMAGE_URL,
+  wrapped: WRAPPED_DOMAIN_IMAGE_URL,
+  v2: DOMAIN_IMAGE_URL_V2,
+  defaultV2: DOMAIN_DEFAULT_IMAGE_URL_V2,
+}
 
 interface NameImageProps {
   name: string
@@ -40,7 +52,6 @@ const NameImage = ({
   forceRefreshKey,
 }: NameImageProps) => {
   const nameHash = namehash(name)
-  const labelHash = labelhash(name.replace('.eth', ''))
 
   // Pending hard-refresh signal published to Redux by callers like the
   // metadata refresh button or the records-edit modal. We capture the
@@ -58,27 +69,20 @@ const NameImage = ({
     dispatch(consumeImageRefresh(name))
   }, [pendingRefreshKey, refreshKey, dispatch, name, forceRefreshKey])
 
-  const cacheParam = useMemo(() => (refreshKey ? `?v=${refreshKey}` : ''), [refreshKey])
-  const wrappedSrc = useMemo(
-    () => `${WRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(nameHash).toString()}/image${cacheParam}`,
-    [nameHash, cacheParam]
-  )
-  const unwrappedSrc = useMemo(
-    () => `${DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image${cacheParam}`,
-    [labelHash, cacheParam]
-  )
-  const v2Src = useMemo(() => `${DOMAIN_IMAGE_URL_V2}/${tokenId}/image${cacheParam}`, [tokenId, cacheParam])
-
   const status =
     forceRegStatus ??
     getRegistrationStatus({ expiry_date: expiryDate, version, registration_status: registrationStatus })
+  const imageSources = useMemo(
+    () => getNameImageSources({ name, tokenId, version, status, refreshKey }, IMAGE_BASE_URLS),
+    [name, tokenId, version, status, refreshKey]
+  )
+  const imageRequestKey = JSON.stringify([imageSources, status])
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${hexToBigInt(nameHash).toString()}?name=${encodeURIComponent(
     name
   )}&version=${version}&expires=${encodeURIComponent(expireTime)}&status=${status}${refreshKey ? `&v=${refreshKey}` : ''}`
 
-  // 0 = try wrapped SVG, 1 = try unwrapped SVG, 2 = give up on SVG and show PNG fallback.
-  const [attempt, setAttempt] = useState(0)
+  const [failedRequestKey, setFailedRequestKey] = useState<string | null>(null)
   const [svg, setSvg] = useState<string | null>(null)
   const [pngLoaded, setPngLoaded] = useState(false)
 
@@ -95,74 +99,59 @@ const NameImage = ({
     layersRef.current = layers
   }, [layers])
 
-  // When the caller bumps `refreshKey` (e.g. after a successful metadata
-  // refresh), restart from the wrapped-SVG attempt so we re-run the full
-  // fetch chain against the new cache-busted URL. We deliberately do NOT
-  // clear `svg` or `layers` here — keeping the previously-loaded layer
-  // mounted lets the new fetch's layer crossfade in over it instead of
-  // flashing through gray. If the refetched SVG is byte-identical (the
-  // metadata service often returns the same content), `setSvg` bails out
-  // and the user sees no change, which is correct.
+  // Start a fresh fetch chain whenever the name, registration status, or
+  // refresh changes. Keep the previous SVG visible so the new one can fade in.
   useEffect(() => {
-    if (refreshKey === undefined) return
-    setAttempt(0)
-    setPngLoaded(false)
-    setSvg(null)
-    setLayers([])
-  }, [refreshKey])
-
-  useEffect(() => {
-    // if (version === 2) {
-    //   ; (async () => {
-    //     const res = await fetch(v2Src, refreshKey !== undefined ? { cache: 'reload' } : undefined)
-    //     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    //     const text = await res.text()
-    //     setSvg(applyStateGradient(text, status))
-    //   })()
-
-    //   return
-    // }
-
-    if (attempt > 1) return
-    // reverse for now to only use unwrapped because the graph subgraph returns correct reccord no matter what
-    const url = version === 2 ? v2Src : attempt === 1 ? wrappedSrc : unwrappedSrc
-
-    let cancelled = false
+    const controller = new AbortController()
+    let retryTimer: ReturnType<typeof setTimeout> | undefined
     const maxRetries = 2
+    setFailedRequestKey(null)
+    setPngLoaded(false)
 
-    const attemptFetch = async (retry = 0): Promise<void> => {
+    const attemptFetch = async (sourceIndex = 0, retry = 0): Promise<void> => {
+      if (controller.signal.aborted) return
+      const url = imageSources[sourceIndex]
+      if (!url) {
+        setFailedRequestKey(imageRequestKey)
+        return
+      }
+
       try {
-        const res = await fetch(url, refreshKey !== undefined ? { cache: 'reload' } : undefined)
+        const res = await fetch(url, {
+          signal: controller.signal,
+          ...(refreshKey !== undefined ? { cache: 'reload' as const } : {}),
+        })
+        if (controller.signal.aborted) return
         if (res.status === 404) {
-          if (!cancelled) setAttempt((a) => a + 1)
-          return
+          return attemptFetch(sourceIndex + 1)
         }
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const text = await res.text()
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setSvg(applyStateGradient(text, status))
         }
       } catch {
-        if (cancelled) return
+        if (controller.signal.aborted) return
 
         if (retry < maxRetries) {
           const backoff = 250 * 2 ** retry + Math.random() * 150
-          setTimeout(() => {
-            attemptFetch(retry + 1)
+          retryTimer = setTimeout(() => {
+            attemptFetch(sourceIndex, retry + 1)
           }, backoff)
           return
         }
 
-        setAttempt((a) => a + 1)
+        return attemptFetch(sourceIndex + 1)
       }
     }
 
     attemptFetch()
 
     return () => {
-      cancelled = true
+      controller.abort()
+      clearTimeout(retryTimer)
     }
-  }, [attempt, wrappedSrc, unwrappedSrc, v2Src, version, status, refreshKey])
+  }, [imageSources, imageRequestKey, status, refreshKey])
 
   // Wrap the fetched SVG markup in a same-origin blob URL so we can render it
   // through an <img> element. That way the browser exposes the normal image
@@ -223,7 +212,7 @@ const NameImage = ({
 
   const sizeStyle = width !== undefined || height !== undefined ? { width, height } : undefined
 
-  const showPngFallback = attempt > 1
+  const showPngFallback = failedRequestKey === imageRequestKey
   const hasLoadedLayer = layers.some((l) => l.loaded)
   const loaded = showPngFallback ? pngLoaded : hasLoadedLayer
 

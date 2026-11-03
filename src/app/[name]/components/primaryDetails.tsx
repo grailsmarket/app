@@ -33,7 +33,6 @@ import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import ENS_LOGO from 'public/logos/ens-circle.svg'
 import OPENSEA_LOGO from 'public/logos/opensea.svg'
-import ENSVISION_LOGO from 'public/logos/ensvision.svg'
 import ETHERSCAN_LOGO from 'public/logos/etherscan.svg'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -325,7 +324,9 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             ) : (
               <>
                 <p className='text-xl font-semibold'>
-                  {formatExpiryDate(nameDetails?.expiry_date ?? '', { includeTime: false, dateDivider: '/' })}
+                  {nameDetails?.expiry_date
+                    ? formatExpiryDate(nameDetails?.expiry_date, { includeTime: false, dateDivider: '/' })
+                    : '-'}
                 </p>
                 <p className='text-neutral text-lg font-medium'>Expiration</p>
               </>
@@ -370,9 +371,9 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             </div>
           )}
         </div>
-        <div className='flex w-full flex-row gap-2'>
+        <div className='grid w-full grid-cols-3 flex-row gap-2'>
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 @[40rem]/app:h-10'
+            className='flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(`https://app.ens.domains/${name}?referrer=${config.ensReferrerAddress}`, '_blank')
             }}
@@ -386,7 +387,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             />
           </button>
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
+            className='flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(`https://opensea.io/item/ethereum/${tokenContract}/${nameDetails?.token_id}`, '_blank')
             }}
@@ -399,7 +400,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
               className='h-7.5 w-7.5 @[40rem]/app:h-8.5 @[40rem]/app:w-8.5'
             />
           </button>
-          <button
+          {/* <button
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#895a01] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(`https://ensvision.com/name/${name}`, '_blank')
@@ -412,9 +413,9 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
               height={28}
               className='h-6 w-6 @[40rem]/app:h-7 @[40rem]/app:w-7'
             />
-          </button>
+          </button> */}
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
+            className='flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
                 `${activeChain.blockExplorers.default.url}/token/${tokenContract}?a=${nameDetails?.token_id as `0x${string}`}`,

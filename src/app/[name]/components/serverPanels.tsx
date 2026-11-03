@@ -309,7 +309,7 @@ const ServerOffersSkeleton = () => (
     <div className='flex w-full items-center justify-between'>
       <h2 className='font-sedan-sc text-3xl'>Offers</h2>
     </div>
-    <div role='status' aria-label='Loading offers' className='bg-tertiary h-[60px] w-full animate-pulse rounded' />
+    <div role='status' aria-label='Loading offers' className='bg-tertiary h-15 w-full animate-pulse rounded' />
   </section>
 )
 

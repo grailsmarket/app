@@ -1,4 +1,9 @@
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
+import {
+  DOMAIN_DEFAULT_IMAGE_URL_V2,
+  DOMAIN_IMAGE_URL,
+  DOMAIN_IMAGE_URL_V2,
+  WRAPPED_DOMAIN_IMAGE_URL,
+} from '@/constants/ens'
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
 import { labelhash, namehash } from 'viem'
@@ -27,6 +32,7 @@ export async function GET(req: NextRequest) {
   const v2ImageUrl = `${DOMAIN_IMAGE_URL_V2}/${tokenId}/image/png`
   const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
   const unwrappedImageUrl = `${DOMAIN_IMAGE_URL}/${labelHash}/image/png`
+  const fallbackImage = `${DOMAIN_DEFAULT_IMAGE_URL_V2}/${name}/png`
 
   try {
     return new ImageResponse(
@@ -92,6 +98,22 @@ export async function GET(req: NextRequest) {
           />
           <img
             src={v2ImageUrl}
+            alt='ens'
+            width={281}
+            height={281}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              borderRadius: 16,
+              marginRight: 16,
+              zIndex: '1',
+            }}
+          />
+          <img
+            src={fallbackImage}
             alt='ens'
             width={281}
             height={281}

@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
-import { labelhash, namehash, isAddress } from 'viem'
+import { isAddress } from 'viem'
 import { formatUnits } from 'viem'
 import { truncateAddress, fetchAccount } from 'ethereum-identity-kit/utils'
 import { beautifyName } from '@/lib/ens'
@@ -9,9 +9,9 @@ import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
 import { DomainOfferType } from '@/types/domains'
 import { getInterFonts } from '../_lib/inter'
+import { renderEnsNftImage } from '../_lib/ensNftImage'
 import { config } from '@/lib/config'
 import { activeChainSlug } from '@/constants/web3/chain'
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
 
 const size = {
   width: 1600,
@@ -151,28 +151,6 @@ export const GET = async (req: NextRequest) => {
       }
     }
 
-    const getENSImage = async () => {
-      try {
-        const { version, token_id } = offerDetails.offer
-        if (version === 2) return token_id ? `${DOMAIN_IMAGE_URL_V2}/${token_id}/image/png` : null
-
-        const nameHash = namehash(displayName)
-        const labelHash = labelhash(displayName.replace('.eth', ''))
-
-        const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-        const unwrappedImageUrl = `${DOMAIN_IMAGE_URL}/${labelHash}/image/png`
-
-        const wrappedResult = await fetch(wrappedImageUrl)
-          .then((res) => res.ok)
-          .catch(() => false)
-
-        return wrappedResult ? wrappedImageUrl : unwrappedImageUrl
-      } catch (error) {
-        console.error('Error fetching ENS Image:', error)
-        return null
-      }
-    }
-
     // Sniff the image format from the actual bytes. The `content-type` header often
     // lies (wrong type, extra params like `; charset=...`), and Satori's decoder will
     // throw `RangeError: Offset is outside the bounds of the DataView` if the MIME in
@@ -235,10 +213,9 @@ export const GET = async (req: NextRequest) => {
         ? `${config.ensMetadataUrl}/${activeChainSlug}/avatar/${profile.displayName}`
         : profile.avatar
 
-    const [ownerProfile, offerrerProfile, ensImage, categoryAvatars, interFonts] = await Promise.all([
+    const [ownerProfile, offerrerProfile, categoryAvatars, interFonts] = await Promise.all([
       getOwnerProfile(),
       getOfferrerProfile(),
-      getENSImage(),
       getCategoryAvatarDataUris(),
       getInterFonts(),
     ])
@@ -328,21 +305,18 @@ export const GET = async (req: NextRequest) => {
           >
             OFFER
           </div>
-          {ensImage && (
-            <img
-              src={ensImage}
-              alt='ens'
-              width={560}
-              height={560}
-              style={{
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                borderBottomLeftRadius: imageBottomRadius,
-                borderBottomRightRadius: imageBottomRadius,
-                objectFit: 'cover',
-              }}
-            />
-          )}
+          {renderEnsNftImage({
+            name: displayName,
+            tokenId: offerDetails.offer.token_id,
+            width: 560,
+            height: 560,
+            style: {
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
+              borderBottomLeftRadius: imageBottomRadius,
+              borderBottomRightRadius: imageBottomRadius,
+            },
+          })}
           {categories.length > 0 && (
             <div
               style={{

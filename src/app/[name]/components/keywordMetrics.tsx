@@ -17,6 +17,7 @@ import Tooltip from '@/components/ui/tooltip'
 
 interface KeywordMetricsProps {
   name: string
+  tokenId?: string | null
   expiryDate?: string | null
   ownerAddress?: string | null
   categories?: string[] | null
@@ -261,7 +262,13 @@ const TrendChart: React.FC<{
   )
 }
 
-const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDate, ownerAddress, categories }) => {
+const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({
+  name,
+  tokenId,
+  expiryDate,
+  ownerAddress,
+  categories,
+}) => {
   const [isOpen, setIsOpen] = useState(true)
   const dispatch = useAppDispatch()
   const { keywordMetrics, keywordMetricsIsLoading, keywordMetricsError, isSubdomain, isTooLong, loginRequired } =
@@ -284,6 +291,7 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
     dispatch(
       setShareModalDomainInfo({
         name,
+        tokenId,
         ownerAddress: ownerAddress ?? null,
         categories: categories ?? null,
       })

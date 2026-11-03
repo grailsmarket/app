@@ -103,6 +103,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='hidden @[64rem]/app:block'>
             <KeywordMetrics
               name={name}
+              tokenId={nameDetails?.token_id}
               expiryDate={nameDetails?.expiry_date}
               ownerAddress={nameDetails?.owner}
               categories={nameDetails?.clubs}
@@ -162,6 +163,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='@[64rem]/app:hidde border-tertiary @[40rem]/app:border-t-2 @[40rem]/app:pt-4 @[64rem]/app:hidden'>
             <KeywordMetrics
               name={name}
+              tokenId={nameDetails?.token_id}
               expiryDate={nameDetails?.expiry_date}
               ownerAddress={nameDetails?.owner}
               categories={nameDetails?.clubs}

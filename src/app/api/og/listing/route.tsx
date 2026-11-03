@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
-import { labelhash, namehash, isAddress } from 'viem'
+import { isAddress } from 'viem'
 import { formatUnits } from 'viem'
 import { truncateAddress as truncateAddr, fetchAccount } from 'ethereum-identity-kit/utils'
 import { TOKENS } from '@/constants/web3/tokens'
@@ -10,13 +10,9 @@ import { APIResponseType } from '@/types/api'
 import { MarketplaceDomainType } from '@/types/domains'
 import { API_URL } from '@/constants/api'
 import { getInterFonts } from '../_lib/inter'
+import { renderEnsNftImage } from '../_lib/ensNftImage'
 import { config } from '@/lib/config'
 import { activeChainSlug } from '@/constants/web3/chain'
-import {
-  DOMAIN_IMAGE_URL as UNWRAPPED_DOMAIN_IMAGE_URL,
-  DOMAIN_IMAGE_URL_V2,
-  WRAPPED_DOMAIN_IMAGE_URL,
-} from '@/constants/ens'
 
 const size = {
   width: 1600,
@@ -74,7 +70,6 @@ export const GET = async (req: NextRequest) => {
         const data = result.data
 
         return {
-          version: data.version,
           tokenId: data.token_id,
           listings: data.listings,
           owner_address: data.owner,
@@ -129,28 +124,6 @@ export const GET = async (req: NextRequest) => {
           avatar: defaultAvatar,
           displayName: isAddress(owner_address) ? truncateAddr(owner_address as `0x${string}`) : owner_address,
         }
-      }
-    }
-
-    const getENSImage = async () => {
-      try {
-        if (nameDetails.version === 2)
-          return nameDetails.tokenId ? `${DOMAIN_IMAGE_URL_V2}/${nameDetails.tokenId}/image/png` : null
-
-        const nameHash = namehash(displayName)
-        const labelHash = labelhash(displayName.replace('.eth', ''))
-
-        const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-        const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
-
-        const wrappedResult = await fetch(wrappedImageUrl)
-          .then((res) => res.ok)
-          .catch(() => false)
-
-        return wrappedResult ? wrappedImageUrl : unwrappedImageUrl
-      } catch (error) {
-        console.error('Error fetching ENS Image:', error)
-        return null
       }
     }
 
@@ -215,9 +188,8 @@ export const GET = async (req: NextRequest) => {
       return Object.fromEntries(entries)
     }
 
-    const [ownerProfile, ensImage, categoryAvatars, interFonts, defaultAvatarDataUri] = await Promise.all([
+    const [ownerProfile, categoryAvatars, interFonts, defaultAvatarDataUri] = await Promise.all([
       getOwnerProfile(),
-      getENSImage(),
       getCategoryAvatarDataUris(),
       getInterFonts(),
       fetchImageAsDataUri(defaultAvatar),
@@ -272,21 +244,18 @@ export const GET = async (req: NextRequest) => {
           >
             LISTING
           </div>
-          {ensImage && (
-            <img
-              src={ensImage}
-              alt='ens'
-              width={560}
-              height={560}
-              style={{
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                borderBottomLeftRadius: imageBottomRadius,
-                borderBottomRightRadius: imageBottomRadius,
-                objectFit: 'cover',
-              }}
-            />
-          )}
+          {renderEnsNftImage({
+            name: displayName,
+            tokenId: nameDetails.tokenId,
+            width: 560,
+            height: 560,
+            style: {
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
+              borderBottomLeftRadius: imageBottomRadius,
+              borderBottomRightRadius: imageBottomRadius,
+            },
+          })}
           {categories.length > 0 && (
             <div
               style={{

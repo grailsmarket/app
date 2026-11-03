@@ -81,6 +81,7 @@ const Modals: React.FC = () => {
     listing: shareModalListing,
     offer: shareModalOffer,
     domainName: shareModalDomainName,
+    tokenId: shareModalTokenId,
     ownerAddress: shareModalOwnerAddress,
     categories: shareModalCategories,
   } = useAppSelector(selectShareModal)
@@ -223,6 +224,7 @@ const Modals: React.FC = () => {
           listing={shareModalListing}
           offer={shareModalOffer}
           domainName={shareModalDomainName}
+          tokenId={shareModalTokenId}
           ownerAddress={shareModalOwnerAddress}
           categories={shareModalCategories}
         />

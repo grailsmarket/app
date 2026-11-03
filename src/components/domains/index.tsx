@@ -231,8 +231,8 @@ const Domains: React.FC<DomainsProps> = ({
             <VirtualGrid<MarketplaceDomainType>
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-              cardWidth={width && width < 400 ? 150 : 180}
-              cardHeight={width && width < 400 ? (width < 328 ? 500 : 380) : 370}
+              cardWidth={width && width < 428 ? 150 : 188}
+              cardHeight={width && width < 400 ? (width < 328 ? 500 : 380) : 368}
               gap={4}
               containerPadding={width && width < 768 ? 8 : 0}
               containerWidth={containerWidth}
@@ -271,7 +271,7 @@ const Domains: React.FC<DomainsProps> = ({
               renderItem={(item, index) => {
                 if (!item)
                   return (
-                    <div className='px-md border-tertiary flex h-[60px] w-full items-center justify-between border-b'>
+                    <div className='px-md border-tertiary flex h-15 w-full items-center justify-between border-b'>
                       <TableLoadingRow displayedColumns={displayedColumns} />
                     </div>
                   )

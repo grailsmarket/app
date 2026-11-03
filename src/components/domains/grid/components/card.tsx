@@ -224,7 +224,7 @@ const Card: React.FC<CardProps> = ({
         className
       )}
     >
-      <div className='relative flex max-h-85 w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-51.5'>
+      <div className='relative flex max-h-85 w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-52.5'>
         {isHomeCarousel ? (
           <Image
             src={`${domain.version === 2 ? DOMAIN_IMAGE_URL_V2 : DOMAIN_IMAGE_URL}/${domain.version === 2 ? domain.token_id : hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}

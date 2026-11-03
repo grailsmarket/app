@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import Link from 'next/link'
-import { hexToBigInt, namehash, type Address } from 'viem'
+import { type Address } from 'viem'
 import { DomainListingType, MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
 import { REGISTERED, UNKNOWN, UNREGISTERED } from '@/constants/domains/registrationStatuses'
@@ -11,6 +11,8 @@ import { formatPrice } from '@/utils/formatPrice'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { localizeNumber } from '@/utils/localizeNumber'
+import { DOMAIN_DEFAULT_IMAGE_URL_V2 } from '@/constants/ens'
+import { getDefaultNameImageUrl } from '@/utils/ensImage/getDefaultNameImageUrl'
 
 interface ServerPanelsProps {
   name: string
@@ -44,18 +46,6 @@ const formatTokenPrice = (price: string | number | null | undefined, currencyAdd
   const formatted = formatPrice(price, asset)
 
   return formatted ? `${formatted} ${asset}` : '-'
-}
-
-const getNameImageUrl = (
-  name: string,
-  expiryDate: string | null | undefined,
-  version: number,
-  status: RegistrationStatus
-) => {
-  const tokenId = hexToBigInt(namehash(name)).toString()
-  const expires = expiryDate ? new Date(expiryDate).getTime() : ''
-
-  return `/api/og/ens-name/${tokenId}?name=${encodeURIComponent(name)}&version=${version}&expires=${encodeURIComponent(expires)}&status=${status}`
 }
 
 const CopyableText = ({ value, truncate = true }: { value: string; truncate?: boolean }) => (
@@ -150,7 +140,7 @@ const ServerPrimaryDetails = ({
   <div className='bg-secondary border-tertiary flex flex-col @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
     <div className='bg-tertiary relative h-fit w-full'>
       <Image
-        src={getNameImageUrl(name, nameDetails?.expiry_date, nameDetails?.version ?? 1, registrationStatus)}
+        src={getDefaultNameImageUrl(name, DOMAIN_DEFAULT_IMAGE_URL_V2, 'png')}
         alt={`${name} preview`}
         width={1024}
         height={1024}

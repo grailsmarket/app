@@ -1,7 +1,6 @@
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
-import { labelhash, namehash } from 'viem'
+import { renderEnsNftImage } from '../_lib/ensNftImage'
 
 const size = {
   width: 800,
@@ -20,13 +19,6 @@ export async function GET(req: NextRequest) {
   if (name.replace('.eth', '').length < 3) {
     return NextResponse.json({ error: 'Invalid ENS name' }, { status: 400 })
   }
-
-  const nameHash = namehash(name)
-  const labelHash = labelhash(name.replace('.eth', ''))
-
-  const v2ImageUrl = `${DOMAIN_IMAGE_URL_V2}/${tokenId}/image/png`
-  const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-  const unwrappedImageUrl = `${DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 
   try {
     return new ImageResponse(
@@ -57,13 +49,13 @@ export async function GET(req: NextRequest) {
             position: 'relative',
           }}
         >
-          {/* show wrapped on top, but if it fails it's blank, so it will show the unwrapped underneath */}
-          <img
-            src={wrappedImageUrl}
-            alt='ens'
-            width={281}
-            height={281}
-            style={{
+          {/* if name image req comes back with nothing, it stys blank which gives room for fallbacks below */}
+          {renderEnsNftImage({
+            name,
+            tokenId,
+            width: 281,
+            height: 281,
+            style: {
               position: 'absolute',
               top: 0,
               left: 0,
@@ -71,41 +63,8 @@ export async function GET(req: NextRequest) {
               height: '100%',
               borderRadius: 16,
               marginRight: 16,
-              zIndex: '3',
-            }}
-          />
-          <img
-            src={unwrappedImageUrl}
-            alt='ens'
-            width={281}
-            height={281}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              borderRadius: 16,
-              marginRight: 16,
-              zIndex: '2',
-            }}
-          />
-          <img
-            src={v2ImageUrl}
-            alt='ens'
-            width={281}
-            height={281}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              borderRadius: 16,
-              marginRight: 16,
-              zIndex: '1',
-            }}
-          />
+            },
+          })}
         </div>
         <div style={{ height: 80, width: 2, backgroundColor: '#ffffff' }} />
         <img src='https://grails.app/your-ens-market-logo.svg' alt='Grails Logo' width={232} height={71} />

@@ -43,7 +43,7 @@ const User: React.FC<UserProps> = ({
   wrapperClassName,
   loadingCellWidth = '60%',
   avatarSize = '18px',
-  fontSize = '15px',
+  fontSize = '14px',
   alignTooltip = 'right',
   disableTooltip = false,
   disableLink = false,
@@ -51,7 +51,6 @@ const User: React.FC<UserProps> = ({
   name,
   skipProfileFetch = false,
 }) => {
-  const router = useRouter()
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: accountQueryKey(address),
@@ -88,81 +87,33 @@ const User: React.FC<UserProps> = ({
       disableTooltip={disableTooltip}
     >
       <div className={cn('flex justify-end', wrapperClassName)}>
-        {disableLink ? (
-          <div
-            className={cn(
-              'bg-tertiary relative flex w-fit cursor-pointer flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
-              className,
-              radiusClassName
-            )}
-            onClick={(e) => {
-              e.stopPropagation()
-              e.preventDefault()
-              router.push(`/profile/${address}`)
-            }}
-          >
-            {!hideHeaderImage && (
-              <Image
-                src={headerImageSrc || DEFAULT_FALLBACK_HEADER}
-                alt='Header'
-                width={400}
-                height={80}
-                unoptimized={true}
-                className={cn(
-                  'absolute top-0 left-0 z-0 h-full w-full rounded-sm object-cover opacity-20',
-                  radiusClassName
-                )}
-              />
-            )}
-            <Avatar
-              address={address}
-              name={profileData?.ens?.name}
-              src={avatarSrc}
-              fallback={DEFAULT_FALLBACK_AVATAR}
-              style={{ width: avatarSize, minWidth: avatarSize, height: avatarSize, minHeight: avatarSize, zIndex: 10 }}
+        <LinkWrapper address={profile?.address} disableLink={disableLink} className={cn(className, radiusClassName)}>
+          {!hideHeaderImage && (
+            <Image
+              src={headerImageSrc ?? DEFAULT_FALLBACK_HEADER}
+              alt='Header'
+              width={400}
+              height={80}
+              unoptimized={true}
+              className={cn(
+                'absolute top-0 left-0 z-0 h-full w-full rounded-sm object-cover opacity-20',
+                radiusClassName
+              )}
             />
-            <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 6}px)` }}>
-              <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
-                {profileData?.ens?.name ? beautifyName(profileData?.ens?.name) : truncateAddress(address)}
-              </p>
-            </div>
+          )}
+          <Avatar
+            address={address}
+            name={profileData?.ens?.name}
+            src={avatarSrc}
+            fallback={DEFAULT_FALLBACK_AVATAR}
+            style={{ width: avatarSize, minWidth: avatarSize, height: avatarSize, minHeight: avatarSize, zIndex: 10 }}
+          />
+          <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 6}px)` }}>
+            <p className='z-10 truncate font-semibold' style={{ fontSize: fontSize }}>
+              {profileData?.ens?.name ? beautifyName(profileData?.ens?.name) : truncateAddress(address)}
+            </p>
           </div>
-        ) : (
-          <Link
-            href={`/profile/${address}`}
-            className={cn(
-              'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
-              className,
-              disableTooltip && 'pointer-events-none'
-            )}
-          >
-            {!hideHeaderImage && headerImageSrc && (
-              <Image
-                src={headerImageSrc}
-                alt='Header'
-                width={400}
-                height={80}
-                unoptimized={true}
-                className={cn(
-                  'absolute top-0 left-0 z-0 h-full w-full rounded-sm object-cover opacity-20',
-                  radiusClassName
-                )}
-              />
-            )}
-            <Avatar
-              address={address}
-              name={profileData?.ens?.name}
-              src={avatarSrc}
-              fallback={DEFAULT_FALLBACK_AVATAR}
-              style={{ width: avatarSize, minWidth: avatarSize, height: avatarSize, minHeight: avatarSize, zIndex: 10 }}
-            />
-            <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 6}px)` }}>
-              <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
-                {profileData?.ens?.name ? beautifyName(profileData?.ens?.name) : truncateAddress(address)}
-              </p>
-            </div>
-          </Link>
-        )}
+        </LinkWrapper>
       </div>
     </TooltipWrapper>
   )
@@ -200,6 +151,41 @@ const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
     >
       {children as React.ReactElement}
     </ProfileTooltip>
+  )
+}
+
+interface LinkWrapperProps {
+  children: React.ReactNode
+  address: Address | undefined
+  disableLink: boolean
+  className?: string
+}
+
+const LinkWrapper: React.FC<LinkWrapperProps> = ({ children, address, disableLink, className }) => {
+  const router = useRouter()
+  const containerClassName = cn(
+    'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
+    className
+  )
+
+  if (disableLink)
+    return (
+      <div
+        className={containerClassName}
+        onClick={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+          router.push(`/profile/${address}`)
+        }}
+      >
+        {children}
+      </div>
+    )
+
+  return (
+    <Link href={`/profile/${address}`} className={containerClassName} onClick={(e) => e.stopPropagation()}>
+      {children}
+    </Link>
   )
 }
 

@@ -114,14 +114,14 @@ const Card: React.FC<CardProps> = ({
     enabled: !!domainListing?.broker_address,
   })
 
-  const backgroundColor = useMemo(() => {
+  const cardColors = useMemo(() => {
     if (isBulkSelecting) {
       return isSelected ? 'bg-primary/20' : isInPreviewRange ? 'bg-primary/10' : 'hover:bg-primary/10'
     }
 
-    if (registrationStatus === UNREGISTERED) return 'bg-available/10'
-    if (registrationStatus === PREMIUM) return 'bg-premium/10'
-    if (registrationStatus === GRACE_PERIOD) return 'bg-grace/10'
+    if (registrationStatus === UNREGISTERED) return 'bg-available/5'
+    if (registrationStatus === PREMIUM) return 'bg-premium/5 border-premium/20'
+    if (registrationStatus === GRACE_PERIOD) return 'bg-grace/5'
     if (registrationStatus === REGISTERED) {
       if (domainListing) return 'bg-foreground/20'
     }
@@ -218,9 +218,9 @@ const Card: React.FC<CardProps> = ({
         }
       }}
       className={cn(
-        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition-colors delay-400 duration-400 hover:opacity-100 @[48rem]/app:opacity-80',
+        'group bg-secondary border-tertiary flex h-full w-full cursor-pointer flex-col rounded-sm border opacity-100 transition-colors delay-400 duration-400 hover:opacity-100 @[48rem]/app:opacity-80',
         !domainIsValid && 'pointer-events-none opacity-40',
-        backgroundColor,
+        cardColors,
         className
       )}
     >
@@ -355,12 +355,12 @@ const Card: React.FC<CardProps> = ({
                 )}
               </div>
               {registrationStatus === PREMIUM && timeLeftString && (
-                <div className='text-md text-premium/70 flex items-center gap-px font-medium tabular-nums'>
+                <div className='text-premium/70 flex items-center gap-px text-sm font-medium tabular-nums'>
                   Premium ({timeLeftString})
                 </div>
               )}
               {registrationStatus === UNREGISTERED && (
-                <p className='text-md text-available flex items-center gap-px font-medium'>Available</p>
+                <p className='text-available flex items-center gap-px text-sm font-medium'>Available</p>
               )}
             </div>
           )}

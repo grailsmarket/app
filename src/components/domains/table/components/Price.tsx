@@ -85,11 +85,11 @@ const Price: React.FC<PriceProps> = ({
           </span>
         </div>
         {registrationStatus === PREMIUM && timeLeftString && (
-          <p className='text-md text-premium/70 font-medium text-nowrap tabular-nums'>
+          <p className='text-premium/70 text-sm font-medium text-nowrap tabular-nums'>
             Premium&nbsp;({timeLeftString})
           </p>
         )}
-        {registrationStatus === UNREGISTERED && <p className='text-md text-available font-medium'>Available</p>}
+        {registrationStatus === UNREGISTERED && <p className='text-available text-sm font-medium'>Available</p>}
       </div>
     )
   }

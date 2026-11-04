@@ -33,7 +33,6 @@ import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import ENS_LOGO from 'public/logos/ens-circle.svg'
 import OPENSEA_LOGO from 'public/logos/opensea.svg'
-import ENSVISION_LOGO from 'public/logos/ensvision.svg'
 import ETHERSCAN_LOGO from 'public/logos/etherscan.svg'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -271,32 +270,35 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             </button>
           </Tooltip>
         </div>
-        <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
-          {nameDetailsIsLoading ? (
+        {nameDetailsIsLoading ? (
+          <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
             <LoadingCell height='26px' width='128px' />
-          ) : (
-            <div className='flex flex-col items-start gap-0.5'>
-              <div className='flex flex-row items-center gap-2'>
-                {nameDetails?.owner && <User address={nameDetails.owner} alignTooltip='left' />}
-                {nameDetails?.owner && ownerAccount?.ens?.name && (
-                  <Image
-                    src={isOwnerCopied ? CheckIcon : CopyIcon}
-                    alt='Copy'
-                    className='h-4 w-4 cursor-pointer hover:opacity-80'
-                    width={16}
-                    height={16}
-                    onClick={async () => {
-                      if (!ownerAccount?.ens?.name) return
-                      navigator.clipboard.writeText(ownerAccount?.ens?.name)
-                      setIsOwnerCopied(true)
-                      setTimeout(() => {
-                        setIsOwnerCopied(false)
-                      }, 2000)
-                    }}
-                  />
-                )}
-              </div>
-              {nameDetails?.owner && (
+            <LoadingCell height='20px' width='110px' />
+          </div>
+        ) : (
+          nameDetails?.owner && (
+            <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
+              <div className='flex flex-col items-start gap-0.5'>
+                <div className='flex flex-row items-center gap-2'>
+                  {nameDetails?.owner && <User address={nameDetails.owner} alignTooltip='left' />}
+                  {nameDetails?.owner && ownerAccount?.ens?.name && (
+                    <Image
+                      src={isOwnerCopied ? CheckIcon : CopyIcon}
+                      alt='Copy'
+                      className='h-4 w-4 cursor-pointer hover:opacity-80'
+                      width={16}
+                      height={16}
+                      onClick={async () => {
+                        if (!ownerAccount?.ens?.name) return
+                        navigator.clipboard.writeText(ownerAccount?.ens?.name)
+                        setIsOwnerCopied(true)
+                        setTimeout(() => {
+                          setIsOwnerCopied(false)
+                        }, 2000)
+                      }}
+                    />
+                  )}
+                </div>
                 <div className='pt-1 @[40rem]/app:hidden'>
                   <CopyValue
                     value={nameDetails.owner}
@@ -305,22 +307,16 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                     className='text-neutral text-lg'
                   />
                 </div>
-              )}
-              <p className='text-neutral text-lg font-medium'>
-                {REGISTERABLE_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner'}
-              </p>
-            </div>
-          )}
-          {nameDetailsIsLoading ? (
-            <LoadingCell height='20px' width='110px' />
-          ) : (
-            nameDetails?.owner && (
+                <p className='text-neutral text-lg font-medium'>
+                  {REGISTERABLE_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner'}
+                </p>
+              </div>
               <div className='hidden @[40rem]/app:block'>
                 <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral' />
               </div>
-            )
-          )}
-        </div>
+            </div>
+          )
+        )}
         <div className='grid w-full grid-cols-2 gap-2 py-2'>
           <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
             {nameDetailsIsLoading ? (
@@ -328,7 +324,9 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             ) : (
               <>
                 <p className='text-xl font-semibold'>
-                  {formatExpiryDate(nameDetails?.expiry_date ?? '', { includeTime: false, dateDivider: '/' })}
+                  {nameDetails?.expiry_date
+                    ? formatExpiryDate(nameDetails?.expiry_date, { includeTime: false, dateDivider: '/' })
+                    : '-'}
                 </p>
                 <p className='text-neutral text-lg font-medium'>Expiration</p>
               </>
@@ -373,9 +371,9 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             </div>
           )}
         </div>
-        <div className='flex w-full flex-row gap-2'>
+        <div className='grid w-full grid-cols-3 flex-row gap-2'>
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 @[40rem]/app:h-10'
+            className='flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(`https://app.ens.domains/${name}?referrer=${config.ensReferrerAddress}`, '_blank')
             }}
@@ -389,7 +387,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             />
           </button>
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
+            className='flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(`https://opensea.io/item/ethereum/${tokenContract}/${nameDetails?.token_id}`, '_blank')
             }}
@@ -402,7 +400,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
               className='h-7.5 w-7.5 @[40rem]/app:h-8.5 @[40rem]/app:w-8.5'
             />
           </button>
-          <button
+          {/* <button
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#895a01] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(`https://ensvision.com/name/${name}`, '_blank')
@@ -415,9 +413,9 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
               height={28}
               className='h-6 w-6 @[40rem]/app:h-7 @[40rem]/app:w-7'
             />
-          </button>
+          </button> */}
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
+            className='flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
                 `${activeChain.blockExplorers.default.url}/token/${tokenContract}?a=${nameDetails?.token_id as `0x${string}`}`,

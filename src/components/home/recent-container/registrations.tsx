@@ -15,7 +15,7 @@ const Registrations = () => {
     periodOverride: '7d',
     sourceOverride: 'all',
     limitOverride: 7,
-    categoryOverride: null,
+    categoriesOverride: null,
   })
 
   return (
@@ -36,13 +36,13 @@ const Registrations = () => {
       <div className='border-tertiary bg-secondary flex flex-col gap-0 rounded-md border-2 border-t'>
         {registrationsLoading
           ? new Array(7).fill(null).map((_, index) => (
-              <div key={index} className='px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
+              <div key={index} className='px-lg border-tertiary flex h-15 w-full items-center border-b'>
                 <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
               </div>
             ))
           : registrationsData?.data?.results?.slice(0, 7).map((registration, index) => (
               <div key={registration.id}>
-                <RegistrationRow registration={registration} index={index} className='h-[60px] w-full' />
+                <RegistrationRow registration={registration} index={index} className='h-15 w-full' />
               </div>
             ))}
       </div>

@@ -25,6 +25,7 @@ const Input: React.FC<InputProps> = ({
   labelClassName,
   disabled = false,
   suffix,
+  ...inputProps
 }) => {
   return (
     <div className={cn('w-full', className)}>
@@ -33,7 +34,7 @@ const Input: React.FC<InputProps> = ({
         {!hideLabel && (
           <p
             className={cn(
-              'bg-background border-tertiary flex min-h-12 min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3 text-lg font-semibold',
+              'bg-background border-tertiary flex min-h-12 min-w-25 items-center rounded-l-md border border-r-0 px-4 py-3 text-lg font-semibold',
               labelClassName
             )}
           >
@@ -43,11 +44,13 @@ const Input: React.FC<InputProps> = ({
 
         {/* Input section */}
         <input
+          aria-label={label}
+          {...inputProps}
           type={type}
           value={value}
           onChange={onChange}
           className={cn(
-            'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex min-h-12 w-full items-center justify-between rounded-r-md border px-4 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
+            'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex min-h-12 w-full min-w-0 items-center justify-between rounded-r-md border px-4 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
             hideLabel && 'rounded-md',
             disabled && 'cursor-not-allowed opacity-50'
           )}

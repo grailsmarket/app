@@ -28,7 +28,7 @@ const NameCarousel: React.FC<NameCarouselProps> = ({ entries, calculationResults
   const fallbackDuration = calculationResults?.durationSeconds ?? BigInt(YEAR_IN_SECONDS)
 
   return (
-    <div className='-mx-lg sm:-mx-xl w-[calc(100%+var(--padding-lg)*2)] overflow-hidden py-2 sm:w-[calc(100%+var(--padding-xl)*2)]'>
+    <div className='-mx-4 w-[calc(100%+2rem)] overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] py-2 md:-mx-6 md:w-[calc(100%+3rem)]'>
       <div
         className='flex hover:[animation-play-state:paused]'
         style={{
@@ -47,6 +47,7 @@ const NameCarousel: React.FC<NameCarouselProps> = ({ entries, calculationResults
           >
             <NameImage
               name={entry.name}
+              version={entry.domain.version}
               tokenId={entry.domain?.token_id}
               expiryDate={getExpiryDate(entry, fallbackDuration)}
               className='h-36 w-36 rounded-lg'

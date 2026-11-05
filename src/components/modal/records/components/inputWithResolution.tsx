@@ -1,4 +1,5 @@
 import LoadingCell from '@/components/ui/loadingCell'
+import NameImage from '@/components/ui/nameImage'
 import { beautifyName } from '@/lib/ens'
 import { cn } from '@/utils/tailwind'
 import { useQuery } from '@tanstack/react-query'
@@ -10,7 +11,8 @@ const InputWithResolution: React.FC<{
   value: string
   resolvedAddress: string | null
   isResolving: boolean
-}> = ({ value, resolvedAddress, isResolving }) => {
+  showNameImage?: boolean
+}> = ({ value, resolvedAddress, isResolving, showNameImage = false }) => {
   const accountLookupTarget = isAddress(value) ? value : resolvedAddress
 
   const { data: resolvedAccount, isLoading: isProfileLoading } = useQuery({
@@ -23,7 +25,7 @@ const InputWithResolution: React.FC<{
 
   const resolvedProfile = resolvedAccount?.ens || { name: null, avatar: null }
 
-  const showResolution = value.includes('.') || (isAddress(value) && resolvedProfile?.name)
+  const showResolution = value?.includes('.') || (isAddress(value) && resolvedProfile?.name)
 
   if (!showResolution && !isResolving) return null
 
@@ -43,11 +45,24 @@ const InputWithResolution: React.FC<{
         </>
       ) : (
         <>
-          <Avatar
-            name={resolvedProfile?.name || value}
-            style={{ height: '26px', width: '26px' }}
-            src={resolvedProfile?.avatar}
-          />
+          {showNameImage && !value.includes('.') && resolvedProfile.name ? (
+            <NameImage
+              name={resolvedProfile.name}
+              tokenId=''
+              version={1}
+              expiryDate={null}
+              forceRegStatus='Registered'
+              width={26}
+              height={26}
+              className='shrink-0'
+            />
+          ) : (
+            <Avatar
+              name={resolvedProfile?.name || value}
+              style={{ height: '26px', width: '26px' }}
+              src={resolvedProfile?.avatar}
+            />
+          )}
           <p className='truncate text-lg font-semibold'>
             {value.includes('.')
               ? resolvedAddress && resolvedAddress.length > 0

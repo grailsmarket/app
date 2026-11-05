@@ -1,8 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
-import { APP_ENS_ADDRESS } from '@/constants'
-import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
-import { labelhash, namehash, isAddress } from 'viem'
+import { isAddress } from 'viem'
 import { formatUnits } from 'viem'
 import { truncateAddress, fetchAccount } from 'ethereum-identity-kit/utils'
 import { beautifyName } from '@/lib/ens'
@@ -11,15 +9,14 @@ import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
 import { DomainOfferType } from '@/types/domains'
 import { getInterFonts } from '../_lib/inter'
+import { renderEnsNftImage } from '../_lib/ensNftImage'
+import { config } from '@/lib/config'
+import { activeChainSlug } from '@/constants/web3/chain'
 
 const size = {
   width: 1600,
   height: 836,
 }
-
-const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
-const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 
 const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
@@ -55,7 +52,7 @@ const getCurrencySymbol = (currencyAddress: string): string => {
   return 'WETH'
 }
 
-export async function GET(req: NextRequest) {
+export const GET = async (req: NextRequest) => {
   try {
     const searchParams = req.nextUrl.searchParams
     const name = searchParams.get('name')
@@ -154,25 +151,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const getENSImage = async () => {
-      try {
-        const nameHash = namehash(displayName)
-        const labelHash = labelhash(displayName.replace('.eth', ''))
-
-        const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-        const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
-
-        const wrappedResult = await fetch(wrappedImageUrl)
-          .then((res) => res.ok)
-          .catch(() => false)
-
-        return wrappedResult ? wrappedImageUrl : unwrappedImageUrl
-      } catch (error) {
-        console.error('Error fetching ENS Image:', error)
-        return null
-      }
-    }
-
     // Sniff the image format from the actual bytes. The `content-type` header often
     // lies (wrong type, extra params like `; charset=...`), and Satori's decoder will
     // throw `RangeError: Offset is outside the bounds of the DataView` if the MIME in
@@ -222,7 +200,7 @@ export async function GET(req: NextRequest) {
       if (categories.length !== 1) return {}
       const entries = await Promise.all(
         categories.map(async (category) => {
-          const dataUri = await fetchImageAsDataUri(`https://api.grails.app/api/v1/clubs/${category}/avatar`)
+          const dataUri = await fetchImageAsDataUri(`${API_URL}/clubs/${category}/avatar`)
           return [category, dataUri || ''] as const
         })
       )
@@ -232,13 +210,12 @@ export async function GET(req: NextRequest) {
     // Metadata avatar endpoint expects an actual ENS name; truncated addresses won't resolve.
     const avatarUrlForProfile = (profile: { avatar: string; displayName: string }) =>
       profile.displayName.endsWith('.eth')
-        ? `${ENS_METADATA_URL}/mainnet/avatar/${profile.displayName}`
+        ? `${config.ensMetadataUrl}/${activeChainSlug}/avatar/${profile.displayName}`
         : profile.avatar
 
-    const [ownerProfile, offerrerProfile, ensImage, categoryAvatars, interFonts] = await Promise.all([
+    const [ownerProfile, offerrerProfile, categoryAvatars, interFonts] = await Promise.all([
       getOwnerProfile(),
       getOfferrerProfile(),
-      getENSImage(),
       getCategoryAvatarDataUris(),
       getInterFonts(),
     ])
@@ -328,21 +305,18 @@ export async function GET(req: NextRequest) {
           >
             OFFER
           </div>
-          {ensImage && (
-            <img
-              src={ensImage}
-              alt='ens'
-              width={560}
-              height={560}
-              style={{
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                borderBottomLeftRadius: imageBottomRadius,
-                borderBottomRightRadius: imageBottomRadius,
-                objectFit: 'cover',
-              }}
-            />
-          )}
+          {renderEnsNftImage({
+            name: displayName,
+            tokenId: offerDetails.offer.token_id,
+            width: 560,
+            height: 560,
+            style: {
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
+              borderBottomLeftRadius: imageBottomRadius,
+              borderBottomRightRadius: imageBottomRadius,
+            },
+          })}
           {categories.length > 0 && (
             <div
               style={{

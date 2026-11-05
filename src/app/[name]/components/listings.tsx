@@ -29,6 +29,8 @@ import { useQuery } from '@tanstack/react-query'
 import { beautifyName } from '@/lib/ens'
 import Link from 'next/link'
 import { accountQueryKey } from '@/utils/queryKeys'
+import { cn } from '@/utils/tailwind'
+import { COMPROMISED_LISTING_TOOLTIP, isBlockedByCompromise } from '@/utils/compromised'
 
 interface ListingsProps {
   domain?: MarketplaceDomainType
@@ -103,6 +105,9 @@ interface DisplayedListingProps {
 }
 
 const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain, domain }) => {
+  const { address: userAddress } = useAccount()
+  // Stolen name: the listing is only usable by the original owner
+  const isBlocked = isBlockedByCompromise(domain?.compromised, userAddress)
   const { data: brokerAccount } = useQuery({
     queryKey: accountQueryKey(listing.broker_address),
     queryFn: async () => {
@@ -115,7 +120,7 @@ const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain
 
   return (
     <div className='flex flex-row items-center justify-between gap-3'>
-      <div className='flex min-w-0 flex-row items-center gap-2 @[40rem]/app:gap-4'>
+      <div className={cn('flex min-w-0 flex-row items-center gap-2 @[40rem]/app:gap-4', isBlocked && 'opacity-40')}>
         <Image
           src={SOURCE_ICONS[listing.source as keyof typeof SOURCE_ICONS]}
           width={32}
@@ -149,7 +154,7 @@ const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain
           <p className='@[40rem]/app:text-md text-neutral text-sm'>{formatExpiryDate(listing.expires_at)}</p>
         </div>
       </div>
-      <ActionButtons listing={listing} isMyDomain={isMyDomain} domain={domain} />
+      <ActionButtons listing={listing} isMyDomain={isMyDomain} domain={domain} isBlocked={isBlocked} />
     </div>
   )
 }
@@ -158,9 +163,10 @@ interface ActionButtonsProps {
   listing: DomainListingType
   isMyDomain: boolean
   domain?: MarketplaceDomainType
+  isBlocked: boolean
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, domain }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, domain, isBlocked }) => {
   const dispatch = useAppDispatch()
 
   const openEditListingModal = () => {
@@ -226,9 +232,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
 
   return (
     <div className='flex flex-row items-center justify-end gap-2 @[40rem]/app:w-auto'>
-      <PrimaryButton onClick={openBuyNowModal}>
-        Buy<span className='hidden @[40rem]/app:inline'> Now</span>
-      </PrimaryButton>
+      {isBlocked ? (
+        <Tooltip label={COMPROMISED_LISTING_TOOLTIP} position='top' align='right'>
+          <PrimaryButton disabled>
+            Buy<span className='hidden @[40rem]/app:inline'> Now</span>
+          </PrimaryButton>
+        </Tooltip>
+      ) : (
+        <PrimaryButton onClick={openBuyNowModal}>
+          Buy<span className='hidden @[40rem]/app:inline'> Now</span>
+        </PrimaryButton>
+      )}
       {/* <button
         onClick={(e) => {
           e.preventDefault()

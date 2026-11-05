@@ -1,18 +1,18 @@
 import { useState } from 'react'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import { mainnet } from 'wagmi/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
-import { SEAPORT_ADDRESS } from '@/constants/web3/contracts'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import { Address } from 'viem'
 import { DomainListingType } from '@/types/domains'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { config } from '@/lib/config'
 
 export function useSeaportOrder() {
   const { address } = useAccount()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -50,17 +50,17 @@ export function useSeaportOrder() {
       const totalPayment = orderBuilder.calculateTotalPayment(order)
       const usesETH = orderBuilder.usesNativeToken(order)
 
-      // Ensure we're on mainnet before executing the transaction
-      await ensureChain(walletClient, mainnet.id)
+      // Ensure we're on the ENS chain before executing the transaction
+      await ensureChain(walletClient, activeChain.id)
 
       // Execute the transaction using the efficient function
       const tx = await walletClient.writeContract({
-        address: SEAPORT_ADDRESS as `0x${string}`,
+        address: config.seaportAddress,
         abi: SEAPORT_ABI,
         functionName: 'fulfillBasicOrder_efficient_6GL6yc',
         args: [basicOrderParams],
         value: usesETH ? totalPayment : BigInt(0),
-        chain: mainnet,
+        chain: activeChain,
       })
 
       // Wait for confirmation
@@ -101,7 +101,7 @@ export function useSeaportOrder() {
 
       // Simulate the transaction to estimate gas
       const gasEstimate = await publicClient.estimateContractGas({
-        address: SEAPORT_ADDRESS as `0x${string}`,
+        address: config.seaportAddress,
         abi: SEAPORT_ABI,
         functionName: 'fulfillBasicOrder_efficient_6GL6yc',
         args: [basicOrderParams],

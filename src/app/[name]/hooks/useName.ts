@@ -7,7 +7,9 @@ import { useAppDispatch } from '@/state/hooks'
 import {
   setEditRecordsModalMetadata,
   setEditRecordsModalName,
+  setEditRecordsModalVersion,
   setEditRecordsModalOpen,
+  setEditRecordsModalStartWithMigration,
 } from '@/state/reducers/modals/editRecordsModal'
 import { useQuery } from '@tanstack/react-query'
 
@@ -58,9 +60,12 @@ export const useName = (name: string) => {
   })
 
   const dispatch = useAppDispatch()
-  const openEditMetadataModal = () => {
-    if (!metadata) return
-    const metadataRecord = metadata.reduce(
+  // V1 editing snapshots these records, including when returning from the migration review.
+  const isRecordEditorReady = nameDetails?.version === 2 || metadata !== undefined
+  const openRecordEditor = (startWithMigration = false) => {
+    if (!isRecordEditorReady) return
+
+    const metadataRecord = (metadata ?? []).reduce(
       (acc, row) => {
         acc[row.label] = row.value
         return acc
@@ -68,9 +73,14 @@ export const useName = (name: string) => {
       {} as Record<string, string>
     )
     dispatch(setEditRecordsModalName(name))
+    dispatch(setEditRecordsModalVersion(nameDetails?.version ?? null))
     dispatch(setEditRecordsModalMetadata(metadataRecord))
+    dispatch(setEditRecordsModalStartWithMigration(startWithMigration))
     dispatch(setEditRecordsModalOpen(true))
   }
+
+  const openEditMetadataModal = () => openRecordEditor()
+  const openMigrationModal = () => openRecordEditor(true)
 
   return {
     nameDetails,
@@ -82,5 +92,7 @@ export const useName = (name: string) => {
     roles,
     isRolesLoading,
     openEditMetadataModal,
+    openMigrationModal,
+    isRecordEditorReady,
   }
 }

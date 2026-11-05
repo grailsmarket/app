@@ -46,6 +46,16 @@ export const BulkSelectSlice = createSlice({
     removeBulkSelectDomain(state, { payload }: PayloadAction<MarketplaceDomainType>) {
       state.domains = state.domains.filter((d) => d.name !== payload.name)
     },
+    removeBulkSelectNames(state, { payload }: PayloadAction<string[]>) {
+      const names = new Set(payload)
+      const listings = new Set(
+        state.domains
+          .filter((domain) => names.has(domain.name))
+          .flatMap((domain) => domain.listings.map(({ id }) => id))
+      )
+      state.domains = state.domains.filter((domain) => !names.has(domain.name))
+      state.previousListings = state.previousListings.filter(({ id }) => !listings.has(id))
+    },
     setBulkSelectDomains(state, { payload }: PayloadAction<MarketplaceDomainType[]>) {
       state.domains = payload
     },
@@ -131,6 +141,7 @@ export const {
   setBulkSelectIsSelecting,
   addBulkSelectDomain,
   removeBulkSelectDomain,
+  removeBulkSelectNames,
   setBulkSelectDomains,
   addBulkSelectPreviousListing,
   removeBulkSelectPreviousListing,

@@ -47,6 +47,7 @@ const ReplyPreview: React.FC<ReplyPreviewProps> = ({ context, onClear }) => {
           >
             <NameImage
               name={normalizedName}
+              version={context.comment.version}
               tokenId={getNameTokenId(normalizedName)}
               expiryDate={null}
               forceRegStatus={REGISTERED}

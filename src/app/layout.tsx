@@ -20,6 +20,7 @@ const inter = Inter({
 const sedanSC = Sedan_SC({
   variable: '--font-sedan-sc',
   weight: '400',
+  subsets: ['latin'],
 })
 
 export const metadata: Metadata = sharedMetadata

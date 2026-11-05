@@ -10,7 +10,6 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import Image from 'next/image'
 import ArrowDown from 'public/icons/arrow-down.svg'
-import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 
 const ActionButtons = () => {
   const { cartIsEmpty, clearCart } = useCartDomains()
@@ -31,42 +30,21 @@ const ActionButtons = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const isActionBarVisible = selectedTab.value === 'watchlist' && !cartIsEmpty
-  const isBulkSelectVisible =
+  const isActionBarVisible =
     selectedTab.value === 'listings' ||
     selectedTab.value === 'domains' ||
     selectedTab.value === 'grace' ||
     selectedTab.value === 'watchlist' ||
     selectedTab.value === 'expired'
-  const isBulkSelecting = useAppSelector(selectBulkSelect).isSelecting
-
-  // const handleSelectAll = () => {
-  //   dispatch(setBulkSelectDomains(visibleDomains))
-  //   // Also collect previous listings from visible domains that have grails listings
-  //   const allPreviousListings: DomainListingType[] = []
-  //   visibleDomains.forEach((domain) => {
-  //     const grailsListings = domain.listings?.filter((listing) => listing.source === 'grails') || []
-  //     grailsListings.forEach((listing) => {
-  //       if (!allPreviousListings.some((l) => l.id === listing.id)) {
-  //         allPreviousListings.push(listing)
-  //       }
-  //     })
-  //   })
-  //   dispatch(setBulkSelectPreviousListings(allPreviousListings))
-  // }
 
   return (
     <>
       <button
         onClick={scrollToTop}
         className={cn(
-          'bg-secondary hover:bg-tertiary border-tertiary fixed right-[calc(var(--chat-sidebar-width,0px)+0.5rem)] z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0px)+1rem)]',
+          'bg-secondary hover:bg-tertiary border-tertiary fixed right-[calc(var(--chat-sidebar-width,0)+0.5rem)] z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0)+1rem)]',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
-          isActionBarVisible ? 'bottom-16 @[48rem]/app:bottom-18' : 'bottom-4 @[48rem]/app:bottom-6',
-          isBulkSelectVisible &&
-            'bottom-15 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0px)+1.25rem)] @[48rem]/app:bottom-22',
-          isBulkSelecting && 'bottom-30 @[48rem]/app:bottom-32',
-          isBulkSelectVisible && isActionBarVisible && 'hidden'
+          isActionBarVisible ? 'bottom-14 @[48rem]/app:bottom-18' : 'bottom-4 @[48rem]/app:bottom-5'
         )}
         aria-label='Scroll to top'
       >
@@ -75,7 +53,7 @@ const ActionButtons = () => {
 
       <div
         className={cn(
-          'border-tertiary action-buttons-container bg-background fixed bottom-0 left-0 z-20 flex h-14 w-[calc(100%-var(--chat-sidebar-width,0px))] flex-row items-center justify-end rounded-b-lg border-t-2 transition-[transform,width] duration-300 @[48rem]/app:h-16 starting:translate-y-full',
+          'border-tertiary action-buttons-container bg-background fixed bottom-0 left-0 z-20 flex h-14 w-[calc(100%-var(--chat-sidebar-width,0))] flex-row items-center justify-end rounded-b-lg border-t-2 transition-[transform,width] duration-300 @[48rem]/app:h-16 starting:translate-y-full',
           selectedTab.value === 'watchlist' && !cartIsEmpty ? 'translate-y-0' : 'hidden'
         )}
       >

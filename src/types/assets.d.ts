@@ -1,1 +1,1 @@
-export type AssetType = 'ETH' | 'WETH' | 'USDC' | 'ENS'
+export type AssetType = 'ETH' | 'WETH' | 'USDC' | 'ENS' | 'DAI'

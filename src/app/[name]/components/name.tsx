@@ -5,14 +5,15 @@ import PrimaryDetails from './primaryDetails'
 import { useName } from '../hooks/useName'
 import Actions from './actions'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { GRACE_PERIOD, REGISTERED, UNKNOWN } from '@/constants/domains/registrationStatuses'
 import Categories from './categories'
 import KeywordMetrics from './keywordMetrics'
 import CommentsPanel from './commentsPanel'
 import NamePageTabContent from './namePageTabContent'
 import SimilarNames from './similarNames'
 import { cn } from '@/utils/tailwind'
-// import Metadata from './metadata'
+import CompromisedBanner from '@/components/compromised/compromisedBanner'
+import { useRegistrationPrice } from '@/hooks/registrar/useRegistrationPrice'
 
 interface Props {
   name: string
@@ -39,25 +40,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
     roles,
     isRolesLoading,
     openEditMetadataModal,
+    openMigrationModal,
+    isRecordEditorReady,
   } = useName(name)
-
-  // // Pre-warm the OG image cache in the background
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined' && name) {
-  //     // Small delay to not block initial page load
-  //     const timer = setTimeout(() => {
-  //       try {
-  //         const img = new Image()
-  //         img.src = `/api/og/name?name=${encodeURIComponent(name)}`
-  //         // We don't need to do anything with the image, just trigger the request
-  //       } catch (error) {
-  //         console.error('Error pre-warming OG image cache:', error)
-  //       }
-  //     }, 1000)
-
-  //     return () => clearTimeout(timer)
-  //   }
-  // }, [name])
 
   useEffect(() => {
     setSelectedTab('market')
@@ -68,11 +53,23 @@ const NamePage: React.FC<Props> = ({ name }) => {
   }, [name])
 
   const isSubname = name.split('.').length > 2
-  const registrationStatus = nameDetails
-    ? isSubname
-      ? REGISTERED
-      : getRegistrationStatus(nameDetails.expiry_date)
-    : UNREGISTERED
+  const apiStatus = nameDetails?.id ? (isSubname ? REGISTERED : getRegistrationStatus(nameDetails)) : UNKNOWN
+  const canQuoteRegistration = !isSubname && name.endsWith('.eth')
+  const {
+    data: registrationPrice,
+    isLoading: registrationPriceIsLoading,
+    isError: registrationPriceIsError,
+  } = useRegistrationPrice(name, canQuoteRegistration)
+  // V1 names can remain renewable through their original grace window while reserved in V2.
+  const registrationStatus =
+    canQuoteRegistration && registrationPrice && !registrationPriceIsError
+      ? !registrationPrice.isAvailable &&
+        registrationPrice.isReserved &&
+        nameDetails?.version === 1 &&
+        apiStatus === GRACE_PERIOD
+        ? GRACE_PERIOD
+        : registrationPrice.status
+      : apiStatus
   const isRegistered = registrationStatus === REGISTERED
   // const isUnregistered = registrationStatus === UNREGISTERED || registrationStatus === PREMIUM
 
@@ -83,6 +80,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
       <div className='px-md flex w-full flex-row justify-between'>
         <Actions nameDetails={nameDetails} />
       </div>
+      <CompromisedBanner compromised={nameDetails?.compromised} />
       <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4 @[64rem]/app:flex-row'>
         <div className='flex h-fit flex-col gap-1 @[40rem]/app:gap-4 @[40rem]/app:rounded-lg @[64rem]/app:w-2/5'>
           <PrimaryDetails
@@ -90,8 +88,14 @@ const NamePage: React.FC<Props> = ({ name }) => {
             nameDetails={nameDetails}
             nameDetailsIsLoading={nameDetailsIsLoading}
             registrationStatus={registrationStatus}
+            registrationStatusIsLoading={
+              canQuoteRegistration && registrationPriceIsLoading && registrationStatus === UNKNOWN
+            }
+            registrationExpiryDate={registrationPrice?.expiryDate}
             isSubname={isSubname}
             openEditMetadataModal={openEditMetadataModal}
+            isRecordEditorReady={isRecordEditorReady}
+            openMigrationModal={openMigrationModal}
           />
           <div className='hidden @[64rem]/app:block'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
@@ -99,6 +103,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='hidden @[64rem]/app:block'>
             <KeywordMetrics
               name={name}
+              tokenId={nameDetails?.token_id}
               expiryDate={nameDetails?.expiry_date}
               ownerAddress={nameDetails?.owner}
               categories={nameDetails?.clubs}
@@ -151,12 +156,14 @@ const NamePage: React.FC<Props> = ({ name }) => {
                 roles={roles}
                 isRolesLoading={isRolesLoading}
                 openEditMetadataModal={openEditMetadataModal}
+                isRecordEditorReady={isRecordEditorReady}
               />
             </div>
           </div>
           <div className='@[64rem]/app:hidde border-tertiary @[40rem]/app:border-t-2 @[40rem]/app:pt-4 @[64rem]/app:hidden'>
             <KeywordMetrics
               name={name}
+              tokenId={nameDetails?.token_id}
               expiryDate={nameDetails?.expiry_date}
               ownerAddress={nameDetails?.owner}
               categories={nameDetails?.clubs}

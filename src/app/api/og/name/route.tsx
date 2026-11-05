@@ -1,21 +1,16 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
-import { APP_ENS_ADDRESS } from '@/constants'
-import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
-import { labelhash, namehash } from 'viem'
+import { renderEnsNftImage } from '../_lib/ensNftImage'
 
 const size = {
   width: 800,
   height: 418,
 }
 
-const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
-const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const name = decodeURIComponent(searchParams.get('name') || '')
+  const tokenId = decodeURIComponent(searchParams.get('tokenId') || '')
 
   if (name === '') {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 })
@@ -24,12 +19,6 @@ export async function GET(req: NextRequest) {
   if (name.replace('.eth', '').length < 3) {
     return NextResponse.json({ error: 'Invalid ENS name' }, { status: 400 })
   }
-
-  const nameHash = namehash(name)
-  const labelHash = labelhash(name.replace('.eth', ''))
-
-  const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-  const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 
   try {
     return new ImageResponse(
@@ -60,13 +49,13 @@ export async function GET(req: NextRequest) {
             position: 'relative',
           }}
         >
-          {/* show wrapped on top, but if it fails it's blank, so it will show the unwrapped underneath */}
-          <img
-            src={wrappedImageUrl}
-            alt='ens'
-            width={281}
-            height={281}
-            style={{
+          {/* if name image req comes back with nothing, it stys blank which gives room for fallbacks below */}
+          {renderEnsNftImage({
+            name,
+            tokenId,
+            width: 281,
+            height: 281,
+            style: {
               position: 'absolute',
               top: 0,
               left: 0,
@@ -74,25 +63,8 @@ export async function GET(req: NextRequest) {
               height: '100%',
               borderRadius: 16,
               marginRight: 16,
-              zIndex: '2',
-            }}
-          />
-          <img
-            src={unwrappedImageUrl}
-            alt='ens'
-            width={281}
-            height={281}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              borderRadius: 16,
-              marginRight: 16,
-              zIndex: '1',
-            }}
-          />
+            },
+          })}
         </div>
         <div style={{ height: 80, width: 2, backgroundColor: '#ffffff' }} />
         <img src='https://grails.app/your-ens-market-logo.svg' alt='Grails Logo' width={232} height={71} />

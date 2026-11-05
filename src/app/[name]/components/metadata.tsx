@@ -13,31 +13,38 @@ import { isAddress } from 'viem'
 import { MetadataType } from '@/types/api'
 import { RegistrationStatus } from '@/types/domains'
 import { REGISTERED } from '@/constants/domains/registrationStatuses'
-import { ENS_METADATA_URL } from '@/constants/ens'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
+import { config } from '@/lib/config'
+import { activeChainSlug } from '@/constants/web3/chain'
 
 interface NameDetailsProps {
   name: string
+  version?: number
   registrationStatus: RegistrationStatus
   nameOwner?: string | null
   metadata?: MetadataType[]
   isMetadataLoading: boolean
   openEditMetadataModal: () => void
+  isRecordEditorReady: boolean
 }
 
 const Metadata: React.FC<NameDetailsProps> = ({
   name,
+  version,
   registrationStatus,
   nameOwner,
   metadata = [],
   isMetadataLoading,
   openEditMetadataModal,
+  isRecordEditorReady,
 }) => {
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
   const { userAddress, authStatus } = useUserContext()
   const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()
-  const canEditMetadata = isNameOwner && registrationStatus === REGISTERED
+  // Resolver delegates can edit V2 records without owning the name; the modal checks their onchain roles.
+  const canEditMetadata =
+    (isNameOwner || (version === 2 && authStatus === 'authenticated')) && registrationStatus === REGISTERED
 
   // Mirror the cache-busting flow used by `NameImage` so a metadata refresh
   // also blows past any cached avatar/header image bytes. See `imageRefresh`
@@ -63,7 +70,8 @@ const Metadata: React.FC<NameDetailsProps> = ({
           <h3 className='font-sedan-sc text-3xl'>Records</h3>
           {canEditMetadata && (
             <button
-              className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
+              className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+              disabled={!isRecordEditorReady}
               onClick={(e) => {
                 e.stopPropagation()
                 openEditMetadataModal()
@@ -107,7 +115,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             {metadata.find((row) => row.label === 'avatar') && (
               <div key='avatar' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
-                  src={`${ENS_METADATA_URL}/mainnet/avatar/${name}${cacheParam}`}
+                  src={`${config.ensMetadataUrl}/${activeChainSlug}/avatar/${name}${cacheParam}`}
                   alt='Avatar'
                   width={40}
                   height={40}
@@ -121,7 +129,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             {metadata.find((row) => row.label === 'header') && (
               <div key='header' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
-                  src={`${ENS_METADATA_URL}/mainnet/header/${name}${cacheParam}`}
+                  src={`${config.ensMetadataUrl}/${activeChainSlug}/header/${name}${cacheParam}`}
                   alt='Header'
                   width={120}
                   height={40}

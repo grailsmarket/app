@@ -2,6 +2,7 @@ import { API_URL } from '@/constants/api'
 import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 import { authFetch } from '../authFetch'
+import { config } from '@/lib/config'
 
 interface CreateOfferParams {
   marketplace: 'opensea' | 'grails'
@@ -91,7 +92,7 @@ export const submitOfferToOpenSea = async (order_data: any) => {
       counter: orderParameters.counter?.toString(),
     },
     signature: orderSignature,
-    protocol_address: process.env.NEXT_PUBLIC_SEAPORT_ADDRESS || '0x0000000000000068F116a894984e2DB1123eB395',
+    protocol_address: config.seaportAddress,
   }
 
   const url = `${OPENSEA_API_URL}/v2/orders/ethereum/seaport/offers`

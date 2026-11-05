@@ -23,13 +23,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
   currentDate,
 }) => {
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(currentDate || null)
-  const [viewMonth, setViewMonth] = useState(today.getUTCMonth())
+  const [viewMonth, setViewMonth] = useState((minDate || today).getUTCMonth())
   const [viewYear, setViewYear] = useState(today.getUTCFullYear())
-  const [hours, setHours] = useState<number | ''>(new Date().getUTCHours())
-  const [minutes, setMinutes] = useState<number | ''>(new Date().getUTCMinutes())
+  const [hours, setHours] = useState<number | ''>((minDate || today).getUTCHours())
+  const [minutes, setMinutes] = useState<number | ''>((minDate || today).getUTCMinutes())
   const [showMonthDropdown, setShowMonthDropdown] = useState(false)
   const [showYearDropdown, setShowYearDropdown] = useState(false)
 
@@ -173,7 +172,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   return (
     <div
       ref={datePickerRef as React.RefObject<HTMLDivElement>}
-      className={cn('bg-background border-tertiary w-[296px] rounded-lg border p-3 sm:p-4', className)}
+      className={cn('bg-background border-tertiary w-74 rounded-lg border p-3 sm:p-4', className)}
     >
       {/* Header with month/year navigation */}
       <div className='mb-2 flex items-center justify-between'>
@@ -194,7 +193,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
               {months[viewMonth]}
             </button>
             {showMonthDropdown && (
-              <div className='bg-secondary border-primary absolute top-full left-0 z-10 mt-1 max-h-[200px] overflow-y-auto rounded-md border shadow-lg'>
+              <div className='bg-secondary border-primary absolute top-full left-0 z-10 mt-1 max-h-50 overflow-y-auto rounded-md border shadow-lg'>
                 {months.map((month, index) => (
                   <button
                     key={month}
@@ -222,7 +221,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
               {viewYear}
             </button>
             {showYearDropdown && (
-              <div className='bg-secondary border-primary absolute top-full left-0 z-10 mt-1 max-h-[200px] overflow-y-auto rounded-md border shadow-lg'>
+              <div className='bg-secondary border-primary absolute top-full left-0 z-10 mt-1 max-h-50 overflow-y-auto rounded-md border shadow-lg'>
                 {years.map((year) => (
                   <button
                     key={year}

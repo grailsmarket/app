@@ -25,10 +25,10 @@ import DayDivider from './dayDivider'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
-import { ENS_METADATA_URL } from '@/constants/ens'
 import Link from 'next/link'
 import { useThreadView } from '../../hooks/useThreadView'
 import { useNewMessageGate } from '../../hooks/useNewMessageGate'
+import { config } from '@/lib/config'
 
 const ThreadView: React.FC = () => {
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null)
@@ -111,7 +111,7 @@ const ThreadView: React.FC = () => {
         {peerProfile?.records['header'] && (
           <HeaderImage
             name={peerProfile?.ensName ?? undefined}
-            src={`${ENS_METADATA_URL}/mainnet/header/${peerProfile?.ensName}`}
+            src={`${config.ensMetadataUrl}/mainnet/header/${peerProfile?.ensName}`}
             isLoading={false}
             style={{
               width: '100%',
@@ -142,7 +142,7 @@ const ThreadView: React.FC = () => {
             <Avatar
               key={peerProfile?.avatar ?? `${peer.address}-default`}
               address={peer?.address as `0x${string}`}
-              src={`${ENS_METADATA_URL}/mainnet/avatar/${peerProfile.ensName}`}
+              src={`${config.ensMetadataUrl}/mainnet/avatar/${peerProfile.ensName}`}
               name={peerProfile?.ensName ?? undefined}
               style={{ width: '36px', height: '36px' }}
             />

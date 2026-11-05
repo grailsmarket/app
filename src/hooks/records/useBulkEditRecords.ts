@@ -1,14 +1,16 @@
 import { useState, useCallback, useMemo } from 'react'
 import { namehash, encodeFunctionData, toHex } from 'viem'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
-import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
+import { PublicResolverAbi } from '@/constants/web3/abi/PublicResolverAbi'
 import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
 import { fetchNameRoles } from '@/api/name/roles'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
+import { describeTxError } from './useEditRecords'
 
 const MAX_NAMES_PER_MULTICALL = 50
 
@@ -28,6 +30,8 @@ export type TransactionStatus = {
   status: 'pending' | 'confirming' | 'processing' | 'success' | 'error'
   txHash: string | null
   error: string | null
+  /** The raw error text behind `error`, when it is longer. */
+  details?: string | null
 }
 
 type ResolverGroup = {
@@ -54,7 +58,7 @@ function encodeContenthash(input: string): `0x${string}` {
 
 export function useBulkEditRecords(names: string[]) {
   const { address } = useAccount()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
 
@@ -130,6 +134,7 @@ export function useBulkEditRecords(names: string[]) {
   // UI state
   const [step, setStep] = useState<BulkEditStep>('loading_roles')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
   const [transactionStatuses, setTransactionStatuses] = useState<TransactionStatus[]>([])
   const [editMode, setEditMode] = useState<'shared' | 'per-name'>('shared')
 
@@ -447,11 +452,23 @@ export function useBulkEditRecords(names: string[]) {
   const saveRecords = useCallback(async () => {
     if (!publicClient || resolverGroups.length === 0) return
 
-    const walletClient = await getWalletClient()
-    await ensureChain(walletClient, mainnet.id)
+    // Inside a try, so a missing wallet or a refused network switch shows the error screen instead of being swallowed.
+    let walletClient: Awaited<ReturnType<typeof getWalletClient>>
+    try {
+      walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
+    } catch (err: unknown) {
+      const { message, details } = describeTxError(err, 'Could not connect to your wallet')
+      setTransactionStatuses([])
+      setErrorMessage(message)
+      setErrorDetails(details)
+      setStep('error')
+      return
+    }
 
     setStep('confirming')
     setErrorMessage(null)
+    setErrorDetails(null)
 
     // Build transaction plan: split large groups into batches
     const txPlan: { resolverAddress: `0x${string}`; names: string[]; calls: `0x${string}`[] }[] = []
@@ -471,7 +488,13 @@ export function useBulkEditRecords(names: string[]) {
       }
     }
 
-    if (txPlan.length === 0) return
+    if (txPlan.length === 0) {
+      // Nothing to send: say so on the error screen instead of leaving the progress screen up.
+      setTransactionStatuses([])
+      setErrorMessage('None of the selected names have record changes to save.')
+      setStep('error')
+      return
+    }
 
     // Initialize transaction statuses
     const statuses: TransactionStatus[] = txPlan.map((tx) => ({
@@ -499,7 +522,7 @@ export function useBulkEditRecords(names: string[]) {
           abi: PublicResolverAbi,
           functionName: 'multicall',
           args: [tx.calls],
-          chain: mainnet,
+          chain: activeChain,
         })
 
         // Update status to processing with hash
@@ -508,28 +531,21 @@ export function useBulkEditRecords(names: string[]) {
         )
         setStep('processing')
 
-        await waitForTransaction(publicClient, hash)
+        const receipt = await waitForTransaction(publicClient, hash)
+        if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        refreshEnsQueries(queryClient, receipt)
 
         // Update status to success
         setTransactionStatuses((prev) => prev.map((s, idx) => (idx === i ? { ...s, status: 'success' } : s)))
       } catch (err: unknown) {
         hasError = true
-        const message = err instanceof Error ? err.message : 'Transaction failed'
+        const { message, details } = describeTxError(err)
         setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === i ? { ...s, status: 'error', error: message } : s))
+          prev.map((s, idx) => (idx === i ? { ...s, status: 'error', error: message, details } : s))
         )
         // Continue with remaining transactions
       }
     }
-
-    // Invalidate caches for all affected names
-    const allAffectedNames = txPlan.flatMap((tx) => tx.names)
-    for (const name of allAffectedNames) {
-      queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
-      queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
-      queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
-    }
-    queryClient.invalidateQueries({ queryKey: ['profile'] })
 
     setStep(hasError ? 'error' : 'success')
     if (hasError) {
@@ -545,40 +561,35 @@ export function useBulkEditRecords(names: string[]) {
       const status = transactionStatuses[index]
       if (!status || status.status !== 'error') return
 
-      const walletClient = await getWalletClient()
-      await ensureChain(walletClient, mainnet.id)
-
       const calls = buildCallsForGroup(status.names)
       if (calls.length === 0) return
 
       try {
         setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === index ? { ...s, status: 'confirming', error: null } : s))
+          prev.map((s, idx) => (idx === index ? { ...s, status: 'confirming', error: null, details: null } : s))
         )
+
+        // Inside the try, so a wallet or network-switch failure marks this transaction failed instead of being swallowed.
+        const walletClient = await getWalletClient()
+        await ensureChain(walletClient, activeChain.id)
 
         const hash = await walletClient.writeContract({
           address: status.resolverAddress,
           abi: PublicResolverAbi,
           functionName: 'multicall',
           args: [calls],
-          chain: mainnet,
+          chain: activeChain,
         })
 
         setTransactionStatuses((prev) =>
           prev.map((s, idx) => (idx === index ? { ...s, status: 'processing', txHash: hash } : s))
         )
 
-        await waitForTransaction(publicClient, hash)
+        const receipt = await waitForTransaction(publicClient, hash)
+        if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        refreshEnsQueries(queryClient, receipt)
 
         setTransactionStatuses((prev) => prev.map((s, idx) => (idx === index ? { ...s, status: 'success' } : s)))
-
-        // Invalidate caches
-        for (const name of status.names) {
-          queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
-          queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
-          queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
-        }
-        queryClient.invalidateQueries({ queryKey: ['profile'] })
 
         // Check if all are now success
         const allSuccess = transactionStatuses.every((s, idx) => (idx === index ? true : s.status === 'success'))
@@ -587,9 +598,9 @@ export function useBulkEditRecords(names: string[]) {
           setErrorMessage(null)
         }
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Transaction failed'
+        const { message, details } = describeTxError(err)
         setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === index ? { ...s, status: 'error', error: message } : s))
+          prev.map((s, idx) => (idx === index ? { ...s, status: 'error', error: message, details } : s))
         )
       }
     },
@@ -599,6 +610,7 @@ export function useBulkEditRecords(names: string[]) {
   const resetToEditing = useCallback(() => {
     setStep('editing')
     setErrorMessage(null)
+    setErrorDetails(null)
     setTransactionStatuses([])
   }, [])
 
@@ -640,6 +652,7 @@ export function useBulkEditRecords(names: string[]) {
     setStep,
     hasChanges,
     errorMessage,
+    errorDetails,
     transactionStatuses,
     // Actions
     saveRecords,

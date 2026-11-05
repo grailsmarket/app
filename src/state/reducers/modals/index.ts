@@ -15,6 +15,7 @@ import bulkSelectModal from './bulkSelectModal'
 import shareModal from './shareModal'
 import editRecordsModal from './editRecordsModal'
 import bulkEditRecordsModal from './bulkEditRecordsModal'
+import bulkMigrationModal from './bulkMigrationModal'
 import listSettingsModal from './listSettingsModal'
 
 const modalReducer = combineReducers({
@@ -33,6 +34,7 @@ const modalReducer = combineReducers({
   shareReducer: shareModal,
   editRecordsReducer: editRecordsModal,
   bulkEditRecordsReducer: bulkEditRecordsModal,
+  bulkMigrationReducer: bulkMigrationModal,
   listSettingsReducer: listSettingsModal,
 })
 

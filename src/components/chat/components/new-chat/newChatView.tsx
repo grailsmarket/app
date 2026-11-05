@@ -20,10 +20,10 @@ import { formatAddress } from '@/utils/formatAddress'
 import { accountQueryKey } from '@/utils/queryKeys'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import Image from 'next/image'
-import { ENS_METADATA_URL } from '@/constants/ens'
 import EFPFriends from './EFPFrineds'
 import { beautifyName } from '@/lib/ens'
 import { Address } from 'viem'
+import { config } from '@/lib/config'
 
 const errorMessage = (code: string, fallback: string): string => {
   switch (code) {
@@ -135,7 +135,7 @@ const NewChatView: React.FC = () => {
               {account.ens?.records?.['header'] && (
                 <HeaderImage
                   name={displayName}
-                  src={`${ENS_METADATA_URL}/mainnet/header/${accountENSName}`}
+                  src={`${config.ensMetadataUrl}/mainnet/header/${accountENSName}`}
                   isLoading={false}
                   style={{
                     width: '100%',
@@ -152,7 +152,7 @@ const NewChatView: React.FC = () => {
               )}
               <Avatar
                 address={accountAddress}
-                src={`${ENS_METADATA_URL}/mainnet/avatar/${accountENSName}`}
+                src={`${config.ensMetadataUrl}/mainnet/avatar/${accountENSName}`}
                 name={displayName}
                 style={{ width: '32px', height: '32px' }}
               />

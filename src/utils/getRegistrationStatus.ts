@@ -1,28 +1,59 @@
-import { RegistrationStatus } from '@/types/domains'
-import { PREMIUM, REGISTERED, UNREGISTERED, GRACE_PERIOD } from '../constants/domains/registrationStatuses'
+import { DomainRegistrationDetails, RegistrationStatus } from '@/types/domains'
+import { PREMIUM, REGISTERED, UNREGISTERED, GRACE_PERIOD, UNKNOWN } from '../constants/domains/registrationStatuses'
 import { DAY_IN_SECONDS } from '../constants/time'
-// expireTime must be in seconds
-export const getRegistrationStatus = (expiryDate: string | null): RegistrationStatus => {
-  if (!expiryDate) return UNREGISTERED
 
-  const expireTime = new Date(expiryDate).getTime() / 1000
-  const now = new Date().getTime() / 1000
-  const timeSinceExpiry = now - expireTime
+export const PREMIUM_PERIOD = 21 * DAY_IN_SECONDS
 
-  if (timeSinceExpiry < 0) return REGISTERED
+export const getGracePeriod = (version: number) => (version === 2 ? 28 : 90) * DAY_IN_SECONDS
 
-  if (timeSinceExpiry < DAY_IN_SECONDS * 90) return GRACE_PERIOD
+export const getRegistrationDates = (domain: DomainRegistrationDetails) => {
+  const expiryTime = domain.expiry_date ? Date.parse(domain.expiry_date) : NaN
+  const graceEndsAt =
+    domain.grace_ends_at !== undefined
+      ? domain.grace_ends_at
+      : Number.isFinite(expiryTime)
+        ? new Date(expiryTime + getGracePeriod(domain.version) * 1000).toISOString()
+        : null
+  const premiumEndsAt =
+    domain.premium_ends_at !== undefined
+      ? domain.premium_ends_at
+      : graceEndsAt
+        ? new Date(Date.parse(graceEndsAt) + PREMIUM_PERIOD * 1000).toISOString()
+        : null
 
-  if (timeSinceExpiry >= DAY_IN_SECONDS * 90 && timeSinceExpiry < DAY_IN_SECONDS * 111) return PREMIUM
+  return { graceEndsAt, premiumEndsAt }
+}
 
-  if (timeSinceExpiry > DAY_IN_SECONDS * 111) return UNREGISTERED
+export const getRegistrationStatus = (domain: DomainRegistrationDetails): RegistrationStatus => {
+  switch (domain.registration_status) {
+    case 'registered':
+      return REGISTERED
+    case 'grace':
+      return GRACE_PERIOD
+    case 'premium':
+      return PREMIUM
+    case 'available':
+      return UNREGISTERED
+  }
+
+  if (!domain.expiry_date) return UNREGISTERED
+
+  const expiryTime = Date.parse(domain.expiry_date)
+  if (!Number.isFinite(expiryTime)) return UNKNOWN
+
+  const now = Date.now()
+  const { graceEndsAt, premiumEndsAt } = getRegistrationDates(domain)
+
+  if (now < expiryTime) return REGISTERED
+  if (graceEndsAt && now < Date.parse(graceEndsAt)) return GRACE_PERIOD
+  if (premiumEndsAt && now < Date.parse(premiumEndsAt)) return PREMIUM
 
   return UNREGISTERED
 }
 
-export const getSpecialRegistrationStatus = (expiryDate: string): RegistrationStatus | null => {
+export const getSpecialRegistrationStatus = (domain: DomainRegistrationDetails): RegistrationStatus | null => {
   const specialRegistrationStatuses = [GRACE_PERIOD, PREMIUM] as RegistrationStatus[]
-  const status = getRegistrationStatus(expiryDate)
+  const status = getRegistrationStatus(domain)
 
   return specialRegistrationStatuses.includes(status) ? status : null
 }

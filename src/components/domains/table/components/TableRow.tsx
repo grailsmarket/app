@@ -62,7 +62,7 @@ const TableRow: React.FC<TableRowProps> = ({
   const { isSelecting: isBulkSelecting } = useAppSelector(selectBulkSelect)
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const domainIsValid = checkNameValidity(domain.name)
-  const registrationStatus = getRegistrationStatus(domain.expiry_date)
+  const registrationStatus = getRegistrationStatus(domain)
   const canAddToCart = !hideCartIcon && address?.toLowerCase() !== domain.owner?.toLowerCase()
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
@@ -92,8 +92,7 @@ const TableRow: React.FC<TableRowProps> = ({
     price: (
       <Price
         key={`${domain.name}-price`}
-        name={domain.name}
-        expiry_date={domain.expiry_date}
+        domain={domain}
         listing={domainListing}
         registrationStatus={registrationStatus}
         columnCount={columnCount}
@@ -137,7 +136,6 @@ const TableRow: React.FC<TableRowProps> = ({
             className='max-w-[90%]'
             wrapperClassName='justify-start! max-w-full'
             disableLink
-            disableTooltip
             // skipProfileFetch
           />
         )}
@@ -249,7 +247,7 @@ const TableRow: React.FC<TableRowProps> = ({
         }
       }}
       className={cn(
-        'group pl-md pr-sm @[48rem]/app:pr-md border-tertiary flex h-[60px] w-full flex-row items-center justify-between border-b transition',
+        'group pl-md pr-sm @[48rem]/app:pr-md border-tertiary flex h-15 w-full flex-row items-center justify-between border-b transition',
         domainIsValid ? 'cursor-pointer opacity-100' : 'pointer-events-none cursor-not-allowed opacity-40',
         backgroundColor
       )}

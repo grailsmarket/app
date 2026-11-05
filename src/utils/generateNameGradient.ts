@@ -1,9 +1,10 @@
+import { DomainRegistrationDetails } from '@/types/domains'
 import { PREMIUM, REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { getRegistrationStatus } from './getRegistrationStatus'
 
 // expire time must be in seconds
-export const generateNameGradient = (expiryDate: string) => {
-  const registrationStatus = getRegistrationStatus(expiryDate)
+export const generateNameGradient = (domain: DomainRegistrationDetails) => {
+  const registrationStatus = getRegistrationStatus(domain)
 
   if (registrationStatus === REGISTERED) return 'gradient-blue'
 

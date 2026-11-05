@@ -7,6 +7,9 @@ import { ONE_HOUR } from '@/constants/time'
 
 interface PremiumPriceGraphProps {
   expiryDate: string // ISO date string
+  version: number
+  graceEndsAt?: string | null
+  premiumEndsAt?: string | null
   ethPrice: number
   targetPoint?: { date: Date; usd: number; eth: number } | null
   onPointClick?: (timestamp: number) => void
@@ -18,9 +21,15 @@ interface DataPoint {
   eth: number
 }
 
-const TOTAL_HOURS = 21 * 24 // 504 hours
-
-const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPrice, targetPoint, onPointClick }) => {
+const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({
+  expiryDate,
+  version,
+  graceEndsAt,
+  premiumEndsAt,
+  ethPrice,
+  targetPoint,
+  onPointClick,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
@@ -32,12 +41,16 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
   // Generate hourly price data points
   const chartData = useMemo(() => {
     const expiryTimestamp = Math.floor(new Date(expiryDate).getTime() / 1000)
-    const oracle = new PremiumPriceOracle(expiryTimestamp)
+    const oracle = new PremiumPriceOracle(expiryTimestamp, version, {
+      graceEndsAt: graceEndsAt ?? null,
+      premiumEndsAt: premiumEndsAt ?? null,
+    })
     const data: DataPoint[] = []
 
-    // Generate data points for each hour of the 21-day premium period
-    for (let hour = 0; hour <= TOTAL_HOURS; hour++) {
-      const timestamp = oracle.releasedDate + hour * ONE_HOUR
+    // Sample the premium period through the API-provided end date.
+    const totalHours = Math.ceil((oracle.zeroPremiumDate - oracle.releasedDate) / ONE_HOUR)
+    for (let hour = 0; hour <= totalHours; hour++) {
+      const timestamp = Math.min(oracle.releasedDate + hour * ONE_HOUR, oracle.zeroPremiumDate)
       const usd = oracle.getPremiumUsd(timestamp)
       const eth = ethPrice > 0 ? usd / ethPrice : 0
 
@@ -49,12 +62,15 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
     }
 
     return data
-  }, [expiryDate, ethPrice])
+  }, [expiryDate, ethPrice, version, graceEndsAt, premiumEndsAt])
 
   // Get current price
   const currentData = useMemo(() => {
     const expiryTimestamp = Math.floor(new Date(expiryDate).getTime() / 1000)
-    const oracle = new PremiumPriceOracle(expiryTimestamp)
+    const oracle = new PremiumPriceOracle(expiryTimestamp, version, {
+      graceEndsAt: graceEndsAt ?? null,
+      premiumEndsAt: premiumEndsAt ?? null,
+    })
     const now = Math.floor(Date.now() / 1000)
 
     if (!oracle.isInPremiumPeriod(now)) {
@@ -69,7 +85,7 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
       usd,
       eth,
     }
-  }, [expiryDate, ethPrice])
+  }, [expiryDate, ethPrice, version, graceEndsAt, premiumEndsAt])
 
   // Handle resize
   useEffect(() => {

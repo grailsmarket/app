@@ -7,6 +7,7 @@ import {
   NameRegistrationEntry,
   RegistrationFlowState,
   RegistrationMode,
+  RegistrationParameters,
   TimeUnit,
 } from '@/types/registration'
 import { MAX_BATCH_SIZE } from '@/constants/registration'
@@ -23,6 +24,8 @@ export interface RegistrationModalState {
   customDuration: number
   batches: BatchState[]
   currentBatchIndex: number
+  parameters: RegistrationParameters | null
+  resolverDeploymentTxHash: Hex | null
 }
 
 const initialState: RegistrationModalState = {
@@ -37,6 +40,8 @@ const initialState: RegistrationModalState = {
   customDuration: 0,
   batches: [],
   currentBatchIndex: 0,
+  parameters: null,
+  resolverDeploymentTxHash: null,
 }
 
 function createDefaultEntry(name: string, domain: MarketplaceDomainType): NameRegistrationEntry {
@@ -83,6 +88,8 @@ const registrationSlice = createSlice({
       const isSameEntry = state.entries.length === 1 && state.entries[0].name === name
 
       if (!isSameEntry) {
+        state.parameters = null
+        state.resolverDeploymentTxHash = null
         state.entries = [createDefaultEntry(name, domain)]
         state.batches = []
         state.currentBatchIndex = 0
@@ -91,6 +98,8 @@ const registrationSlice = createSlice({
       state.isOpen = true
 
       if (state.flowState === 'success' || state.flowState === 'error') {
+        state.parameters = null
+        state.resolverDeploymentTxHash = null
         state.flowState = 'review'
         state.batches = []
         state.currentBatchIndex = 0
@@ -112,6 +121,8 @@ const registrationSlice = createSlice({
       state.isOpen = true
       state.flowState = 'review'
       state.secret = null
+      state.parameters = null
+      state.resolverDeploymentTxHash = null
       state.errorMessage = null
       state.batches = []
       state.currentBatchIndex = 0
@@ -124,6 +135,12 @@ const registrationSlice = createSlice({
     },
     setSecret: (state, action: PayloadAction<Address>) => {
       state.secret = action.payload
+    },
+    setRegistrationParameters: (state, action: PayloadAction<RegistrationParameters | null>) => {
+      state.parameters = action.payload
+    },
+    setResolverDeploymentTxHash: (state, action: PayloadAction<Hex | null>) => {
+      state.resolverDeploymentTxHash = action.payload
     },
     setRegistrationError: (state, action: PayloadAction<string>) => {
       state.errorMessage = action.payload
@@ -245,6 +262,8 @@ export const {
   closeRegistrationModal,
   setRegistrationFlowState,
   setSecret,
+  setRegistrationParameters,
+  setResolverDeploymentTxHash,
   setRegistrationError,
   setRegistrationMode,
   setQuantity,

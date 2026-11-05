@@ -1,0 +1,255 @@
+import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  type Address,
+  type PublicClient,
+  BaseError,
+  ContractFunctionRevertedError,
+  ContractFunctionZeroDataError,
+  parseEventLogs,
+  getAbiItem,
+} from 'viem'
+import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
+import { getUserResolvers, toResolver } from '@/api/resolvers/getResolvers'
+import { activeChain } from '@/constants/web3/chain'
+import { config } from '@/lib/config'
+import { VERIFIABLE_FACTORY_ABI } from '@/constants/web3/abi/VerifiableFactory'
+import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
+import { createV2RecordsClient } from '@/utils/records/client'
+import { findDeploymentBlock, readLogs } from '@/utils/records/v2Resolver'
+import { loadResolverCatalog, loadResolverState } from '@/utils/records/loadResolver'
+import type { SettingsResolver } from '@/types/ens'
+import { useResolverPreferences } from './useResolverPreferences'
+import { resolverLabel } from '@/utils/settings/labels'
+
+const deploymentEvent = getAbiItem({ abi: VERIFIABLE_FACTORY_ABI, name: 'ProxyDeployed' })
+
+const accessEvent = getAbiItem({ abi: PERMISSIONED_RESOLVER_ABI, name: 'EACRolesChanged' })
+
+export const useResolverDirectory = (includeDeployments = true, enabled = true) => {
+  const { address } = useAccount()
+  const queries = useQueryClient()
+  const client: PublicClient = useMemo(createV2RecordsClient, [])
+  const { isUserResolverDeployed } = usePermissionedResolver()
+  const preferences = useResolverPreferences(enabled)
+  const key = ['settings', 'discovered-resolvers', activeChain.id, address]
+  const remembered = useQuery<SettingsResolver[]>({ queryKey: key, queryFn: () => [], enabled: false, initialData: [] })
+
+  const resolverQuery = useQuery({
+    queryKey: ['user', 'resolvers', activeChain.id, address],
+    queryFn: ({ signal }) => getUserResolvers({ userAddress: address!, signal }),
+    enabled:
+      enabled && !!address && preferences.authStatus !== 'loading' && (!preferences.account || preferences.isError),
+    retry: false,
+    staleTime: 60_000,
+  })
+
+  const resolverData =
+    preferences.data && !preferences.isError
+      ? {
+          ...resolverQuery,
+          isError: false,
+          isLoading: false,
+          data: preferences.data.resolvers.map((item) => ({
+            ...toResolver(item.resolver),
+            address: item.address,
+            name: item.label,
+            isDefault: item.isPreferred,
+          })),
+        }
+      : resolverQuery
+
+  const predicted = useQuery({
+    queryKey: ['registration', 'resolver', activeChain.id, address],
+    queryFn: () => isUserResolverDeployed(),
+    enabled: enabled && !!address && includeDeployments,
+    retry: false,
+  })
+
+  // The account endpoint lists current roles, but not past deployments after all roles were given away.
+  const owned = useQuery({
+    queryKey: ['settings', 'owned-resolvers', activeChain.id, address],
+    enabled: enabled && !!address && includeDeployments,
+    retry: false,
+    staleTime: 60_000,
+    queryFn: async ({ signal }) => {
+      const deadline = AbortSignal.any([signal, AbortSignal.timeout(25_000)])
+      const latest = await client.getBlockNumber({ cacheTime: 0 })
+      const from = await findDeploymentBlock(client, config.ensV2VerifiableFactory, latest, deadline)
+      const logs = await readLogs(client, config.ensV2VerifiableFactory, from, latest, deadline, (fromBlock, toBlock) =>
+        client.getLogs<typeof deploymentEvent>({
+          address: config.ensV2VerifiableFactory,
+          event: deploymentEvent,
+          args: { sender: address! },
+          fromBlock,
+          toBlock,
+        })
+      )
+
+      return parseEventLogs({ abi: VERIFIABLE_FACTORY_ABI, eventName: 'ProxyDeployed', logs })
+        .filter(
+          (log) =>
+            log.args.sender.toLowerCase() === address!.toLowerCase() &&
+            log.args.implementation.toLowerCase() === config.ensV2PermissionedResolverImpl.toLowerCase()
+        )
+        .map(
+          (log) =>
+            ({
+              address: log.args.proxyAddress,
+              deployedBy: address,
+              name: null,
+              nameCount: null,
+              roles: [],
+              isDefault: false,
+            }) satisfies SettingsResolver
+        )
+    },
+  })
+
+  const entries = new Map<string, SettingsResolver>()
+  const delegated = useQuery({
+    queryKey: ['settings', 'delegated-resolvers', activeChain.id, address],
+    enabled: enabled && !!address && resolverData.isError,
+    retry: false,
+    staleTime: 60_000,
+    queryFn: async ({ signal }) => {
+      const deadline = AbortSignal.any([signal, AbortSignal.timeout(25_000)])
+      const latest = await client.getBlockNumber({ cacheTime: 0 })
+      const from = await findDeploymentBlock(client, config.ensV2VerifiableFactory, latest, deadline)
+      const logs = await readLogs(client, config.ensV2VerifiableFactory, from, latest, deadline, (fromBlock, toBlock) =>
+        client.getLogs<typeof accessEvent>({ event: accessEvent, args: { account: address! }, fromBlock, toBlock })
+      )
+
+      const candidates = new Map<Address, Set<bigint>>()
+      for (const log of parseEventLogs({ abi: PERMISSIONED_RESOLVER_ABI, eventName: 'EACRolesChanged', logs })) {
+        if (log.args.newRoleBitmap === BigInt(0)) continue
+        const resources = candidates.get(log.address) ?? new Set<bigint>()
+        resources.add(log.args.resource)
+        candidates.set(log.address, resources)
+      }
+
+      const resolvers: SettingsResolver[] = []
+      for (const [contract, resources] of candidates) {
+        deadline.throwIfAborted()
+        try {
+          await client.readContract({
+            address: contract,
+            abi: PERMISSIONED_RESOLVER_ABI,
+            functionName: 'getRecordCount',
+          })
+
+          for (const resource of resources) {
+            deadline.throwIfAborted()
+            const roles = await client.readContract({
+              address: contract,
+              abi: PERMISSIONED_RESOLVER_ABI,
+              functionName: 'roles',
+              args: [resource, address!],
+            })
+
+            if (roles) {
+              resolvers.push({ address: contract, nameCount: null, roles: [], isDefault: false, delegated: true })
+              break
+            }
+          }
+        } catch (error) {
+          // Registry role events share the signature. Skip unsupported contracts, but surface RPC failures.
+          const cause =
+            error instanceof BaseError
+              ? error.walk(
+                  (item) =>
+                    item instanceof ContractFunctionZeroDataError || item instanceof ContractFunctionRevertedError
+                )
+              : error
+
+          if (!(cause instanceof ContractFunctionZeroDataError) && !(cause instanceof ContractFunctionRevertedError))
+            throw error
+        }
+      }
+      return resolvers
+    },
+  })
+
+  if (predicted.data)
+    entries.set(predicted.data.toLowerCase(), {
+      address: predicted.data,
+      nameCount: null,
+      roles: [],
+      isDefault: false,
+      deployedBy: address,
+    })
+  // Keep former deployers and locally discovered resolvers, even when they no longer hold roles.
+  for (const item of [
+    ...(resolverData.isError ? (delegated.data ?? []) : []),
+    ...(owned.data ?? []),
+    ...(remembered.data ?? []),
+    ...(resolverData.data ?? []),
+  ]) {
+    entries.set(item.address.toLowerCase(), { ...entries.get(item.address.toLowerCase()), ...item })
+  }
+
+  const preferred = preferences.data?.preferred
+
+  if (preferred && !entries.has(preferred.address.toLowerCase()))
+    entries.set(preferred.address.toLowerCase(), {
+      address: preferred.address,
+      nameCount: null,
+      roles: [],
+      isDefault: true,
+      managesRecords: preferred.hasRoles,
+    })
+
+  for (const item of entries.values()) {
+    item.name = resolverLabel(preferences.data, item.address) ?? item.name
+    item.isDefault = item.address.toLowerCase() === preferred?.address.toLowerCase()
+  }
+
+  const remember = (resolver: Address, deployed = false) =>
+    queries.setQueryData<SettingsResolver[]>(key, (previous) => [
+      ...(previous ?? []).filter((item) => item.address.toLowerCase() !== resolver.toLowerCase()),
+      { address: resolver, nameCount: null, roles: [], isDefault: false, ...(deployed ? { deployedBy: address } : {}) },
+    ])
+
+  return {
+    resolvers: [...entries.values()].sort((a, b) => Number(b.isDefault) - Number(a.isDefault)),
+    preferences,
+    preferred,
+    remember,
+    resolverData,
+    owned,
+    delegated,
+    predicted,
+    loading:
+      !entries.size &&
+      (preferences.isLoading ||
+        resolverData.isLoading ||
+        owned.isLoading ||
+        delegated.isLoading ||
+        predicted.isLoading),
+  }
+}
+
+export const useResolverCatalog = (resolver: Address, enabled = true) => {
+  const { address } = useAccount()
+  const queries = useQueryClient()
+  const client = useMemo(createV2RecordsClient, [])
+
+  const state = useQuery({
+    queryKey: ['settings', 'resolver-state', activeChain.id, resolver, address],
+    queryFn: ({ signal }) => loadResolverState(queries, client, resolver, 'grails-settings.invalid', address, signal),
+    enabled,
+    retry: false,
+    staleTime: 15_000,
+  })
+
+  const history = useQuery({
+    queryKey: ['settings', 'resolver-history', activeChain.id, resolver, address, state.data?.blockNumber.toString()],
+    queryFn: ({ signal }) => loadResolverCatalog(queries, client, resolver, state.data!, address, signal),
+    enabled: enabled && !!state.data,
+    retry: false,
+    staleTime: Infinity,
+  })
+
+  return { client, state, history, catalog: history.data ?? state.data }
+}

@@ -49,7 +49,7 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
     <HoverPrefetchLink
       href={`/${normalizeName(listing.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition @[40rem]/app:px-3',
+        'group border-tertiary hover:bg-foreground/10 flex h-13 w-full flex-row items-center gap-3 border-b px-2 transition @[40rem]/app:px-3',
         index === 0 && 'border-t'
       )}
     >
@@ -57,15 +57,16 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
         <SourceIcon source={listing.source} />
         <NameImage
           name={listing.name}
-          tokenId=''
+          version={listing.version}
+          tokenId={listing.token_id}
           expiryDate={null}
           forceRegStatus={REGISTERED}
           className='h-8 w-8 shrink-0 rounded-sm'
         />
-        <div className='max-w-[calc(100%-60px)] truncate'>
-          <p className='text-md max-w-full truncate font-semibold'>{beautifyName(listing.name)}</p>
+        <div className='min-w-0 flex-1'>
+          <p className='text-md truncate font-semibold'>{beautifyName(listing.name)}</p>
           {category && categoryDetails && (
-            <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
+            <div className='text-md text-foreground/60 flex items-center gap-1 overflow-hidden font-semibold text-nowrap'>
               <Image
                 src={categoryDetails.avatar}
                 alt={category.display_name}
@@ -113,7 +114,7 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
     <HoverPrefetchLink
       href={`/${normalizeName(offer.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition @[40rem]/app:px-3',
+        'group border-tertiary hover:bg-foreground/10 flex h-13 w-full flex-row items-center gap-3 border-b px-2 transition @[40rem]/app:px-3',
         index === 0 && 'border-t'
       )}
     >
@@ -121,15 +122,16 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
         <SourceIcon source={offer.source} />
         <NameImage
           name={offer.name}
-          tokenId=''
+          version={offer.version}
+          tokenId={offer.token_id}
           expiryDate={null}
           forceRegStatus={REGISTERED}
           className='h-8 w-8 shrink-0 rounded-sm'
         />
-        <div className='w-full max-w-[calc(100%-60px)] truncate'>
-          <p className='text-md max-w-full truncate font-semibold'>{beautifyName(offer.name)}</p>
+        <div className='min-w-0 flex-1'>
+          <p className='text-md truncate font-semibold'>{beautifyName(offer.name)}</p>
           {category && categoryDetails && (
-            <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
+            <div className='text-md text-foreground/60 flex items-center gap-1 overflow-hidden font-semibold text-nowrap'>
               <Image
                 src={categoryDetails.avatar}
                 alt={category.display_name}
@@ -179,7 +181,7 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
     <HoverPrefetchLink
       href={`/${normalizeName(sale.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-1 border-b px-2 transition @[40rem]/app:px-3',
+        'group border-tertiary hover:bg-foreground/10 flex h-13 w-full flex-row items-center gap-1 border-b px-2 transition @[40rem]/app:px-3',
         className,
         index === 0 && 'border-t'
       )}
@@ -188,15 +190,16 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
         <SourceIcon source={sale.source} />
         <NameImage
           name={sale.name}
-          tokenId=''
+          version={sale.version}
+          tokenId={sale.token_id}
           expiryDate={null}
           forceRegStatus={REGISTERED}
           className='h-8 w-8 shrink-0 rounded-sm'
         />
-        <div className='w-full max-w-[calc(100%-60px)] truncate'>
-          <p className='text-md max-w-full truncate font-semibold'>{beautifyName(sale.name)}</p>
+        <div className='min-w-0 flex-1'>
+          <p className='text-md truncate font-semibold'>{beautifyName(sale.name)}</p>
           {category && categoryDetails && (
-            <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
+            <div className='text-md text-foreground/60 flex items-center gap-1 overflow-hidden font-semibold text-nowrap'>
               <Image
                 src={categoryDetails.avatar}
                 alt={category.display_name}
@@ -258,7 +261,7 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
     <HoverPrefetchLink
       href={`/${normalizeName(registration.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition @[40rem]/app:px-3',
+        'group border-tertiary hover:bg-foreground/10 flex h-13 w-full flex-row items-center gap-3 border-b px-2 transition @[40rem]/app:px-3',
         className,
         index === 0 && 'border-t'
       )}
@@ -267,15 +270,16 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
         <SourceIcon source={registration.source} />
         <NameImage
           name={registration.name}
-          tokenId=''
+          version={registration.version}
+          tokenId={registration.token_id}
           forceRegStatus={REGISTERED}
           expiryDate={null}
           className='h-8 w-8 shrink-0 rounded-sm'
         />
-        <div className='w-full max-w-[calc(100%-34px)] truncate'>
-          <p className='text-md max-w-full truncate font-semibold'>{beautifyName(registration.name)}</p>
+        <div className='min-w-0 flex-1'>
+          <p className='text-md truncate font-semibold'>{beautifyName(registration.name)}</p>
           {category && categoryDetails && (
-            <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
+            <div className='text-md text-foreground/60 flex items-center gap-1 overflow-hidden font-semibold text-nowrap'>
               <Image
                 src={categoryDetails.avatar}
                 alt={category.display_name}
@@ -294,7 +298,8 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
       <div className='flex w-[20%] flex-1 items-center'>
         <Price
           price={registration.total_cost_wei}
-          currencyAddress={ETH_ADDRESS}
+          currencyAddress={(registration.currency_address ?? ETH_ADDRESS) as Address}
+          usdPrice={registration.total_cost_usd ? Number(registration.total_cost_usd) : undefined}
           fontSize='text-md font-medium'
           iconSize='16px'
         />

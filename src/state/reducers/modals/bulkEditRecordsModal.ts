@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
+import type { BulkRecordName } from '@/types/records'
 
 // Types --------------------------------------------
 type BulkEditRecordsModalState = {
   open: boolean
-  names: string[]
+  names: BulkRecordName[]
 }
 
 // Initial State ------------------------------------
@@ -21,7 +22,7 @@ export const BulkEditRecordsModalSlice = createSlice({
     setBulkEditRecordsModalOpen(state, { payload }: PayloadAction<boolean>) {
       state.open = payload
     },
-    setBulkEditRecordsModalNames(state, { payload }: PayloadAction<string[]>) {
+    setBulkEditRecordsModalNames(state, { payload }: PayloadAction<BulkRecordName[]>) {
       state.names = payload
     },
   },

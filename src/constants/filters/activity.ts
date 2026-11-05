@@ -29,6 +29,7 @@ export const ACTIVITY_TYPE_FILTERS = [
   { label: 'Listing Cancelled', value: 'listing_cancelled' },
   { label: 'Minted', value: 'mint' },
   { label: 'Extended', value: 'renewal' },
+  { label: 'Migrated', value: 'migrated' },
   { label: 'Sent', value: 'sent' },
   { label: 'Received', value: 'received' },
 ] as const

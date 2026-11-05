@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest } from 'next/server'
-import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { ALL_REGISTRATION_STATUSES, REGISTERED, UNKNOWN, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -26,9 +26,7 @@ const gradients = {
   'gradient-gray': 'linear-gradient(135deg, rgba(129, 133, 152) 0%, rgba(231, 237, 246) 103.11%)',
 }
 
-function getGradient(expiryDate: string | null) {
-  const registrationStatus = getRegistrationStatus(expiryDate)
-
+const getGradient = (registrationStatus: string) => {
   if (registrationStatus === REGISTERED) return gradients['gradient-blue']
   if (registrationStatus === UNREGISTERED) return gradients['gradient-gray']
 
@@ -45,7 +43,13 @@ export async function GET(req: NextRequest) {
     const expires = searchParams.get('expires')
     const expiryDate = expires ? new Date(Number(expires)).toISOString() : null
 
-    const gradient = getGradient(expiryDate)
+    const version = searchParams.get('version') === '2' ? 2 : 1
+    const status = searchParams.get('status')
+    const registrationStatus =
+      status && [...ALL_REGISTRATION_STATUSES, UNKNOWN].some((value) => value === status)
+        ? status
+        : getRegistrationStatus({ expiry_date: expiryDate, version })
+    const gradient = getGradient(registrationStatus)
 
     const satoshiBold = await readFile(join(process.cwd(), 'public/fonts/satoshi/Satoshi-Black.otf'))
 

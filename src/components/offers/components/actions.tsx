@@ -15,6 +15,8 @@ import {
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { useUserContext } from '@/context/user'
+import Tooltip from '@/components/ui/tooltip'
+import { COMPROMISED_OFFER_TOOLTIP, isCompromisedCounterparty } from '@/utils/compromised'
 
 interface ActionsProps {
   offer: DomainOfferType
@@ -38,6 +40,7 @@ const Actions: React.FC<ActionsProps> = ({ offer, currentUserAddress }) => {
         name: offer.name,
         tokenId: offer.token_id,
         isWrapped: false,
+        compromised: offer.compromised ?? null,
       })
     )
   }
@@ -59,6 +62,14 @@ const Actions: React.FC<ActionsProps> = ({ offer, currentUserAddress }) => {
   }
 
   if (isSeller) {
+    // Stolen name: only offers from the original owner can be accepted
+    if (offer.compromised && !isCompromisedCounterparty(offer.compromised, offer.buyer_address)) {
+      return (
+        <Tooltip label={COMPROMISED_OFFER_TOOLTIP} position='top' align='right'>
+          <PrimaryButton disabled>Accept</PrimaryButton>
+        </Tooltip>
+      )
+    }
     return <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
   }
 

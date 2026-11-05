@@ -10,13 +10,25 @@ import { useUserContext } from '@/context/user'
 import { authFetch } from '@/api/authFetch'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
-import { MarketplaceType } from '@/lib/seaport/seaportClient'
+import { MarketplaceType, SeaportCancelEvent, SeaportProgressEvent } from '@/lib/seaport/seaportClient'
+import { getListingTokenId } from '@/lib/seaport/ensv2'
+import { USDC_ADDRESS } from '@/constants/web3/tokens'
+import { activeChain } from '@/constants/web3/chain'
+import { ensureChain } from '@/utils/web3/ensureChain'
+
+// The hash of a Seaport cancel: transact() resolves with the broadcast transaction, the fallback path with its receipt
+const getCancelTxHash = (transaction: unknown): string | null => {
+  const tx = transaction as { hash?: unknown; transactionHash?: unknown } | null | undefined
+  if (typeof tx?.hash === 'string') return tx.hash
+  if (typeof tx?.transactionHash === 'string') return tx.transactionHash
+  return null
+}
 
 export function useSeaportClient() {
   const queryClient = useQueryClient()
   const { userAddress: address, authStatus } = useUserContext()
   const getWalletClient = useGetWalletClient()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -81,6 +93,7 @@ export function useSeaportClient() {
       setApproveTxHash?: (txHash: string | null) => void
       setCreateListingTxHash?: (txHash: string | null) => void
       setError?: (error: string | null) => void
+      onProgress?: (event: SeaportProgressEvent) => void
     }): Promise<{ success: boolean; error?: string; result?: any }> => {
       if (!address) {
         return { success: false, error: 'Wallet not connected' }
@@ -91,6 +104,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -130,6 +144,7 @@ export function useSeaportClient() {
 
         // Submitting created orders to the marketplace APIs
         // params.setStatus?.('submitting')
+        params.onProgress?.({ type: 'publishing' })
         // Handle "both" marketplace case
         if (params.marketplace.length > 1 && 'opensea' in orders && 'grails' in orders) {
           // Create two separate listings - one for each platform
@@ -174,15 +189,13 @@ export function useSeaportClient() {
                     .toString()
                   const currency = params.currencies?.[index] || 'ETH'
                   const currencyAddress =
-                    currency === 'USDC'
-                      ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
-                      : '0x0000000000000000000000000000000000000000'
+                    currency === 'USDC' ? USDC_ADDRESS : '0x0000000000000000000000000000000000000000'
 
                   return authFetch('/api/brokered-listings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                      token_id: domain.token_id,
+                      token_id: getListingTokenId(order, domain.token_id),
                       price_wei: priceWei,
                       currency_address: currencyAddress,
                       order_data: JSON.stringify(order),
@@ -273,16 +286,13 @@ export function useSeaportClient() {
                 .reduce((sum: bigint, item: any) => sum + BigInt(item.startAmount || '0'), BigInt(0))
                 .toString()
               const currency = params.currencies?.[index] || 'ETH'
-              const currencyAddress =
-                currency === 'USDC'
-                  ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC address
-                  : '0x0000000000000000000000000000000000000000' // ETH
+              const currencyAddress = currency === 'USDC' ? USDC_ADDRESS : '0x0000000000000000000000000000000000000000' // ETH
 
               return authFetch('/api/brokered-listings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  token_id: domain.token_id,
+                  token_id: getListingTokenId(order, domain.token_id),
                   price_wei: priceWei,
                   currency_address: currencyAddress,
                   order_data: JSON.stringify(order),
@@ -357,12 +367,14 @@ export function useSeaportClient() {
     async (params: {
       tokenId: string
       ensName: string
+      version?: number
       ensNameId: number
       price: number
       currency: 'WETH' | 'USDC'
       expiryDate: number
       currentOwner?: string
       marketplace: MarketplaceType[]
+      onProgress?: (event: SeaportProgressEvent) => void
     }) => {
       if (!address) {
         throw new Error('Wallet not connected')
@@ -373,6 +385,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -393,12 +406,16 @@ export function useSeaportClient() {
         const result = await seaportClient.createOffer({
           tokenId: params.tokenId,
           ensName: params.ensName,
+          version: params.version,
           price: params.price,
           currency: params.currency,
           expiryDate: params.expiryDate,
           offererAddress: address,
           marketplace: params.marketplace,
+          onProgress: params.onProgress,
         })
+
+        params.onProgress?.({ type: 'publishing' })
 
         // Handle the result - it should be a single order since we're using 'grails' marketplace
         const createdOffers = Object.entries(result).map(async ([marketplace, order]) => {
@@ -433,7 +450,20 @@ export function useSeaportClient() {
           }
         })
 
-        return await Promise.all(createdOffers)
+        // Settle every save so each marketplace's outcome can be reported, then fail as before if any failed
+        const settled = await Promise.allSettled(createdOffers)
+        Object.keys(result).forEach((marketplace, index) => {
+          params.onProgress?.({
+            type: 'published',
+            marketplace: marketplace as MarketplaceType,
+            ok: settled[index].status === 'fulfilled',
+          })
+        })
+
+        const failed = settled.find((outcome) => outcome.status === 'rejected')
+        if (failed) throw failed.reason
+
+        return settled.flatMap((outcome) => (outcome.status === 'fulfilled' ? [outcome.value] : []))
       } catch (err: any) {
         setError(err.message || 'Failed to create offer')
         throw err
@@ -457,6 +487,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -486,7 +517,7 @@ export function useSeaportClient() {
 
   // Cancel orders
   const cancelListings = useCallback(
-    async (listingIds: number[]) => {
+    async (listingIds: number[], onProgress?: (event: SeaportCancelEvent) => void) => {
       if (!address) {
         throw new Error('Wallet not connected')
       }
@@ -496,6 +527,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -512,6 +544,7 @@ export function useSeaportClient() {
 
       try {
         // Step 1: Fetch order components from API
+        onProgress?.({ type: 'cancel-api' })
         const fetchResponse = await authFetch('/api/listings/cancel', {
           method: 'POST',
           headers: {
@@ -543,11 +576,14 @@ export function useSeaportClient() {
 
         // Step 2: Cancel on-chain using Seaport contract
         const orderComponents = orders.map((o: any) => o.orderComponents)
+        onProgress?.({ type: 'cancel-prompt' })
         const transaction = await seaportClient.cancelOrders(orderComponents, address)
+        onProgress?.({ type: 'cancel-sent', hash: getCancelTxHash(transaction) })
 
         console.log('Cancellation transaction:', transaction)
 
         // Step 3: Update database after successful on-chain cancellation
+        onProgress?.({ type: 'cancel-update' })
         const updateResponse = await authFetch('/api/listings/cancel', {
           method: 'POST',
           headers: {
@@ -577,7 +613,7 @@ export function useSeaportClient() {
   )
 
   const cancelOffer = useCallback(
-    async (offer: DomainOfferType) => {
+    async (offer: DomainOfferType, onProgress?: (event: SeaportCancelEvent) => void) => {
       if (!address) {
         throw new Error('Wallet not connected')
       }
@@ -587,40 +623,45 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
       setIsLoading(true)
       setError(null)
 
       const offerId = offer.id
 
-      if (offer.source === 'opensea') {
-        console.log('Cancelling OpenSea offer:', offer)
+      try {
+        // Inside the try so a rejected or failed onchain cancel still resets isLoading
+        if (offer.source === 'opensea') {
+          console.log('Cancelling OpenSea offer:', offer)
 
-        // Build the order component
-        const onchaincancelParams = {
-          offerer: offer.buyer_address,
-          zone: offer.order_data.protocol_data.parameters.zone,
-          orderType: offer.order_data.protocol_data.parameters.orderType,
-          startTime: offer.order_data.protocol_data.parameters.startTime,
-          endTime: offer.order_data.protocol_data.parameters.endTime,
-          zoneHash: offer.order_data.protocol_data.parameters.zoneHash,
-          salt: offer.order_data.protocol_data.parameters.salt,
-          offer: offer.order_data.protocol_data.parameters.offer,
-          consideration: offer.order_data.protocol_data.parameters.consideration,
-          totalOriginalConsiderationItems: offer.order_data.protocol_data.parameters.totalOriginalConsiderationItems,
-          conduitKey: offer.order_data.protocol_data.parameters.conduitKey,
-          counter: offer.order_data.protocol_data.parameters.counter,
+          // Build the order component
+          const onchaincancelParams = {
+            offerer: offer.buyer_address,
+            zone: offer.order_data.protocol_data.parameters.zone,
+            orderType: offer.order_data.protocol_data.parameters.orderType,
+            startTime: offer.order_data.protocol_data.parameters.startTime,
+            endTime: offer.order_data.protocol_data.parameters.endTime,
+            zoneHash: offer.order_data.protocol_data.parameters.zoneHash,
+            salt: offer.order_data.protocol_data.parameters.salt,
+            offer: offer.order_data.protocol_data.parameters.offer,
+            consideration: offer.order_data.protocol_data.parameters.consideration,
+            totalOriginalConsiderationItems: offer.order_data.protocol_data.parameters.totalOriginalConsiderationItems,
+            conduitKey: offer.order_data.protocol_data.parameters.conduitKey,
+            counter: offer.order_data.protocol_data.parameters.counter,
+          }
+
+          onProgress?.({ type: 'cancel-prompt' })
+          const openseaResponse = await seaportClient.cancelOrders([onchaincancelParams], address)
+          console.log('OpenSea response:', openseaResponse)
+          onProgress?.({ type: 'cancel-sent', hash: getCancelTxHash(openseaResponse) })
         }
 
-        const openseaResponse = await seaportClient.cancelOrders([onchaincancelParams], address)
-        console.log('OpenSea response:', openseaResponse)
-      }
-
-      try {
         // Re-initialize to ensure we have the wallet client
         await seaportClient.initialize(publicClient, walletClient)
         console.log('Seaport re-initialized with wallet client for cancellation')
         // Step 1: Fetch order components from API
+        onProgress?.({ type: 'cancel-update' })
         const response = await cancelOfferApi(offerId)
         return response
       } catch (err: any) {

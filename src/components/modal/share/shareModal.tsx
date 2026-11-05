@@ -21,6 +21,7 @@ interface ShareModalProps {
   listing: DomainListingType | null
   offer: DomainOfferType | null
   domainName: string | null
+  tokenId?: string | null
   ownerAddress: string | null
   categories: string[] | null
 }
@@ -31,6 +32,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
   listing,
   offer,
   domainName,
+  tokenId,
   ownerAddress,
   categories,
 }) => {
@@ -69,6 +71,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
       } else if (type === 'google-analytics') {
         const params = new URLSearchParams({
           name: domainName,
+          ...(tokenId && { tokenId }),
           ...(ownerAddress && { owner: ownerAddress }),
           ...(categories && { categories: categories.join(',') }),
         })
@@ -95,7 +98,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
       setError((err as Error).message)
       setStatus('error')
     }
-  }, [type, listing, offer, domainName, ownerAddress, categories])
+  }, [type, listing, offer, domainName, tokenId, ownerAddress, categories])
 
   useEffect(() => {
     fetchImage()

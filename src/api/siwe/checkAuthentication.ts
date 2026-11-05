@@ -4,6 +4,7 @@ import { Address } from 'viem'
 export type ProfileResponseType = {
   id: number
   address: Address
+  preferredResolver?: Address | null
   email: string | null
   emailVerified: boolean
   telegram: string | null

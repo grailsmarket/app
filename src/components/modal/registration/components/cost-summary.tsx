@@ -1,14 +1,21 @@
-import type { CalculationResults, NameRegistrationEntry } from '@/types/registration'
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
+import { Address } from 'viem'
+import DetailList, { type DetailRow } from '@/components/ui/modal/detailList'
+import Notice from '@/components/ui/modal/notice'
+import { TOKENS } from '@/constants/web3/tokens'
+import { ETH_PAYMENT_NOTE, formatPaymentAmount, getPricingAsset, isEthPayment } from '@/lib/ethPayment'
+import type { CalculationResults, NameRegistrationEntry, SufficientBalanceResults } from '@/types/registration'
 
 interface CostSummaryProps {
   calculationResults: CalculationResults | null
   isBulk: boolean
   availableEntries: NameRegistrationEntry[]
   totalBatches: number
-  hasSufficientBalance: boolean
+  hasSufficientBalance: SufficientBalanceResults
   allNamesValid: boolean
   gasEstimate: bigint | null
   gasPrice: bigint | undefined
+  asset: Address
 }
 
 const CostSummary: React.FC<CostSummaryProps> = ({
@@ -20,74 +27,88 @@ const CostSummary: React.FC<CostSummaryProps> = ({
   allNamesValid,
   gasEstimate,
   gasPrice,
+  asset,
 }) => {
+  const payWithEth = isEthPayment(asset)
+  // Quotes and discounts are in the pricing token: USDC when paying with ETH
+  const pricingLabel = TOKENS[getPricingAsset(asset)]
+  const durationDiscount = calculationResults?.durationDiscount
+  const hasDurationDiscount = !!durationDiscount && durationDiscount.amount > 0
+
+  const rows: DetailRow[] = []
+  if (calculationResults) {
+    rows.push(
+      isBulk
+        ? { key: 'names', label: 'Names', value: availableEntries.length }
+        : { key: 'duration', label: 'Total Duration', value: `${calculationResults.durationYears.toFixed(2)} years` }
+    )
+  }
+  if (hasDurationDiscount) {
+    rows.push({
+      key: 'discount',
+      label: 'Duration discount',
+      value: `-${durationDiscount.amount.toFixed(2)} ${pricingLabel} (${Number(durationDiscount.percentage.toFixed(2))}%)`,
+      tone: 'success',
+    })
+  }
+  if (gasEstimate && gasPrice) {
+    rows.push({
+      key: 'gas',
+      label: 'Estimated Gas',
+      value: `~${(Number((gasEstimate * gasPrice) / BigInt(10 ** 12)) / 10 ** 6).toFixed(6)} ETH`,
+    })
+  }
+
   return (
-    <div className='flex flex-col gap-2'>
+    <>
       {calculationResults && (
-        <div className='bg-secondary border-tertiary rounded-lg border p-3'>
-          <div className='text-md space-y-2'>
-            {!isBulk && (
-              <div className='flex items-center justify-between'>
-                <p>Registration Duration:</p>
-                <p className='font-medium'>{calculationResults.durationYears.toFixed(2)} years</p>
-              </div>
-            )}
-            <div className='flex items-center justify-between'>
-              <p>Total Cost (ETH):</p>
-              <div className='flex flex-col items-end'>
-                <p className='font-medium'>{calculationResults.priceETH.toFixed(6)} ETH</p>
-                <p className='text-neutral text-xs'>(${calculationResults.priceUSD.toFixed(2)})</p>
-              </div>
-            </div>
-            {gasEstimate && gasPrice && (
-              <div className='flex justify-between'>
-                <span>Estimated Gas:</span>
-                <span className='font-medium'>
-                  ~{(Number((gasEstimate * gasPrice) / BigInt(10 ** 12)) / 10 ** 6).toFixed(6)} ETH
-                </span>
-              </div>
-            )}
-            {isBulk && (
-              <div className='flex items-center justify-between'>
-                <p>Names:</p>
-                <p className='font-medium'>{availableEntries.length}</p>
-              </div>
-            )}
-          </div>
-        </div>
+        <DetailList
+          rows={rows}
+          total={{
+            label: 'Registration Cost',
+            value: calculationResults.isLoadingPrice ? (
+              <SkeletonText label='Loading registration price…' className='w-24' />
+            ) : payWithEth ? (
+              <>
+                {formatPaymentAmount(calculationResults.priceETH, asset)} ETH{' '}
+                <span className='text-neutral font-normal'>(≈ {calculationResults.priceUSD.toFixed(2)} USDC)</span>
+              </>
+            ) : (
+              `${calculationResults.priceUSD.toFixed(2)} ${TOKENS[asset]}`
+            ),
+          }}
+        />
       )}
+      {payWithEth && <Notice tone='info'>{ETH_PAYMENT_NOTE}</Notice>}
+      <Notice tone='info'>
+        {totalBatches > 1
+          ? `This registration requires ${totalBatches} commit + ${totalBatches} register transactions.`
+          : 'Note: You will have to make 2 transactions to complete your registration.'}
+      </Notice>
       {calculationResults?.isBelowMinimum && (
-        <div className='rounded-lg border border-amber-500/20 bg-amber-900/20 p-3'>
-          <p className='text-md text-amber-400'>
-            Minimum registration duration is 28 days. Please select a longer duration.
-          </p>
-        </div>
+        <Notice tone='warning'>Minimum registration duration is 28 days. Please select a longer duration.</Notice>
       )}
-      <div className='bg-secondary border-tertiary rounded-lg border p-3'>
-        <p className='text-md text-neutral'>
-          {totalBatches > 1
-            ? `This registration requires ${totalBatches} commit + ${totalBatches} register transactions.`
-            : 'Note: You will have to make 2 transactions to complete your registration.'}
-        </p>
-      </div>
-      {calculationResults && !hasSufficientBalance && (
-        <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
-          <p className='text-md text-red-400'>
-            Insufficient ETH balance. You need approximately {(calculationResults.priceETH + 0.01).toFixed(4)} ETH to
-            complete this registration (including gas costs).
-          </p>
-        </div>
+      {calculationResults && !calculationResults.isLoadingPrice && !hasSufficientBalance.hasSufficientEth && (
+        <Notice tone='danger'>
+          {payWithEth
+            ? 'Insufficient ETH balance to cover the registration and transaction gas.'
+            : 'Insufficient ETH balance to cover transaction gas.'}
+        </Notice>
+      )}
+      {calculationResults && !calculationResults.isLoadingPrice && !hasSufficientBalance.hasSufficientAssets && (
+        <Notice tone='danger'>
+          Insufficient {TOKENS[asset]} balance. You need {calculationResults.priceUSD.toFixed(2)} {TOKENS[asset]} to pay
+          for this registration.
+        </Notice>
       )}
       {!allNamesValid && (
-        <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
-          <p className='text-md text-red-400'>
-            {isBulk
-              ? 'Some names contain invalid characters and cannot be registered.'
-              : 'This name contains invalid characters and cannot be registered.'}
-          </p>
-        </div>
+        <Notice tone='danger'>
+          {isBulk
+            ? 'Some names contain invalid characters and cannot be registered.'
+            : 'This name contains invalid characters and cannot be registered.'}
+        </Notice>
       )}
-    </div>
+    </>
   )
 }
 

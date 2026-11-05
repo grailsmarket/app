@@ -1,11 +1,10 @@
 import { DAY_IN_SECONDS, MONTH_IN_SECONDS, ONE_HOUR, ONE_MINUTE, YEAR_IN_SECONDS } from '@/constants/time'
 
-const PREMIUM_PERIOD_DAYS = 111
-const GRACE_PERIOD_DAYS = 90
+import { getGracePeriod, PREMIUM_PERIOD } from '../getRegistrationStatus'
 
-export const formatTimeLeft = (expiryDate: string, type: 'premium' | 'grace' = 'premium'): string | null => {
+export const formatTimeLeft = (expiryDate: string, type: 'premium' | 'grace', version: number): string | null => {
   const expiryTime = new Date(expiryDate).getTime()
-  const timeToAdd = (type === 'premium' ? PREMIUM_PERIOD_DAYS : GRACE_PERIOD_DAYS) * DAY_IN_SECONDS * 1000
+  const timeToAdd = (getGracePeriod(version) + (type === 'premium' ? PREMIUM_PERIOD : 0)) * 1000
   const endTime = expiryTime + timeToAdd
   const now = Date.now()
 

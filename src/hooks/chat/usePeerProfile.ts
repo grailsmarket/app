@@ -6,7 +6,7 @@ import { Address, isAddress } from 'viem'
 import { formatAddress } from '@/utils/formatAddress'
 import { beautifyName } from '@/lib/ens'
 import { accountQueryKey } from '@/utils/queryKeys'
-import { ENS_METADATA_URL } from '@/constants/ens'
+import { config } from '@/lib/config'
 import { DEFAULT_FALLBACK_AVATAR } from 'ethereum-identity-kit'
 
 interface PeerProfile {
@@ -34,7 +34,8 @@ export const usePeerProfile = (address: Address | null | undefined): PeerProfile
 
   const ensName = query.data?.ens?.name ?? null
   const avatar =
-    query.data?.ens?.avatar ?? (ensName ? `${ENS_METADATA_URL}/mainnet/avatar/${ensName}` : DEFAULT_FALLBACK_AVATAR)
+    query.data?.ens?.avatar ??
+    (ensName ? `${config.ensMetadataUrl}/mainnet/avatar/${ensName}` : DEFAULT_FALLBACK_AVATAR)
   const records = query.data?.ens?.records ?? {}
 
   return {

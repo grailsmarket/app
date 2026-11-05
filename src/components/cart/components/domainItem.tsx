@@ -9,6 +9,7 @@ import useModifyCart from '@/hooks/useModifyCart'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import NameImage from '@/components/ui/nameImage'
+import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import { useAppSelector } from '@/state/hooks'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 import { cn } from '@/utils/tailwind'
@@ -20,7 +21,7 @@ interface DomainItemProps {
 const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
   const { modifyCart } = useModifyCart()
   const { modifyingCartTokenIds } = useAppSelector(selectMarketplaceDomains)
-  const registrationStatus = getRegistrationStatus(domain.expiry_date)
+  const registrationStatus = getRegistrationStatus(domain)
   const isRegistered = registrationStatus === REGISTERED
   const hasListing = isRegistered && domain.listings[0]
 
@@ -31,19 +32,20 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
       <HoverPrefetchLink
         href={`/${domain.name}`}
         className={cn(
-          'flex flex-row items-center gap-2 transition-all duration-300 hover:opacity-70',
+          'flex min-w-0 flex-row items-center gap-2 transition-all duration-300 hover:opacity-70',
           hasListing ? 'w-[40%]' : 'w-[70%]'
         )}
       >
         <NameImage
           name={domain.name}
+          version={domain.version}
           tokenId={domain.token_id}
           expiryDate={domain.expiry_date}
-          className='h-8 w-8 rounded-sm sm:h-9 sm:w-9'
+          registrationStatus={domain.registration_status}
+          className='h-8 w-8 shrink-0 rounded-sm sm:h-9 sm:w-9'
         />
-        <p className='text-md line-clamp-2 truncate font-bold sm:text-lg' style={{ maxWidth: 'calc(100% - 40px)' }}>
-          {beautifyName(domain.name)}
-        </p>
+        <p className='text-md truncate font-bold sm:text-lg'>{beautifyName(domain.name)}</p>
+        <NameVersionBadge version={domain.version} />
       </HoverPrefetchLink>
       <div
         className={cn(

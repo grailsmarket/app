@@ -116,7 +116,7 @@ const Actions: React.FC<ActionsProps> = ({
   const primaryButtonClassName =
     'border-primary/50 hover:bg-primary w-full text-primary/70 hover:text-background rounded-none cursor-pointer border-y border-l px-2 h-10 transition-all duration-300'
   const secondaryButtonClassName =
-    'bg-transparent hover:bg-tertiary w-full text-foreground/60 border-foreground/50 hover:text-foreground h-10 cursor-pointer rounded-none px-2.5 py-0.5 text-lg font-bold'
+    'bg-transparent hover:bg-tertiary w-full text-foreground/60 border-foreground/50 hover:text-foreground h-10 cursor-pointer rounded-none px-2 py-0.5 text-lg font-bold'
 
   const actionButton = useMemo(() => {
     if (isBulkSelecting) {

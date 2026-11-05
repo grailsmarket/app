@@ -7,6 +7,7 @@ import { ONE_MINUTE } from '@/constants/time'
 import HideOnClient from './components/hide-on-client'
 import Profile from './components/profile'
 import { headers } from 'next/headers'
+import { notFound } from 'next/navigation'
 
 type ProfileDetails = Awaited<ReturnType<typeof fetchProfileDetails>>
 
@@ -60,12 +61,13 @@ const ProfileSemanticSummary = ({ user, profile }: { user: string; profile?: Pro
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
-  const params = await props.params
-  const user = isAddress(params.user) ? params.user : params.user
+  const { user } = await props.params
+  if (user === 'undefined') notFound()
+
   const searchParams = await props.searchParams
   const requestHeaders = await headers()
   const ssr = searchParams.ssr === 'false' || requestHeaders.get('rsc') === '1' ? false : true
-  const truncatedUser = isAddress(params.user) ? (truncateAddress(params.user) as string) : params.user
+  const truncatedUser = isAddress(user) ? (truncateAddress(user) as string) : user
 
   const getAccount = async () => {
     try {
@@ -134,6 +136,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 const UserPage = async (props: Props) => {
   const { user } = await props.params
+  if (user === 'undefined') notFound()
+
   const searchParams = await props.searchParams
   const requestHeaders = await headers()
   const ssr = searchParams.ssr === 'false' || requestHeaders.get('rsc') === '1' ? false : true

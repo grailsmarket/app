@@ -1,4 +1,4 @@
-import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
+import { config } from '@/lib/config'
 
 export type CheckIfWrappedResponse = {
   data: {
@@ -22,7 +22,7 @@ export const checkIfWrapped = async (domain: string) => {
   }
 }
   `
-  const response = await fetch(`https://ensnode-api-production-500f.up.railway.app/subgraph`, {
+  const response = await fetch(`https://ensnode.on.hotbox.wtf/subgraph`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -36,7 +36,7 @@ export const checkIfWrapped = async (domain: string) => {
   }
 
   const data = (await response.json()) as CheckIfWrappedResponse
-  return data.data.domains.some((domain) => domain.owner.id.toLowerCase() === ENS_NAME_WRAPPER_ADDRESS.toLowerCase())
+  return data.data.domains.some((domain) => domain.owner.id.toLowerCase() === config.ensNameWrapper.toLowerCase())
     ? true
     : false
 }

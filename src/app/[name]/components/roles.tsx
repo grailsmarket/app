@@ -10,6 +10,7 @@ import { useAppDispatch } from '@/state/hooks'
 import {
   setEditRecordsModalOpen,
   setEditRecordsModalName,
+  setEditRecordsModalVersion,
   setEditRecordsModalMetadata,
   setEditRecordsModalDefaultTab,
 } from '@/state/reducers/modals/editRecordsModal'
@@ -19,29 +20,36 @@ import { isAddress } from 'viem'
 import { MetadataType, RolesType } from '@/types/api'
 import { RegistrationStatus } from '@/types/domains'
 import { REGISTERED } from '@/constants/domains/registrationStatuses'
+import V2Roles from './v2Roles'
 
 interface NameDetailsProps {
   name: string
+  version?: number
   registrationStatus: RegistrationStatus
   nameOwner?: string | null
   roles?: RolesType | null
   isRolesLoading: boolean
   metadata?: MetadataType[]
+  isRecordEditorReady: boolean
 }
 
 const Roles: React.FC<NameDetailsProps> = ({
   name,
+  version,
   registrationStatus,
   nameOwner,
   metadata = [],
   roles,
   isRolesLoading,
+  isRecordEditorReady,
 }) => {
-  const [isRolesOpen, setIsRolesOpen] = useState(true)
+  const [isRolesOpen, setIsRolesOpen] = useState(false)
   const { userAddress, authStatus } = useUserContext()
   const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()
   const canEditRoles = isNameOwner && registrationStatus === REGISTERED
   const dispatch = useAppDispatch()
+
+  if (version === 2) return <V2Roles name={name} />
 
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
@@ -53,9 +61,12 @@ const Roles: React.FC<NameDetailsProps> = ({
           <h3 className='font-sedan-sc text-3xl'>Roles</h3>
           {canEditRoles && (
             <button
-              className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
+              className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+              disabled={!isRecordEditorReady}
               onClick={(e) => {
                 e.stopPropagation()
+                if (!isRecordEditorReady) return
+
                 const metadataRecord = metadata.reduce(
                   (acc, row) => {
                     acc[row.label] = row.value
@@ -65,6 +76,7 @@ const Roles: React.FC<NameDetailsProps> = ({
                 )
 
                 dispatch(setEditRecordsModalName(name))
+                dispatch(setEditRecordsModalVersion(version ?? null))
                 dispatch(setEditRecordsModalMetadata(metadataRecord))
                 dispatch(setEditRecordsModalOpen(true))
                 dispatch(setEditRecordsModalDefaultTab('roles'))

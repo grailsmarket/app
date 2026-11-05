@@ -1,5 +1,6 @@
 'use client'
 
+import { activeChain } from '@/constants/web3/chain'
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -61,6 +62,7 @@ const EVENT_COPY: Record<
   sent: { verb: 'sent', actorLabel: 'From', counterpartyLabel: 'To', counterpartyPreposition: 'to' },
   received: { verb: 'received', actorLabel: 'From', counterpartyLabel: 'To', counterpartyPreposition: 'from' },
   renewal: { verb: 'extended', actorLabel: 'Extended by' },
+  migrated: { verb: 'migrated to ENSv2', actorLabel: 'Migrated by' },
 }
 
 const EVENT_STYLE_MAP: Record<ProfileActivityEventType, string> = {
@@ -78,6 +80,7 @@ const EVENT_STYLE_MAP: Record<ProfileActivityEventType, string> = {
   sold: 'bg-grace/5 border-grace/30',
   sent: 'bg-foreground/5 border-foreground/20',
   received: 'bg-foreground/5 border-foreground/20',
+  migrated: 'bg-foreground/5 border-foreground/20',
 }
 
 const EVENT_VERB_COLOR_MAP: Record<ProfileActivityEventType, string> = {
@@ -95,6 +98,7 @@ const EVENT_VERB_COLOR_MAP: Record<ProfileActivityEventType, string> = {
   sold: 'text-grace',
   sent: 'text-foreground/85',
   received: 'text-foreground/85',
+  migrated: 'text-foreground/85',
 }
 
 const formatEventType = (eventType: string) => {
@@ -142,7 +146,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
                 <User
                   address={activity.actor_address}
                   wrapperClassName='justify-start'
-                  className='max-w-full py-[3px] @[40rem]/app:py-1'
+                  className='py-0.75] max-w-full @[40rem]/app:py-1'
                   avatarSize={width && width < 768 ? '20px' : '24px'}
                   alignTooltip='left'
                 />
@@ -156,6 +160,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
             >
               <NameImage
                 name={normalizedName}
+                version={activity.version}
                 tokenId={tokenId}
                 expiryDate={null}
                 forceRegStatus={REGISTERED}
@@ -210,7 +215,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
               <>
                 <span className='text-neutral'>·</span>
                 <Link
-                  href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+                  href={`${activeChain.blockExplorers.default.url}/tx/${activity.transaction_hash}`}
                   target='_blank'
                   onClick={(e) => e.stopPropagation()}
                   className='text-neutral hover:text-foreground flex items-center gap-1 transition-colors'

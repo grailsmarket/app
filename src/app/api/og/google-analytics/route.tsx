@@ -1,23 +1,21 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
-import { APP_ENS_ADDRESS } from '@/constants'
-import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
-import { labelhash, namehash, isAddress } from 'viem'
+import { isAddress } from 'viem'
 import { truncateAddress as truncateAddr, fetchAccount } from 'ethereum-identity-kit/utils'
 import { beautifyName } from '@/lib/ens'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { fetchKeywordMetrics } from '@/api/domains/fetchKeywordMetrics'
 import { toSteppedPercent } from '@/utils/metrics'
 import { getInterFonts } from '../_lib/inter'
+import { renderEnsNftImage } from '../_lib/ensNftImage'
+import { config } from '@/lib/config'
+import { API_URL } from '@/constants/api'
+import { activeChainSlug } from '@/constants/web3/chain'
 
 const size = {
   width: 1600,
   height: 836,
 }
-const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
-const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
-
 const MONTH_TO_INDEX: Record<string, number> = {
   JANUARY: 0,
   FEBRUARY: 1,
@@ -241,6 +239,7 @@ export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams
     const name = searchParams.get('name')
+    const tokenId = searchParams.get('tokenId')
     const owner_address = searchParams.get('owner')
     const categories = searchParams.get('categories')?.split(',') || []
 
@@ -271,25 +270,6 @@ export async function GET(req: NextRequest) {
           avatar: defaultAvatar,
           displayName: isAddress(owner_address) ? truncateAddr(owner_address as `0x${string}`) : owner_address,
         }
-      }
-    }
-
-    const getENSImage = async () => {
-      try {
-        const nameHash = namehash(displayName)
-        const labelHash = labelhash(displayName.replace('.eth', ''))
-
-        const wrappedUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-        const unwrappedUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
-
-        const wrappedOk = await fetch(wrappedUrl)
-          .then((res) => res.ok)
-          .catch(() => false)
-
-        return wrappedOk ? wrappedUrl : unwrappedUrl
-      } catch (error) {
-        console.error('Error fetching ENS image:', error)
-        return null
       }
     }
 
@@ -345,13 +325,12 @@ export async function GET(req: NextRequest) {
 
     const getCategoryAvatarDataUri = async (): Promise<string | null> => {
       if (categories.length !== 1) return null
-      return fetchImageAsDataUri(`https://api.grails.app/api/v1/clubs/${categories[0]}/avatar`)
+      return fetchImageAsDataUri(`${API_URL}/clubs/${categories[0]}/avatar`)
     }
 
-    const [ownerProfile, ensImage, googleAnalyticsData, categoryAvatarDataUri, defaultAvatarDataUri, interFonts] =
+    const [ownerProfile, googleAnalyticsData, categoryAvatarDataUri, defaultAvatarDataUri, interFonts] =
       await Promise.all([
         getOwnerProfile(),
-        getENSImage(),
         getGoogleAnalyticsData(),
         getCategoryAvatarDataUri(),
         fetchImageAsDataUri(defaultAvatar),
@@ -359,7 +338,7 @@ export async function GET(req: NextRequest) {
       ])
 
     const ownerAvatarDataUri = ownerProfile.displayName
-      ? await fetchImageAsDataUri(`${ENS_METADATA_URL}/mainnet/avatar/${ownerProfile.displayName}`)
+      ? await fetchImageAsDataUri(`${config.ensMetadataUrl}/${activeChainSlug}/avatar/${ownerProfile.displayName}`)
       : null
     const ownerAvatar = ownerAvatarDataUri || defaultAvatarDataUri
 
@@ -433,21 +412,18 @@ export async function GET(req: NextRequest) {
               justifyContent: 'center',
             }}
           >
-            {ensImage && (
-              <img
-                src={ensImage}
-                alt='ENS Image'
-                width={imageWidth}
-                height={imageHeight}
-                style={{
-                  borderTopLeftRadius: 20,
-                  borderTopRightRadius: 0,
-                  borderBottomLeftRadius: imageBottomLeftRadius,
-                  borderBottomRightRadius: 0,
-                  objectFit: 'cover',
-                }}
-              />
-            )}
+            {renderEnsNftImage({
+              name: displayName,
+              tokenId,
+              width: imageWidth,
+              height: imageHeight,
+              style: {
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 0,
+                borderBottomLeftRadius: imageBottomLeftRadius,
+                borderBottomRightRadius: 0,
+              },
+            })}
             {categories.length > 0 && (
               <div
                 style={{

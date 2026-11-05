@@ -1,16 +1,18 @@
 import Tooltip from '@/components/ui/tooltip'
 import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
-import { GRACE_PERIOD } from '@/constants/domains/registrationStatuses'
+import { GRACE_PERIOD, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
 import { MarketplaceDomainType } from '@/types/domains'
 import { RegistrationStatus } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
+import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import Image from 'next/image'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
-import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { localizeNumber } from '@/utils/localizeNumber'
+
+const RANKED_CATEGORIES = ['prepunk', 'short_name_auction']
 
 const formatCategoryName = (category: string) =>
   category
@@ -27,65 +29,83 @@ interface NameProps {
 }
 
 const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, columnCount }) => {
-  const { width } = useResponsiveSize()
-  const maxShownCategories = width && width < 640 ? 1 : 2
-  const displayedCategories = domain.clubs?.slice(0, maxShownCategories)
-  const remainingCategories =
-    domain.clubs?.length && domain.clubs?.length > maxShownCategories ? domain.clubs?.slice(maxShownCategories) : []
+  const displayedCategory = useMemo(() => {
+    const first = domain.clubs?.[0]
+    if (!first) return null
+
+    const isRankClub = RANKED_CATEGORIES.find((category) => first.includes(category))
+    const clubRank = isRankClub ? domain.club_ranks?.find((rank) => rank.club === first)?.rank : null
+
+    return {
+      name: first,
+      rank: clubRank,
+    }
+  }, [])
+  const remainingCategories = domain.clubs?.length - 1
 
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['domain'].getWidth(columnCount))}>
-      <div className='flex h-[54px] w-full max-w-full flex-row items-center'>
-        <div
-          className='flex flex-row items-center justify-start gap-2 truncate'
-          style={{ maxWidth: domainIsValid ? 'calc(100% - 8px)' : 'calc(100% - 12px)' }}
-        >
+      <div className='flex h-13.5 w-full max-w-full flex-row items-center'>
+        <div className='flex min-w-0 flex-row items-center justify-start gap-2 pr-2'>
           <NameImage
             name={domain.name}
+            version={domain.version}
             tokenId={domain.token_id}
             expiryDate={domain.expiry_date}
-            className='pointer-events-none aspect-square h-[42px] min-h-[42px] w-[42px] min-w-[42px] rounded-sm'
+            registrationStatus={domain.registration_status}
+            className='pointer-events-none aspect-square h-10.5 min-h-10.5 w-10.5 min-w-10.5 rounded-sm'
           />
-          <div className='flex max-w-full flex-col gap-px truncate'>
-            <p
-              className={cn(
-                'text-md max-w-full truncate leading-[18px] font-bold',
-                registrationStatus === GRACE_PERIOD ? 'text-grace' : 'text-foreground'
+          <div className='flex min-w-0 flex-col gap-0.75'>
+            <div className='flex min-w-0 items-center gap-1.5'>
+              <p
+                className={cn(
+                  'truncate text-[13px] leading-4.5 font-bold',
+                  registrationStatus === GRACE_PERIOD ? 'text-grace' : 'text-foreground'
+                )}
+              >
+                {beautifyName(domain.name)}
+              </p>
+              {!REGISTERABLE_STATUSES.includes(registrationStatus) && <NameVersionBadge version={domain.version} />}
+              {domain.compromised && (
+                <div className='pointer-events-auto shrink-0'>
+                  <Tooltip
+                    position='right'
+                    label='Reported stolen — only the original owner can trade it'
+                    align='center'
+                  >
+                    <p className='text-xs'>🚨</p>
+                  </Tooltip>
+                </div>
               )}
-            >
-              {beautifyName(domain.name)}
-            </p>
-            <div className='text-md text-neutral flex w-fit max-w-full flex-row items-center gap-1 truncate font-semibold @[40rem]/app:gap-1.5'>
-              {displayedCategories?.map((club, index) => {
-                const isRankClub = club.includes('prepunk') || club.includes('short_name_auction')
-                const clubRank =
-                  isRankClub && index === 0 ? domain.club_ranks?.find((rank) => rank.club === club)?.rank : null
-
-                return (
-                  <div key={club} className='flex min-w-fit flex-row items-center gap-0.5 @[40rem]/app:gap-1'>
-                    <Image
-                      src={getCategoryDetails(club).avatar}
-                      alt={club}
-                      width={16}
-                      height={16}
-                      className='rounded-full'
-                    />
-                    <p>{formatCategoryName(club)}</p>
-                    {clubRank ? <p>#{localizeNumber(clubRank)}</p> : null}
-                  </div>
-                )
-              })}
-              {remainingCategories?.length > 0 && <p>+{remainingCategories.length}</p>}
+              {!domainIsValid && (
+                <div className='pointer-events-auto shrink-0'>
+                  <Tooltip position='right' label='Name contains invalid character(s)' align='center'>
+                    <p className='text-xs'>⚠️</p>
+                  </Tooltip>
+                </div>
+              )}
+            </div>
+            <div className='text-neutral flex w-fit max-w-full flex-row items-center gap-1 truncate text-sm font-semibold @[40rem]/app:gap-1.5'>
+              {displayedCategory && (
+                <div
+                  key={displayedCategory.name}
+                  className='flex min-w-fit flex-row items-center gap-0.5 @[40rem]/app:gap-1'
+                >
+                  <Image
+                    src={getCategoryDetails(displayedCategory.name).avatar}
+                    alt={displayedCategory.name}
+                    width={16}
+                    height={16}
+                    className='rounded-full'
+                  />
+                  <p>{formatCategoryName(displayedCategory.name)}</p>
+                  {displayedCategory.rank ? <p>#{localizeNumber(displayedCategory.rank)}</p> : null}
+                </div>
+              )}
+              {remainingCategories > 0 && <p>+{remainingCategories}</p>}
             </div>
           </div>
         </div>
-        {!domainIsValid && (
-          <div>
-            <Tooltip position='right' label='Name contains invalid character(s)' align='center'>
-              <p className='pl-2 text-xs'>⚠️</p>
-            </Tooltip>
-          </div>
-        )}
       </div>
     </div>
   )

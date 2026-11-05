@@ -1,494 +1,247 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAccount, usePublicClient } from 'wagmi'
-import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import {
-  ENS_REGISTRAR_ADDRESS,
-  ENS_NAME_WRAPPER_ADDRESS,
-  BULK_TRANSFER_CONTRACT_ADDRESS,
-  OPENSEA_CONDUIT_KEY,
-  OPENSEA_CONDUIT_ADDRESS,
-} from '@/constants/web3/contracts'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { setTransferModalDomains, TransferDomainType } from '@/state/reducers/modals/transferModal'
-import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import ModalShell, { modalActionClassName, modalPrimaryActionClassName } from '@/components/ui/modal/modalShell'
+import { TransferDomainType } from '@/state/reducers/modals/transferModal'
 import { formatAddress } from '@/utils/formatAddress'
-import { isAddress, Address, labelhash, namehash } from 'viem'
-import Input from '@/components/ui/input'
-import { mainnet } from 'viem/chains'
-import { ensureChain } from '@/utils/web3/ensureChain'
-import { waitForTransaction } from '@/utils/web3/safeTransaction'
-import { beautifyName, normalizeName } from '@/lib/ens'
-import { accountQueryKey } from '@/utils/queryKeys'
-import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
-import { Avatar, Check, fetchAccount } from 'ethereum-identity-kit'
-import { useDebounce } from '@/hooks/useDebounce'
-import { BULK_TRANSFER_ABI } from '@/constants/abi/BulkTransfer'
-import { ItemType } from '@/types/seaport'
-import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
-import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
+import { beautifyName } from '@/lib/ens'
+import { useTransferModal } from './hooks/use-transfer-modal'
+import TransferReviewForm from './components/review-form'
+import TransferSubject from './components/transfer-subject'
+import TransferProgressView from './components/progress-view'
+import TransferSuccessView from './components/success-view'
+import TransferErrorView from './components/error-view'
+import {
+  estimateTransferBatches,
+  getTransferBatchNames,
+  getTransferProgressStatus,
+  getTransferSteps,
+  type TransferProgressInput,
+} from './components/transfer-steps'
+
+const KEEP_OPEN_HINT = 'Keep this window open until the transaction confirms.'
+
+type TransferModalState = ReturnType<typeof useTransferModal>
+
+export type TransferModalViewState = Pick<
+  TransferModalState,
+  | 'step'
+  | 'error'
+  | 'errorDetails'
+  | 'account'
+  | 'recipient'
+  | 'recipientInput'
+  | 'setRecipientInput'
+  | 'recipientError'
+  | 'isResolving'
+  | 'isBusy'
+  | 'recipientLocked'
+  | 'walletMismatch'
+  | 'canTransfer'
+  | 'transaction'
+  | 'completedTransactions'
+  | 'completedNames'
+  | 'remainingDomains'
+  | 'approvingContract'
+  | 'currentNetwork'
+  | 'hasPendingTransaction'
+  | 'processingKind'
+  | 'approvals'
+  | 'activeBatch'
+  | 'batchTotals'
+  | 'handleTransfer'
+  | 'handleClose'
+  | 'handleRetry'
+>
+
+interface TransferModalViewProps {
+  domains: TransferDomainType[]
+  modal: TransferModalViewState
+}
+
+// Every state of the transfer in one shell: review, the busy screens, success and error.
+export const TransferModalView: React.FC<TransferModalViewProps> = ({ domains, modal }) => {
+  const {
+    step,
+    error,
+    errorDetails,
+    account,
+    recipient,
+    recipientError,
+    isResolving,
+    isBusy,
+    canTransfer,
+    transaction,
+    completedTransactions,
+    completedNames,
+    remainingDomains,
+    hasPendingTransaction,
+    batchTotals,
+    handleTransfer,
+    handleClose,
+    handleRetry,
+  } = modal
+  const isSingle = domains.length === 1
+  const isUnconfirmed = step === 'error' && hasPendingTransaction
+
+  // While the recipient is being typed, the subject names it only once it resolves to a valid address.
+  const recipientLabel =
+    recipient && (step !== 'review' || (!recipientError && !isResolving))
+      ? account?.ens?.name || formatAddress(recipient)
+      : null
+  const transactionCount = batchTotals ? batchTotals[1] + batchTotals[2] : estimateTransferBatches(domains)
+
+  const progressInput: TransferProgressInput = {
+    step,
+    isSingle,
+    domains,
+    completedNames,
+    completedTransactions,
+    transaction,
+    hasPendingTransaction,
+    processingKind: modal.processingKind,
+    approvals: modal.approvals,
+    approvingContract: modal.approvingContract,
+    activeBatch: modal.activeBatch,
+    batchTotals,
+    network: modal.currentNetwork,
+  }
+  const progressStatus = isBusy ? getTransferProgressStatus(progressInput) : null
+
+  const renderStage = () => {
+    if (step === 'review') {
+      return (
+        <TransferReviewForm
+          domains={domains}
+          completedNames={completedNames}
+          recipientInput={modal.recipientInput}
+          setRecipientInput={modal.setRecipientInput}
+          account={account}
+          isResolving={isResolving}
+          recipientError={recipientError}
+          recipientLocked={modal.recipientLocked}
+          walletMismatch={modal.walletMismatch}
+        />
+      )
+    }
+
+    if (progressStatus) {
+      return (
+        <TransferProgressView
+          status={progressStatus}
+          batchNames={getTransferBatchNames(progressInput)}
+          steps={getTransferSteps(progressInput)}
+        />
+      )
+    }
+
+    if (step === 'success') {
+      const recipientName = recipientLabel ?? ''
+
+      return (
+        <TransferSuccessView
+          message={
+            isSingle
+              ? `${beautifyName(domains[0].name)} transferred to ${recipientName}.`
+              : `${completedNames.size} names transferred to ${recipientName}.`
+          }
+          transactions={completedTransactions}
+        />
+      )
+    }
+
+    return (
+      <TransferErrorView
+        unconfirmed={isUnconfirmed}
+        error={error}
+        errorDetails={errorDetails}
+        pendingTransaction={transaction}
+        partial={
+          completedNames.size > 0
+            ? { transferred: completedNames.size, total: domains.length, transactions: completedTransactions }
+            : null
+        }
+      />
+    )
+  }
+
+  const renderFooter = () => {
+    if (step === 'review') {
+      return (
+        <>
+          <PrimaryButton onClick={handleTransfer} disabled={!canTransfer} className={modalPrimaryActionClassName}>
+            {completedNames.size
+              ? `Transfer ${remainingDomains.length} remaining name${remainingDomains.length === 1 ? '' : 's'}`
+              : 'Transfer'}
+          </PrimaryButton>
+          <SecondaryButton onClick={handleClose} className={modalActionClassName}>
+            Cancel
+          </SecondaryButton>
+        </>
+      )
+    }
+
+    if (isBusy) return null
+
+    if (step === 'success') {
+      return (
+        <SecondaryButton onClick={handleClose} className={modalActionClassName}>
+          Close
+        </SecondaryButton>
+      )
+    }
+
+    return (
+      <>
+        <PrimaryButton onClick={isUnconfirmed ? handleTransfer : handleRetry} className={modalPrimaryActionClassName}>
+          {isUnconfirmed ? 'Check Transaction' : 'Try Again'}
+        </PrimaryButton>
+        <SecondaryButton onClick={handleClose} className={modalActionClassName}>
+          Close
+        </SecondaryButton>
+      </>
+    )
+  }
+
+  // The review form lists the names itself. Several names end on the success orb alone; one name keeps its
+  // subject, now with its new owner.
+  const showSubject = step !== 'review' && !(step === 'success' && !isSingle)
+
+  return (
+    <ModalShell
+      title={`Transfer Name${domains.length > 1 ? 's' : ''}`}
+      onClose={handleClose}
+      locked={isBusy}
+      dismissible={step === 'review' || step === 'error'}
+      stageKey={isBusy ? 'progress' : isUnconfirmed ? 'unconfirmed' : step}
+      subject={
+        showSubject ? (
+          <TransferSubject
+            domains={domains}
+            recipientLabel={recipientLabel}
+            transactionCount={transactionCount}
+            compact={isBusy || step === 'error'}
+            transferred={step === 'success'}
+          />
+        ) : null
+      }
+      footer={renderFooter()}
+      footerHint={progressStatus && progressStatus.state !== 'wallet' ? KEEP_OPEN_HINT : undefined}
+    >
+      {renderStage()}
+    </ModalShell>
+  )
+}
 
 interface TransferModalProps {
   domains: TransferDomainType[]
   onClose: () => void
 }
 
-type TransactionStep = 'review' | 'approving' | 'confirming' | 'processing' | 'success' | 'error'
-
 const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
-  const dispatch = useAppDispatch()
-  const [step, setStep] = useState<TransactionStep>('review')
-  const [txHash, setTxHash] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [recipientInput, setRecipientInput] = useState('')
-  const debouncedRecipientInput = useDebounce(recipientInput, 200)
-  const [needsRegistrarApproval, setNeedsRegistrarApproval] = useState(false)
-  const [needsWrapperApproval, setNeedsWrapperApproval] = useState(false)
-  const [approvingContract, setApprovingContract] = useState<string | null>(null)
-
-  const { address } = useAccount()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
-  const getWalletClient = useGetWalletClient()
-  const queryClient = useQueryClient()
-  const { isSelecting } = useAppSelector(selectBulkSelect)
-
-  const handleClose = () => {
-    // Clear bulk selection only on success
-    if (step === 'success') {
-      if (isSelecting) {
-        dispatch(clearBulkSelect())
-      }
-    }
-
-    // Always clear modal data when closing to prevent stale data
-    dispatch(setTransferModalDomains([]))
-
-    onClose()
-  }
-
-  const { data: account, isLoading: isResolving } = useQuery({
-    queryKey: accountQueryKey(debouncedRecipientInput),
-    queryFn: async () => {
-      if (!isAddress(debouncedRecipientInput) && !debouncedRecipientInput.includes('.')) return null
-      const response = await fetchAccount(debouncedRecipientInput)
-
-      if (!isAddress(response?.address ?? '')) return null
-      // if (!response?.address) {
-      //   if (!recipientInput.includes('.')) {
-      //     const resolvedAddress = await publicClient?.getEnsAddress({ name: recipientInput })
-      //     return { address: resolvedAddress, ens: { name: recipientInput, avatar: null } }
-      //   }
-
-      //   return { address: recipientInput, ens: { name: null, avatar: null } }
-      // }
-
-      return response
-    },
-    enabled: !!debouncedRecipientInput,
-  })
-
-  // Check if approvals are needed
-  const checkApprovals = async () => {
-    if (!address || !publicClient || !domains.length) return
-
-    try {
-      // Check which contracts we need (wrapped vs unwrapped)
-      const wrappedStatuses = await Promise.all(domains.map(async (domain) => checkIfWrapped(domain.name)))
-
-      const hasUnwrapped = wrappedStatuses.some((isWrapped) => !isWrapped)
-      const hasWrapped = wrappedStatuses.some((isWrapped) => isWrapped)
-
-      // Check registrar approval (for unwrapped names)
-      if (hasUnwrapped) {
-        const isApproved = await publicClient.readContract({
-          address: ENS_REGISTRAR_ADDRESS as Address,
-          abi: BaseRegistrarAbi,
-          functionName: 'isApprovedForAll',
-          args: [address, OPENSEA_CONDUIT_ADDRESS as Address],
-        })
-        setNeedsRegistrarApproval(!isApproved)
-      } else {
-        setNeedsRegistrarApproval(false)
-      }
-
-      // Check wrapper approval (for wrapped names)
-      if (hasWrapped) {
-        const isApproved = await publicClient.readContract({
-          address: ENS_NAME_WRAPPER_ADDRESS as Address,
-          abi: NAME_WRAPPER_ABI,
-          functionName: 'isApprovedForAll',
-          args: [address, OPENSEA_CONDUIT_ADDRESS as Address],
-        })
-        setNeedsWrapperApproval(!isApproved)
-      } else {
-        setNeedsWrapperApproval(false)
-      }
-    } catch (err) {
-      console.error('Error checking approvals:', err)
-    }
-  }
-
-  // Check approvals when domains change
-  useEffect(() => {
-    checkApprovals()
-  }, [domains, address])
-
-  const handleApprove = async (contractAddress: Address, contractName: string) => {
-    if (!address || !publicClient) return
-
-    const walletClient = await getWalletClient()
-
-    setStep('approving')
-    setApprovingContract(contractName)
-
-    try {
-      await ensureChain(walletClient, mainnet.id)
-
-      const hash = await walletClient.writeContract({
-        address: contractAddress,
-        abi: contractName === 'ENS Registrar' ? BaseRegistrarAbi : NAME_WRAPPER_ABI,
-        functionName: 'setApprovalForAll',
-        args: [OPENSEA_CONDUIT_ADDRESS as Address, true],
-        chain: mainnet,
-      })
-
-      await waitForTransaction(publicClient, hash)
-
-      // Re-check approvals after successful approval
-      await checkApprovals()
-      setStep('review')
-      setApprovingContract(null)
-    } catch (err) {
-      console.error('Approval error:', err)
-      setError((err as Error).message)
-      setStep('error')
-      setApprovingContract(null)
-    }
-  }
-
-  const handleTransfer = async () => {
-    if (!address || !account || !publicClient) return
-
-    const walletClient = await getWalletClient()
-    if (!domains || domains.length === 0) {
-      setError('No domains selected for transfer')
-      setStep('error')
-      return
-    }
-
-    setStep('confirming')
-
-    try {
-      const recipientAddress = account.address as Address
-      const items = await Promise.all(
-        domains.map(async (domain) => {
-          const isWrapped = await checkIfWrapped(domain.name)
-          const normalizedName = normalizeName(domain.name)
-          const tokenId = isWrapped ? namehash(normalizedName) : labelhash(normalizedName.replace('.eth', ''))
-
-          return {
-            itemType: isWrapped ? ItemType.ERC1155 : ItemType.ERC721,
-            token: isWrapped ? ENS_NAME_WRAPPER_ADDRESS : (ENS_REGISTRAR_ADDRESS as Address),
-            identifier: BigInt(tokenId),
-            amount: BigInt(1),
-          }
-        })
-      )
-
-      // Validate items array before calling contract
-      if (!items || items.length === 0) {
-        throw new Error('Failed to prepare items for transfer')
-      }
-
-      // Structure matches TransferHelperItemsWithRecipient[]
-      const transferItems = [
-        {
-          items,
-          recipient: recipientAddress,
-          validateERC721Receiver: true,
-        },
-      ]
-
-      await ensureChain(walletClient, mainnet.id)
-
-      // Simulate first to get detailed error
-      try {
-        await publicClient.simulateContract({
-          address: BULK_TRANSFER_CONTRACT_ADDRESS as Address,
-          abi: BULK_TRANSFER_ABI,
-          functionName: 'bulkTransfer',
-          args: [transferItems, OPENSEA_CONDUIT_KEY],
-          account: address,
-        })
-      } catch (simError: any) {
-        throw new Error(simError?.shortMessage || simError?.message || 'Transaction simulation failed')
-      }
-
-      const hash = await walletClient.writeContract({
-        address: BULK_TRANSFER_CONTRACT_ADDRESS as Address,
-        abi: BULK_TRANSFER_ABI,
-        functionName: 'bulkTransfer',
-        args: [transferItems, OPENSEA_CONDUIT_KEY],
-        chain: mainnet,
-      })
-
-      setTxHash(hash) // Store the first transaction hash
-      setStep('processing')
-
-      const receipt = await waitForTransaction(publicClient, hash)
-
-      if (receipt.status !== 'success') {
-        throw new Error('Transaction failed')
-      }
-
-      setStep('success')
-      setTimeout(() => {
-        domains.forEach((domain) => {
-          queryClient.refetchQueries({ queryKey: ['name', 'details', domain.name] })
-        })
-        queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
-      }, 2000)
-
-      return receipt
-    } catch (error) {
-      console.error('Transfer error:', error)
-      setError((error as Error).message)
-      setStep('error')
-    }
-  }
-
-  const formatDomainsText = () => {
-    if (domains.length === 1) {
-      return beautifyName(domains[0].name)
-    } else if (domains.length === 2) {
-      return `${beautifyName(domains[0].name)} and ${beautifyName(domains[1].name)}`
-    } else {
-      const displayNames = domains
-        .slice(0, 3)
-        .map((d) => beautifyName(d.name))
-        .join(', ')
-      const remaining = domains.length - 3
-      return remaining > 0 ? `${displayNames}, and ${remaining} more` : displayNames
-    }
-  }
-
-  const renderContent = () => {
-    switch (step) {
-      case 'review':
-        return (
-          <>
-            <div className='space-y-2'>
-              <h3 className='px-lg text-lg font-semibold'>
-                {domains.length > 1 ? `Names to Transfer (${domains.length})` : 'Name to Transfer'}
-              </h3>
-              <div className='bg-secondary max-h-48 overflow-y-auto rounded-md p-4'>
-                {domains.map((domain) => (
-                  <div key={domain.tokenId} className='py-1 font-bold'>
-                    {beautifyName(domain.name)}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className='space-y-2'>
-              <Input
-                label='Recipient'
-                value={recipientInput}
-                onChange={(e) => setRecipientInput(e.target.value)}
-                placeholder='Address or ENS name'
-              />
-              {account?.address && !isResolving && (
-                <div key={account.address} className='flex items-center gap-2'>
-                  {account.ens?.avatar && (
-                    <Avatar
-                      address={account.address}
-                      src={account.ens?.avatar}
-                      name={account.ens?.name}
-                      style={{ width: '24px', height: '24px' }}
-                    />
-                  )}
-                  <p className='text-md text-neutral max-w-full truncate pt-0.5 font-medium'>
-                    {isAddress(recipientInput) ? account.ens?.name : account.address}
-                  </p>
-                </div>
-              )}
-              {error && !isResolving && <p className='text-sm text-red-500'>{error}</p>}
-            </div>
-            {/* Show approval buttons if needed */}
-            {/* {(needsRegistrarApproval || needsWrapperApproval) && (
-              <div className='bg-secondary space-y-2 rounded-md p-3'>
-                <p className='text-neutral text-sm'>Approval required before transfer:</p>
-                {needsRegistrarApproval && (
-                  <SecondaryButton
-                    onClick={() => handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')}
-                    className='w-full'
-                  >
-                    Approve ENS Registrar
-                  </SecondaryButton>
-                )}
-                {needsWrapperApproval && (
-                  <SecondaryButton
-                    onClick={() => handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')}
-                    className='w-full'
-                  >
-                    Approve Name Wrapper
-                  </SecondaryButton>
-                )}
-              </div>
-            )} */}
-            <div className='flex flex-col gap-2'>
-              <PrimaryButton
-                onClick={async () => {
-                  if (needsRegistrarApproval && needsWrapperApproval) {
-                    await handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')
-                    await handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')
-                  } else if (needsRegistrarApproval) {
-                    await handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')
-                  } else if (needsWrapperApproval) {
-                    await handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')
-                  }
-
-                  handleTransfer()
-                }}
-                disabled={!account?.address || isResolving || !!error}
-                className='w-full'
-              >
-                {needsRegistrarApproval || needsWrapperApproval ? 'Approve Transfer' : 'Transfer'}
-              </PrimaryButton>
-              <SecondaryButton onClick={handleClose} className='w-full'>
-                Cancel
-              </SecondaryButton>
-            </div>
-          </>
-        )
-
-      case 'approving':
-        return (
-          <>
-            <p className='text-center font-bold'>Approving {approvingContract}</p>
-            <div className='flex flex-col items-center gap-4'>
-              <div className='border-primary my-2 inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-lg'>Please confirm the approval in your wallet...</p>
-            </div>
-            <SecondaryButton onClick={handleClose} disabled={true} className='w-full'>
-              Close
-            </SecondaryButton>
-          </>
-        )
-
-      case 'confirming':
-      case 'processing':
-        return (
-          <>
-            <p className='text-center font-bold'>
-              {step === 'confirming' ? 'Confirm Transfer' : 'Processing Transfer'}
-            </p>
-            <div className='flex flex-col items-center gap-4'>
-              <div className='border-primary my-2 inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-lg'>
-                {step === 'confirming'
-                  ? 'Please confirm the transaction in your wallet...'
-                  : `Transferring ${domains.length} name${domains.length > 1 ? 's' : ''}...`}
-              </p>
-              {txHash && (
-                <div className='mx-auto flex w-full items-center justify-center'>
-                  <a
-                    href={`https://${mainnet.id === 1 ? '' : 'sepolia.'}etherscan.io/tx/${txHash}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='text-primary hover:underline'
-                  >
-                    View on Etherscan
-                  </a>
-                </div>
-              )}
-            </div>
-            <SecondaryButton onClick={handleClose} disabled={true} className='w-full'>
-              Close
-            </SecondaryButton>
-          </>
-        )
-
-      case 'success':
-        return (
-          <>
-            <div className='flex flex-col items-center gap-4'>
-              <div className='bg-primary mx-auto flex w-fit items-center justify-center rounded-full p-2'>
-                <Check className='text-background h-6 w-6' />
-              </div>
-              <p className='text-center text-lg font-medium'>
-                Transfer of {formatDomainsText()} to {account?.ens?.name || formatAddress(account?.address ?? '')} was
-                successful!
-              </p>
-              {txHash && (
-                <div className='flex w-full items-center justify-center'>
-                  <a
-                    href={`https://${mainnet.id === 1 ? '' : 'sepolia.'}etherscan.io/tx/${txHash}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='text-primary hover:text-primary/80 underline'
-                  >
-                    View on Etherscan
-                  </a>
-                </div>
-              )}
-            </div>
-            <SecondaryButton onClick={handleClose} className='w-full'>
-              Close
-            </SecondaryButton>
-          </>
-        )
-
-      case 'error':
-        return (
-          <>
-            <div className='flex flex-col gap-2 rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
-              <h2 className='text-2xl font-bold text-red-400'>Transaction Failed</h2>
-              <p className='line-clamp-6 text-red-400'>{error || 'An unknown error occurred'}</p>
-            </div>
-            <div className='flex w-full flex-col gap-2'>
-              <PrimaryButton
-                onClick={() => {
-                  setStep('review')
-                  setError(null)
-                  setTxHash(null)
-                }}
-                className='w-full'
-              >
-                Try Again
-              </PrimaryButton>
-              <SecondaryButton onClick={handleClose} className='w-full'>
-                Close
-              </SecondaryButton>
-            </div>
-          </>
-        )
-    }
-  }
-
-  return (
-    <div
-      onClick={() => {
-        if (step === 'review' || step === 'error') {
-          handleClose()
-        }
-      }}
-      className='fixed inset-0 z-50 flex h-dvh w-screen items-end justify-end bg-black/50 backdrop-blur-sm md:items-center md:justify-center md:p-4'
-    >
-      <div
-        onClick={(e) => {
-          e.stopPropagation()
-        }}
-        className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col gap-4 overflow-y-auto border-t p-4 transition-all duration-300 md:max-w-md md:rounded-md md:border-2 md:p-6 starting:translate-y-full md:starting:translate-y-0'
-      >
-        <h2 className='font-sedan-sc min-h-6 text-center text-3xl'>Transfer Name{domains.length > 1 ? 's' : ''}</h2>
-        {renderContent()}
-      </div>
-    </div>
-  )
+  const modal = useTransferModal(domains, onClose)
+  return <TransferModalView domains={domains} modal={modal} />
 }
 
 export default TransferModal

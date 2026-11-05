@@ -1,4 +1,4 @@
-import { useUserContext } from '@/context/user'
+import { useRouter } from 'next/navigation'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import React from 'react'
@@ -11,7 +11,7 @@ interface SetEmailReminderProps {
 }
 
 const SetEmailReminder: React.FC<SetEmailReminderProps> = ({ onClick, className }) => {
-  const { setIsSettingsOpen } = useUserContext()
+  const router = useRouter()
   const { email } = useAppSelector(selectUserProfile)
 
   if (email.address && email.verified) return null
@@ -34,7 +34,7 @@ const SetEmailReminder: React.FC<SetEmailReminderProps> = ({ onClick, className 
         className='min-w-20'
         onClick={() => {
           onClick?.()
-          setIsSettingsOpen(true)
+          router.push('/settings/profile')
         }}
       >
         {buttonText}

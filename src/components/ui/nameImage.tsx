@@ -1,28 +1,35 @@
 'use client'
 
-import { APP_ENS_ADDRESS } from '@/constants'
-import Image from 'next/image'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { hexToBigInt, labelhash, namehash } from 'viem'
 import { cn } from '@/utils/tailwind'
-import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
-import { ENS_METADATA_URL } from '@/constants/ens'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { applyStateGradient } from '@/utils/ensImage/applyStateGradient'
+import { getNameImageSources } from '@/utils/ensImage/getNameImageSources'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 import LoadingCell from './loadingCell'
-import { RegistrationStatus } from '@/types/domains'
-
-export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
+import { DomainRegistrationDetails, RegistrationStatus } from '@/types/domains'
+import {
+  DOMAIN_DEFAULT_IMAGE_URL_V2,
+  DOMAIN_IMAGE_URL,
+  DOMAIN_IMAGE_URL_V2,
+  WRAPPED_DOMAIN_IMAGE_URL,
+} from '@/constants/ens'
 
 const INTRINSIC_SIZE = 540
+const IMAGE_BASE_URLS = {
+  unwrapped: DOMAIN_IMAGE_URL,
+  wrapped: WRAPPED_DOMAIN_IMAGE_URL,
+  v2: DOMAIN_IMAGE_URL_V2,
+  defaultV2: DOMAIN_DEFAULT_IMAGE_URL_V2,
+}
 
 interface NameImageProps {
   name: string
   tokenId: string
+  version: number
   expiryDate: string | null
+  registrationStatus?: DomainRegistrationDetails['registration_status']
   className?: string
   height?: number
   width?: number
@@ -30,10 +37,18 @@ interface NameImageProps {
   forceRefreshKey?: number
 }
 
-const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus, forceRefreshKey }: NameImageProps) => {
-  const nameHash = namehash(name)
-  const labelHash = labelhash(name.replace('.eth', ''))
-
+const NameImage = ({
+  name,
+  tokenId,
+  version,
+  expiryDate,
+  registrationStatus,
+  className,
+  height,
+  width,
+  forceRegStatus,
+  forceRefreshKey,
+}: NameImageProps) => {
   // Pending hard-refresh signal published to Redux by callers like the
   // metadata refresh button or the records-edit modal. We capture the
   // timestamp into local state on first sight and immediately consume it
@@ -44,34 +59,23 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   const [refreshKey, setRefreshKey] = useState<number | undefined>(undefined)
 
   useEffect(() => {
-    if (!pendingRefreshKey || !forceRefreshKey || pendingRefreshKey === refreshKey || forceRefreshKey === refreshKey)
-      return
-    setRefreshKey(forceRefreshKey ?? pendingRefreshKey)
-    dispatch(consumeImageRefresh(name))
+    const nextRefreshKey = forceRefreshKey ?? pendingRefreshKey
+    if (!nextRefreshKey || nextRefreshKey === refreshKey) return
+    setRefreshKey(nextRefreshKey)
+    if (pendingRefreshKey) dispatch(consumeImageRefresh(name))
   }, [pendingRefreshKey, refreshKey, dispatch, name, forceRefreshKey])
 
-  const cacheParam = useMemo(() => (refreshKey ? `?v=${refreshKey}` : ''), [refreshKey])
-  const wrappedSrc = useMemo(
-    () => `${WRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(nameHash).toString()}/image${cacheParam}`,
-    [nameHash, cacheParam]
+  const status =
+    forceRegStatus ??
+    getRegistrationStatus({ expiry_date: expiryDate, version, registration_status: registrationStatus })
+  const imageSources = useMemo(
+    () => getNameImageSources({ name, tokenId, version, status, refreshKey }, IMAGE_BASE_URLS),
+    [name, tokenId, version, status, refreshKey]
   )
-  const unwrappedSrc = useMemo(
-    () => `${UNWRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image${cacheParam}`,
-    [labelHash, cacheParam]
-  )
+  const imageRequestKey = JSON.stringify([imageSources, status])
 
-  const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
-  const fallbackSrc = `/api/og/ens-name/${hexToBigInt(nameHash).toString()}?name=${encodeURIComponent(
-    name
-  )}&expires=${encodeURIComponent(expireTime)}${refreshKey ? `&v=${refreshKey}` : ''}`
-
-  // Subtract 400ms to ensure the state changes at the same time as the other components
-  const status = forceRegStatus ?? getRegistrationStatus(expiryDate)
-
-  // 0 = try wrapped SVG, 1 = try unwrapped SVG, 2 = give up on SVG and show PNG fallback.
-  const [attempt, setAttempt] = useState(0)
-  const [svg, setSvg] = useState<string | null>(null)
-  const [pngLoaded, setPngLoaded] = useState(false)
+  const [failedRequestKey, setFailedRequestKey] = useState<string | null>(null)
+  const [svg, setSvg] = useState<{ name: string; markup: string } | null>(null)
 
   // Stack of in-flight SVG layers we render simultaneously to crossfade
   // between gradients (e.g. when registration status flips into Premium).
@@ -79,70 +83,66 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   // layer mounts on top with opacity 0 and fades to 1 once it loads, while
   // older layers stay visible underneath until the fade completes, then are
   // pruned and their blob URLs revoked.
-  type SvgLayer = { url: string; loaded: boolean; animate: boolean }
+  type SvgLayer = { name: string; url: string; loaded: boolean; animate: boolean }
   const [layers, setLayers] = useState<SvgLayer[]>([])
   const layersRef = useRef<SvgLayer[]>([])
   useEffect(() => {
     layersRef.current = layers
   }, [layers])
 
-  // When the caller bumps `refreshKey` (e.g. after a successful metadata
-  // refresh), restart from the wrapped-SVG attempt so we re-run the full
-  // fetch chain against the new cache-busted URL. We deliberately do NOT
-  // clear `svg` or `layers` here — keeping the previously-loaded layer
-  // mounted lets the new fetch's layer crossfade in over it instead of
-  // flashing through gray. If the refetched SVG is byte-identical (the
-  // metadata service often returns the same content), `setSvg` bails out
-  // and the user sees no change, which is correct.
+  // Start a fresh fetch chain whenever the name, registration status, or
+  // refresh changes. Keep the previous SVG visible so the new one can fade in.
   useEffect(() => {
-    if (refreshKey === undefined) return
-    setAttempt(0)
-    setPngLoaded(false)
-    setSvg(null)
-    setLayers([])
-  }, [refreshKey])
-
-  useEffect(() => {
-    if (attempt > 1) return
-    // reverse for now to only use unwrapped because the graph subgraph returns correct reccord no matter what
-    const url = attempt === 1 ? wrappedSrc : unwrappedSrc
-
-    let cancelled = false
+    const controller = new AbortController()
+    let retryTimer: ReturnType<typeof setTimeout> | undefined
     const maxRetries = 2
+    setFailedRequestKey(null)
 
-    const attemptFetch = async (retry = 0): Promise<void> => {
+    const attemptFetch = async (sourceIndex = 0, retry = 0): Promise<void> => {
+      if (controller.signal.aborted) return
+      const url = imageSources[sourceIndex]
+      if (!url) {
+        setFailedRequestKey(imageRequestKey)
+        return
+      }
+
       try {
-        const res = await fetch(url, refreshKey !== undefined ? { cache: 'reload' } : undefined)
+        const res = await fetch(url, {
+          signal: controller.signal,
+          ...(refreshKey !== undefined ? { cache: 'reload' as const } : {}),
+        })
+        if (controller.signal.aborted) return
         if (res.status === 404) {
-          if (!cancelled) setAttempt((a) => a + 1)
-          return
+          return attemptFetch(sourceIndex + 1)
         }
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const text = await res.text()
-        if (!cancelled) {
-          setSvg(applyStateGradient(text, status))
+        if (!controller.signal.aborted) {
+          const markup = applyStateGradient(text, status)
+          setSvg((prev) => (prev?.name === name && prev.markup === markup ? prev : { name, markup }))
         }
       } catch {
-        if (cancelled) return
+        if (controller.signal.aborted) return
 
         if (retry < maxRetries) {
           const backoff = 250 * 2 ** retry + Math.random() * 150
-          setTimeout(() => {
-            attemptFetch(retry + 1)
+          retryTimer = setTimeout(() => {
+            attemptFetch(sourceIndex, retry + 1)
           }, backoff)
           return
         }
 
-        setAttempt((a) => a + 1)
+        return attemptFetch(sourceIndex + 1)
       }
     }
 
     attemptFetch()
 
     return () => {
-      cancelled = true
+      controller.abort()
+      clearTimeout(retryTimer)
     }
-  }, [attempt, wrappedSrc, unwrappedSrc, status, refreshKey])
+  }, [imageSources, imageRequestKey, status, refreshKey, name])
 
   // Wrap the fetched SVG markup in a same-origin blob URL so we can render it
   // through an <img> element. That way the browser exposes the normal image
@@ -158,13 +158,17 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
       })
       return
     }
-    const blob = new Blob([svg], { type: 'image/svg+xml' })
+    const blob = new Blob([svg.markup], { type: 'image/svg+xml' })
     const url = URL.createObjectURL(blob)
 
     // Only crossfade when there's already a layer underneath to fade over.
     // The very first layer renders instantly so the initial image isn't
     // gated behind a 500ms fade; subsequent layers animate status changes.
-    setLayers((prev) => [...prev, { url, loaded: false, animate: prev.length > 0 }])
+    setLayers((prev) => {
+      const current = prev.filter((layer) => layer.name === svg.name)
+      prev.filter((layer) => layer.name !== svg.name).forEach((layer) => URL.revokeObjectURL(layer.url))
+      return [...current, { name: svg.name, url, loaded: false, animate: current.length > 0 }]
+    })
   }, [svg])
 
   // Once the topmost (newest) layer has rendered, wait for its opacity
@@ -203,38 +207,18 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
 
   const sizeStyle = width !== undefined || height !== undefined ? { width, height } : undefined
 
-  const showPngFallback = attempt > 1
-  const hasLoadedLayer = layers.some((l) => l.loaded)
-  const loaded = showPngFallback ? pngLoaded : hasLoadedLayer
+  // A reused component must never display the previous name's image while
+  // this name is loading or after every source has failed.
+  const currentLayers = layers.filter((layer) => layer.name === name)
+  const failed = failedRequestKey === imageRequestKey
+  const hasLoadedLayer = currentLayers.some((layer) => layer.loaded)
+  const loaded = hasLoadedLayer || failed
 
   const wrapperClasses = cn(
     'bg-foreground/80 rounded-sm overflow-hidden relative',
     !loaded && 'animate-pulse',
     className
   )
-
-  if (showPngFallback) {
-    return (
-      <div aria-label={name} role='img' style={sizeStyle} className={wrapperClasses}>
-        {!pngLoaded && (
-          <div className='absolute inset-0 z-10'>
-            <LoadingCell height='100%' width='100%' />
-          </div>
-        )}
-        <Image
-          src={fallbackSrc}
-          alt={name}
-          width={width ?? INTRINSIC_SIZE}
-          height={height ?? INTRINSIC_SIZE}
-          onLoad={() => setPngLoaded(true)}
-          className={cn(
-            '-m-px block h-[calc(100%+2px)] w-[calc(100%+2px)] object-cover transition-opacity duration-200',
-            !pngLoaded && 'opacity-0'
-          )}
-        />
-      </div>
-    )
-  }
 
   return (
     <div
@@ -251,13 +235,18 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
         height={INTRINSIC_SIZE}
         className='invisible block h-full w-full'
       />
-      {!hasLoadedLayer && (
+      {failed && !hasLoadedLayer && (
+        <span className='absolute inset-0 flex items-center justify-center p-2 text-center text-xs font-medium break-all'>
+          {name}
+        </span>
+      )}
+      {!failed && !hasLoadedLayer && (
         <div className='absolute inset-0 z-10'>
           <LoadingCell height='100%' width='100%' />
         </div>
       )}
-      {layers.map((layer, i) => {
-        const isTop = i === layers.length - 1
+      {currentLayers.map((layer, i) => {
+        const isTop = i === currentLayers.length - 1
         return (
           <img
             key={layer.url}

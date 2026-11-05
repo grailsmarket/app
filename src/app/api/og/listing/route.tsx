@@ -1,8 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
-import { APP_ENS_ADDRESS } from '@/constants'
-import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
-import { labelhash, namehash, isAddress } from 'viem'
+import { isAddress } from 'viem'
 import { formatUnits } from 'viem'
 import { truncateAddress as truncateAddr, fetchAccount } from 'ethereum-identity-kit/utils'
 import { TOKENS } from '@/constants/web3/tokens'
@@ -12,15 +10,14 @@ import { APIResponseType } from '@/types/api'
 import { MarketplaceDomainType } from '@/types/domains'
 import { API_URL } from '@/constants/api'
 import { getInterFonts } from '../_lib/inter'
+import { renderEnsNftImage } from '../_lib/ensNftImage'
+import { config } from '@/lib/config'
+import { activeChainSlug } from '@/constants/web3/chain'
 
 const size = {
   width: 1600,
   height: 836,
 }
-
-const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
-const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 
 const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
@@ -56,7 +53,7 @@ const getCurrencySymbol = (currencyAddress: string): string => {
   return token || 'ETH'
 }
 
-export async function GET(req: NextRequest) {
+export const GET = async (req: NextRequest) => {
   try {
     const searchParams = req.nextUrl.searchParams
     const name = searchParams.get('name')
@@ -73,6 +70,7 @@ export async function GET(req: NextRequest) {
         const data = result.data
 
         return {
+          tokenId: data.token_id,
           listings: data.listings,
           owner_address: data.owner,
           categories: data.clubs || [],
@@ -126,25 +124,6 @@ export async function GET(req: NextRequest) {
           avatar: defaultAvatar,
           displayName: isAddress(owner_address) ? truncateAddr(owner_address as `0x${string}`) : owner_address,
         }
-      }
-    }
-
-    const getENSImage = async () => {
-      try {
-        const nameHash = namehash(displayName)
-        const labelHash = labelhash(displayName.replace('.eth', ''))
-
-        const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-        const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
-
-        const wrappedResult = await fetch(wrappedImageUrl)
-          .then((res) => res.ok)
-          .catch(() => false)
-
-        return wrappedResult ? wrappedImageUrl : unwrappedImageUrl
-      } catch (error) {
-        console.error('Error fetching ENS Image:', error)
-        return null
       }
     }
 
@@ -202,23 +181,22 @@ export async function GET(req: NextRequest) {
       if (categories.length !== 1) return {}
       const entries = await Promise.all(
         categories.map(async (category) => {
-          const dataUri = await fetchImageAsDataUri(`https://api.grails.app/api/v1/clubs/${category}/avatar`)
+          const dataUri = await fetchImageAsDataUri(`${API_URL}/clubs/${category}/avatar`)
           return [category, dataUri || ''] as const
         })
       )
       return Object.fromEntries(entries)
     }
 
-    const [ownerProfile, ensImage, categoryAvatars, interFonts, defaultAvatarDataUri] = await Promise.all([
+    const [ownerProfile, categoryAvatars, interFonts, defaultAvatarDataUri] = await Promise.all([
       getOwnerProfile(),
-      getENSImage(),
       getCategoryAvatarDataUris(),
       getInterFonts(),
       fetchImageAsDataUri(defaultAvatar),
     ])
 
     const ownerAvatarDataUri = ownerProfile.displayName
-      ? await fetchImageAsDataUri(`${ENS_METADATA_URL}/mainnet/avatar/${ownerProfile.displayName}`)
+      ? await fetchImageAsDataUri(`${config.ensMetadataUrl}/${activeChainSlug}/avatar/${ownerProfile.displayName}`)
       : null
     const ownerAvatar = ownerAvatarDataUri || (defaultAvatarDataUri as string)
 
@@ -266,21 +244,18 @@ export async function GET(req: NextRequest) {
           >
             LISTING
           </div>
-          {ensImage && (
-            <img
-              src={ensImage}
-              alt='ens'
-              width={560}
-              height={560}
-              style={{
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                borderBottomLeftRadius: imageBottomRadius,
-                borderBottomRightRadius: imageBottomRadius,
-                objectFit: 'cover',
-              }}
-            />
-          )}
+          {renderEnsNftImage({
+            name: displayName,
+            tokenId: nameDetails.tokenId,
+            width: 560,
+            height: 560,
+            style: {
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
+              borderBottomLeftRadius: imageBottomRadius,
+              borderBottomRightRadius: imageBottomRadius,
+            },
+          })}
           {categories.length > 0 && (
             <div
               style={{

@@ -29,7 +29,7 @@ const SimilarNames: React.FC<Props> = ({ name }) => {
             Sign in to generate AI recommendations for this name.
           </div>
         ) : isLoading ? (
-          <div className='flex h-[300px] w-full animate-pulse flex-col items-center justify-center gap-3'>
+          <div className='flex h-75 w-full animate-pulse flex-col items-center justify-center gap-3'>
             <LoadingCell height='20px' width='140px' radius='4px' />
             <span className='text-neutral text-lg'>
               {loadingPhase === 'suggestions' ? 'AI Thinking...' : 'Loading name data...'}
@@ -37,7 +37,7 @@ const SimilarNames: React.FC<Props> = ({ name }) => {
           </div>
         ) : domains.length > 0 ? (
           <>
-            <div className='border-tertiary px-md @[48rem]/app:p-md @[64rem]/app:p-lg flex h-[40px] w-full flex-row items-center justify-between border-b'>
+            <div className='border-tertiary px-md @[48rem]/app:p-md @[64rem]/app:p-lg flex h-10 w-full flex-row items-center justify-between border-b'>
               {SIMILAR_NAMES_COLUMNS.map((column) => (
                 <div
                   key={column}

@@ -35,7 +35,7 @@ const MainPanel: React.FC = () => {
           <DomainPanel {...bulkSearchDomains} />
         </div>
       </div>
-      <ActionButtons hideDomainActions={false} />
+      <ActionButtons />
     </div>
   )
 }

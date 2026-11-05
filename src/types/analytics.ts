@@ -40,6 +40,8 @@ export type AnalyticsSource = 'all' | 'grails' | 'opensea'
 export interface AnalyticsListing {
   id: number
   name: string
+  version: number
+  token_id: string
   price_wei: string
   currency_address: string
   seller_address: string
@@ -51,6 +53,8 @@ export interface AnalyticsListing {
 export interface AnalyticsOffer {
   id: number
   name: string
+  version: number
+  token_id: string
   offer_amount_wei: string
   currency_address: string
   buyer_address: string
@@ -62,6 +66,8 @@ export interface AnalyticsOffer {
 export interface AnalyticsSale {
   id: number
   name: string
+  version: number
+  token_id: string
   sale_price_wei: string
   currency_address: string
   seller_address: string
@@ -74,11 +80,16 @@ export interface AnalyticsSale {
 export interface AnalyticsRegistration {
   id: number
   name: string
+  version: number
+  token_id: string
   registrant_address: string
   owner_address: string
   base_cost_wei: string
   premium_wei: string
   total_cost_wei: string
+  // null means ETH (v1 controllers); ENSv2 registrations are paid in USDC/DAI
+  currency_address: string | null
+  total_cost_usd: string | null
   name_length: number
   registration_date: string
   clubs: string[] | null

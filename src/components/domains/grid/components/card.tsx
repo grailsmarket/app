@@ -4,10 +4,17 @@ import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import Tooltip from '@/components/ui/tooltip'
 import { MarketplaceDomainType } from '@/types/domains'
-import { REGISTERED, GRACE_PERIOD, PREMIUM, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import {
+  REGISTERED,
+  GRACE_PERIOD,
+  PREMIUM,
+  UNREGISTERED,
+  REGISTERABLE_STATUSES,
+} from '@/constants/domains/registrationStatuses'
 import { cn } from '@/utils/tailwind'
 import Actions from './actions'
 import NameImage from '@/components/ui/nameImage'
+import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import Price from '@/components/ui/price'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { useFilterContext } from '@/context/filters'
@@ -34,11 +41,10 @@ import User from '@/components/ui/user'
 import Image from 'next/image'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useQuery } from '@tanstack/react-query'
-import { DAY_IN_SECONDS } from '@/constants/time'
+import { getRegistrationDates } from '@/utils/getRegistrationStatus'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
-import { ENS_METADATA_URL } from '@/constants/ens'
-import { APP_ENS_ADDRESS } from '@/constants'
+import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2 } from '@/constants/ens'
 
 const formatCategoryName = (category: string) =>
   category
@@ -72,7 +78,7 @@ const Card: React.FC<CardProps> = ({
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const { isSelecting: isBulkSelecting } = useAppSelector(selectBulkSelect)
   const domainIsValid = checkNameValidity(domain?.name)
-  const registrationStatus = getRegistrationStatus(domain.expiry_date)
+  const registrationStatus = getRegistrationStatus(domain)
   const domainListing = domain.listings?.[0]
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
@@ -94,7 +100,8 @@ const Card: React.FC<CardProps> = ({
   // Determine countdown type based on registration status
   const countdownType =
     registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD ? 'grace' : null
-  const { premiumPrice, timeLeftString } = useExpiryCountdown(domain.expiry_date, countdownType)
+  const { premiumPrice, timeLeftString } = useExpiryCountdown(domain, countdownType)
+  const { graceEndsAt } = getRegistrationDates(domain)
   const regPrice = calculateRegistrationPrice(domain.name, ethPrice)
 
   const { data: brokerAccount } = useQuery({
@@ -107,14 +114,14 @@ const Card: React.FC<CardProps> = ({
     enabled: !!domainListing?.broker_address,
   })
 
-  const backgroundColor = useMemo(() => {
+  const cardColors = useMemo(() => {
     if (isBulkSelecting) {
       return isSelected ? 'bg-primary/20' : isInPreviewRange ? 'bg-primary/10' : 'hover:bg-primary/10'
     }
 
-    if (registrationStatus === UNREGISTERED) return 'bg-available/10'
-    if (registrationStatus === PREMIUM) return 'bg-premium/10'
-    if (registrationStatus === GRACE_PERIOD) return 'bg-grace/10'
+    if (registrationStatus === UNREGISTERED) return 'bg-available/5'
+    if (registrationStatus === PREMIUM) return 'bg-premium/5 border-premium/20'
+    if (registrationStatus === GRACE_PERIOD) return 'bg-grace/5'
     if (registrationStatus === REGISTERED) {
       if (domainListing) return 'bg-foreground/20'
     }
@@ -211,16 +218,16 @@ const Card: React.FC<CardProps> = ({
         }
       }}
       className={cn(
-        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition-colors delay-400 duration-400 hover:opacity-100 @[48rem]/app:opacity-80',
+        'group bg-secondary border-tertiary flex h-full w-full cursor-pointer flex-col rounded-sm border opacity-100 transition-colors delay-400 duration-400 hover:opacity-100 @[48rem]/app:opacity-80',
         !domainIsValid && 'pointer-events-none opacity-40',
-        backgroundColor,
+        cardColors,
         className
       )}
     >
-      <div className='relative flex max-h-[340px] w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-[206px]'>
+      <div className='relative flex max-h-85 w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-52.5'>
         {isHomeCarousel ? (
           <Image
-            src={`${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}
+            src={`${domain.version === 2 ? DOMAIN_IMAGE_URL_V2 : DOMAIN_IMAGE_URL}/${domain.version === 2 ? domain.token_id : hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}
             alt={domain.name}
             unoptimized
             width={500}
@@ -230,22 +237,36 @@ const Card: React.FC<CardProps> = ({
         ) : (
           <NameImage
             name={domain.name}
+            version={domain.version}
             tokenId={domain.token_id}
             expiryDate={domain.expiry_date}
+            registrationStatus={domain.registration_status}
             className='h-full w-full rounded-t-sm rounded-b-none object-cover'
           />
         )}
-        {domainIsValid ? null : (
-          <div className='bg-secondary absolute top-0 right-0 z-10 flex flex-row items-center gap-0 rounded-tr-[3px] rounded-bl-sm'>
-            <Tooltip
-              position='bottom'
-              label='Name contains invalid character(s)'
-              align={isFirstInRow ? 'left' : 'right'}
-            >
-              <p className='pl-[6px]'>⚠️</p>
-            </Tooltip>
-          </div>
-        )}
+        <div className='absolute inset-x-2 top-2 z-10 flex flex-row-reverse flex-wrap items-start gap-1.5'>
+          {!REGISTERABLE_STATUSES.includes(registrationStatus) && (
+            <NameVersionBadge version={domain.version} align={isFirstInRow ? 'left' : 'right'} />
+          )}
+          {!domainIsValid && (
+            <div className='bg-secondary pointer-events-auto shrink-0 rounded-sm px-1.5'>
+              <Tooltip
+                position='bottom'
+                label='Name contains invalid character(s)'
+                align={isFirstInRow ? 'left' : 'right'}
+              >
+                <p>⚠️</p>
+              </Tooltip>
+            </div>
+          )}
+          {domain.compromised && (
+            <div className='pointer-events-auto mr-auto shrink-0 rounded-sm bg-red-900/80 px-1.5 py-0.5'>
+              <Tooltip position='bottom' label='Reported stolen — only the original owner can trade it' align='left'>
+                <p className='text-xs font-bold text-red-300'>🚨 Stolen</p>
+              </Tooltip>
+            </div>
+          )}
+        </div>
       </div>
       <div className='flex justify-between'>
         <Actions
@@ -259,14 +280,18 @@ const Card: React.FC<CardProps> = ({
       </div>
       <div
         className={cn(
-          'flex w-full flex-1 flex-col justify-between gap-[3px] rounded-b-sm pt-3 text-lg',
+          'flex w-full flex-1 flex-col justify-between gap-0.75 rounded-b-sm pt-3 text-lg',
           isBulkSelecting && 'pointer-events-none'
         )}
       >
         <div className='flex w-full flex-col gap-1 px-3'>
           {registrationStatus === GRACE_PERIOD ? (
             <Tooltip
-              label={`Ends ${formatExpiryDate(new Date(new Date(domain.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+              label={
+                graceEndsAt
+                  ? `Ends ${formatExpiryDate(graceEndsAt, { includeTime: true, dateDivider: '/' })}`
+                  : 'Grace period'
+              }
               align='left'
               position='top'
             >
@@ -296,7 +321,7 @@ const Card: React.FC<CardProps> = ({
                 )}
               </div>
             ) : (
-              <p className='leading-[18px] font-bold'>Unlisted</p>
+              <p className='leading-4.5 font-bold'>Unlisted</p>
             )
           ) : (
             <div className='flex flex-col gap-px'>
@@ -330,12 +355,12 @@ const Card: React.FC<CardProps> = ({
                 )}
               </div>
               {registrationStatus === PREMIUM && timeLeftString && (
-                <div className='text-md text-premium/70 flex items-center gap-px font-medium tabular-nums'>
+                <div className='text-premium/70 flex items-center gap-px text-sm font-medium tabular-nums'>
                   Premium ({timeLeftString})
                 </div>
               )}
               {registrationStatus === UNREGISTERED && (
-                <p className='text-md text-available flex items-center gap-px font-medium'>Available</p>
+                <p className='text-available flex items-center gap-px text-sm font-medium'>Available</p>
               )}
             </div>
           )}
@@ -380,6 +405,7 @@ const Card: React.FC<CardProps> = ({
         </div>
         <div className='flex flex-col'>
           {domain.owner &&
+            !REGISTERABLE_STATUSES.includes(registrationStatus) &&
             (filterType !== 'profile' || profileTab.value === 'watchlist' || profileTab.value === 'broker') && (
               <User
                 address={domain.owner as Address}

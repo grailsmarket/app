@@ -1,5 +1,6 @@
 'use client'
 
+import { activeChain } from '@/constants/web3/chain'
 import Image from 'next/image'
 import React, { useState } from 'react'
 import LoadingCell from '@/components/ui/loadingCell'
@@ -18,6 +19,7 @@ import {
 } from '@/constants/domains/registrationStatuses'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
+import NameVersionBadge from '@/components/ui/nameVersionBadge'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
@@ -31,31 +33,30 @@ import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import ENS_LOGO from 'public/logos/ens-circle.svg'
 import OPENSEA_LOGO from 'public/logos/opensea.svg'
-import ENSVISION_LOGO from 'public/logos/ensvision.svg'
 import ETHERSCAN_LOGO from 'public/logos/etherscan.svg'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
-import {
-  ENS_HOLIDAY_REFERRER_ADDRESS_SHORT,
-  ENS_NAME_WRAPPER_ADDRESS,
-  ENS_REGISTRAR_ADDRESS,
-} from '@/constants/web3/contracts'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
-import { DAY_IN_SECONDS } from '@/constants/time'
+import { getRegistrationDates } from '@/utils/getRegistrationStatus'
 import CartIcon from '@/components/domains/table/components/CartIcon'
 import useCartDomains from '@/hooks/useCartDomains'
 import RefreshIcon from 'public/icons/refresh.svg'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
 import { markImageForRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
+import { config } from '@/lib/config'
 
 interface NameDetailsProps {
   name: string
   nameDetails?: MarketplaceDomainType | null
   nameDetailsIsLoading: boolean
   registrationStatus: RegistrationStatus
+  registrationStatusIsLoading?: boolean
+  registrationExpiryDate?: string | null
   isSubname: boolean
   openEditMetadataModal: () => void
+  isRecordEditorReady: boolean
+  openMigrationModal: () => void
 }
 
 const PrimaryDetails: React.FC<NameDetailsProps> = ({
@@ -63,8 +64,12 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   nameDetails,
   nameDetailsIsLoading,
   registrationStatus,
+  registrationStatusIsLoading = false,
+  registrationExpiryDate,
   isSubname,
   openEditMetadataModal,
+  isRecordEditorReady,
+  openMigrationModal,
 }) => {
   const [isOwnerCopied, setIsOwnerCopied] = useState(false)
   const [isRefreshingMetadata, setIsRefreshingMetadata] = useState(false)
@@ -72,12 +77,30 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   // Determine countdown type based on registration status
   const countdownType =
     registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD ? 'grace' : null
-  const { timeLeftString } = useExpiryCountdown(nameDetails?.expiry_date ?? null, countdownType)
+  const useNameGracePeriod = registrationStatus === GRACE_PERIOD && !!nameDetails?.expiry_date
+  const countdownExpiryDate = useNameGracePeriod
+    ? nameDetails.expiry_date
+    : (registrationExpiryDate ?? nameDetails?.expiry_date ?? null)
+  const countdownVersion = useNameGracePeriod || registrationExpiryDate === undefined ? (nameDetails?.version ?? 1) : 2
+  const registrationDetails = {
+    ...(countdownVersion === nameDetails?.version && countdownExpiryDate === nameDetails?.expiry_date
+      ? nameDetails
+      : undefined),
+    expiry_date: countdownExpiryDate,
+    version: countdownVersion,
+  }
+  const { timeLeftString } = useExpiryCountdown(registrationDetails, countdownType)
+  const { graceEndsAt } = getRegistrationDates(registrationDetails)
 
   const { data: isWrapped } = useQuery({
     queryKey: ['isWrapped', name],
     queryFn: () => checkIfWrapped(name),
   })
+
+  // v2 names are ERC1155 tokens on the ETHRegistry; v1 names live on the BaseRegistrar or NameWrapper
+  const tokenContract = (
+    nameDetails?.version === 2 ? config.ensV2Registry : isWrapped ? config.ensNameWrapper : config.ensRegistrar
+  ).toLowerCase()
 
   const { data: ownerAccount } = useQuery({
     queryKey: accountQueryKey(nameDetails?.owner),
@@ -116,6 +139,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
         {
           name: nameDetails.name,
           tokenId: nameDetails.token_id,
+          version: nameDetails.version,
           owner: nameDetails.owner,
           expiry_date: nameDetails.expiry_date,
         },
@@ -124,7 +148,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
     dispatch(setTransferModalOpen(true))
   }
 
-  const isOwner = userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase()
+  const isOwner = !!userAddress && userAddress.toLowerCase() === nameDetails?.owner?.toLowerCase()
 
   const refreshMetadata = async () => {
     if (isRefreshingMetadata) return
@@ -147,20 +171,36 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
 
   return (
     <div className='bg-secondary border-tertiary flex flex-col @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
-      <div className='bg-tertiary h-fit w-full'>
+      <div className='bg-tertiary relative h-fit w-full'>
         {nameDetails?.token_id && (
           <NameImage
             name={nameDetails.name}
             tokenId={nameDetails.token_id}
+            version={nameDetails.version}
             expiryDate={nameDetails.expiry_date}
+            forceRegStatus={registrationStatus}
             forceRefreshKey={pendingRefreshKey}
             className='bg-tertiary mx-auto aspect-square w-full max-w-lg'
           />
         )}
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
+        {!REGISTERABLE_STATUSES.includes(registrationStatus) && (
+          <div className='absolute top-2 right-2 z-10'>
+            <NameVersionBadge version={nameDetails?.version} align='right' />
+          </div>
+        )}
       </div>
 
       <div className='p-lg flex flex-col items-center gap-3 @[64rem]/app:pt-5'>
+        {isOwner && nameDetails?.version === 1 && REGISTERED_STATUSES.includes(registrationStatus) && (
+          <PrimaryButton
+            onClick={openMigrationModal}
+            className='w-full text-lg'
+            disabled={authStatus !== 'authenticated' || !isRecordEditorReady}
+          >
+            Migrate to V2
+          </PrimaryButton>
+        )}
         {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
           <div className='flex w-full flex-row items-center justify-between gap-2'>
             {!isSubname && (
@@ -180,7 +220,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                 <SecondaryButton
                   onClick={openEditMetadataModal}
                   className='w-full text-lg'
-                  disabled={authStatus !== 'authenticated'}
+                  disabled={authStatus !== 'authenticated' || !isRecordEditorReady}
                 >
                   Edit
                 </SecondaryButton>
@@ -230,32 +270,35 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             </button>
           </Tooltip>
         </div>
-        <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
-          {nameDetailsIsLoading ? (
+        {nameDetailsIsLoading ? (
+          <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
             <LoadingCell height='26px' width='128px' />
-          ) : (
-            <div className='flex flex-col items-start gap-0.5'>
-              <div className='flex flex-row items-center gap-2'>
-                {nameDetails?.owner && <User address={nameDetails.owner} alignTooltip='left' />}
-                {nameDetails?.owner && ownerAccount?.ens?.name && (
-                  <Image
-                    src={isOwnerCopied ? CheckIcon : CopyIcon}
-                    alt='Copy'
-                    className='h-4 w-4 cursor-pointer hover:opacity-80'
-                    width={16}
-                    height={16}
-                    onClick={async () => {
-                      if (!ownerAccount?.ens?.name) return
-                      navigator.clipboard.writeText(ownerAccount?.ens?.name)
-                      setIsOwnerCopied(true)
-                      setTimeout(() => {
-                        setIsOwnerCopied(false)
-                      }, 2000)
-                    }}
-                  />
-                )}
-              </div>
-              {nameDetails?.owner && (
+            <LoadingCell height='20px' width='110px' />
+          </div>
+        ) : (
+          nameDetails?.owner && (
+            <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
+              <div className='flex flex-col items-start gap-0.5'>
+                <div className='flex flex-row items-center gap-2'>
+                  {nameDetails?.owner && <User address={nameDetails.owner} alignTooltip='left' />}
+                  {nameDetails?.owner && ownerAccount?.ens?.name && (
+                    <Image
+                      src={isOwnerCopied ? CheckIcon : CopyIcon}
+                      alt='Copy'
+                      className='h-4 w-4 cursor-pointer hover:opacity-80'
+                      width={16}
+                      height={16}
+                      onClick={async () => {
+                        if (!ownerAccount?.ens?.name) return
+                        navigator.clipboard.writeText(ownerAccount?.ens?.name)
+                        setIsOwnerCopied(true)
+                        setTimeout(() => {
+                          setIsOwnerCopied(false)
+                        }, 2000)
+                      }}
+                    />
+                  )}
+                </div>
                 <div className='pt-1 @[40rem]/app:hidden'>
                   <CopyValue
                     value={nameDetails.owner}
@@ -264,22 +307,16 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                     className='text-neutral text-lg'
                   />
                 </div>
-              )}
-              <p className='text-neutral text-lg font-medium'>
-                {REGISTERABLE_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner'}
-              </p>
-            </div>
-          )}
-          {nameDetailsIsLoading ? (
-            <LoadingCell height='20px' width='110px' />
-          ) : (
-            nameDetails?.owner && (
+                <p className='text-neutral text-lg font-medium'>
+                  {REGISTERABLE_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner'}
+                </p>
+              </div>
               <div className='hidden @[40rem]/app:block'>
                 <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral' />
               </div>
-            )
-          )}
-        </div>
+            </div>
+          )
+        )}
         <div className='grid w-full grid-cols-2 gap-2 py-2'>
           <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
             {nameDetailsIsLoading ? (
@@ -287,7 +324,9 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             ) : (
               <>
                 <p className='text-xl font-semibold'>
-                  {formatExpiryDate(nameDetails?.expiry_date ?? '', { includeTime: false, dateDivider: '/' })}
+                  {nameDetails?.expiry_date
+                    ? formatExpiryDate(nameDetails?.expiry_date, { includeTime: false, dateDivider: '/' })
+                    : '-'}
                 </p>
                 <p className='text-neutral text-lg font-medium'>Expiration</p>
               </>
@@ -295,13 +334,17 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           </div>
           {!isSubname && (
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-              {nameDetailsIsLoading ? (
+              {nameDetailsIsLoading || registrationStatusIsLoading ? (
                 <LoadingCell height='44px' width='128px' />
               ) : (
                 <>
                   {registrationStatus === GRACE_PERIOD ? (
                     <Tooltip
-                      label={`Ends ${formatExpiryDate(new Date(new Date(nameDetails?.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+                      label={
+                        graceEndsAt
+                          ? `Ends ${formatExpiryDate(graceEndsAt, { includeTime: true, dateDivider: '/' })}`
+                          : 'Grace period'
+                      }
                       align='right'
                       position='top'
                     >
@@ -328,11 +371,11 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             </div>
           )}
         </div>
-        <div className='flex w-full flex-row gap-2'>
+        <div className='grid w-full grid-cols-3 flex-row gap-2'>
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 @[40rem]/app:h-10'
+            className='flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
-              window.open(`https://app.ens.domains/${name}?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
+              window.open(`https://app.ens.domains/${name}?referrer=${config.ensReferrerAddress}`, '_blank')
             }}
           >
             <Image
@@ -344,12 +387,9 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             />
           </button>
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
+            className='flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
-              window.open(
-                `https://opensea.io/item/ethereum/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}/${nameDetails?.token_id}`,
-                '_blank'
-              )
+              window.open(`https://opensea.io/item/ethereum/${tokenContract}/${nameDetails?.token_id}`, '_blank')
             }}
           >
             <Image
@@ -360,7 +400,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
               className='h-7.5 w-7.5 @[40rem]/app:h-8.5 @[40rem]/app:w-8.5'
             />
           </button>
-          <button
+          {/* <button
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#895a01] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(`https://ensvision.com/name/${name}`, '_blank')
@@ -373,12 +413,12 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
               height={28}
               className='h-6 w-6 @[40rem]/app:h-7 @[40rem]/app:w-7'
             />
-          </button>
+          </button> */}
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
+            className='flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
-                `https://etherscan.io/token/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
+                `${activeChain.blockExplorers.default.url}/token/${tokenContract}?a=${nameDetails?.token_id as `0x${string}`}`,
                 '_blank'
               )
             }}

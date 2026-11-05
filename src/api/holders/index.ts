@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@/constants/analytics'
+import { API_URL } from '@/constants/api'
 import { ForceFollowingState } from 'ethereum-identity-kit'
 
 export interface Holder {
@@ -42,7 +42,7 @@ export const fetchHolders = async ({
     limit: String(limit),
   })
 
-  const response = await fetch(`${API_BASE_URL}/clubs/${category}/holders?${params}`)
+  const response = await fetch(`${API_URL}/clubs/${category}/holders?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch holders')
@@ -66,7 +66,7 @@ export const fetchAllHolders = async ({
     limit: String(limit),
   })
 
-  const response = await fetch(`${API_BASE_URL}/clubs/holders?${params}`)
+  const response = await fetch(`${API_URL}/clubs/holders?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch all holders')

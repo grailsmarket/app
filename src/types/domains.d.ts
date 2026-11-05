@@ -1,12 +1,19 @@
 import { Address, Hex } from 'viem'
-import { ALL_REGISTRATION_STATUSES } from '@/constants/domains/registrationStatuses'
+import { ALL_REGISTRATION_STATUSES, UNKNOWN } from '@/constants/domains/registrationStatuses'
 
-export type MarketplaceDomainType = {
+export interface DomainRegistrationDetails {
+  version: number
+  expiry_date: string | null
+  registration_status?: 'registered' | 'grace' | 'premium' | 'available' | null
+  grace_ends_at?: string | null
+  premium_ends_at?: string | null
+}
+
+export type MarketplaceDomainType = DomainRegistrationDetails & {
   id: number
   name: string
   token_id: string
   owner: Address | null
-  expiry_date: string | null
   registration_date: string | null
   creation_date: string | null
   metadata: Record<string, string>
@@ -28,6 +35,7 @@ export type MarketplaceDomainType = {
   downvotes: number
   upvotes: number
   watchlist_record_id: number | null
+  compromised?: CompromisedInfoType | null
   watchlist?: {
     notifyOnSale: boolean
     notifyOnOffer: boolean
@@ -51,11 +59,13 @@ export type DomainListingType = {
   source: string
   broker_address: Address | null
   broker_fee_bps: number | null
+  order_data_redacted?: boolean
 }
 
 export type DomainOfferType = {
   id: number
   ens_name_id: number
+  version: number
   buyer_address: Address
   offer_amount_wei: string
   currency_address: Address
@@ -67,6 +77,24 @@ export type DomainOfferType = {
   token_id: string
   order_data: DomainOfferOrderDataType
   order_hash: Hex
+  compromised?: CompromisedInfoType | null
+  order_data_redacted?: boolean
+}
+
+export type CompromiseIncidentType = {
+  slug: string
+  title: string
+  description: string | null
+  info_url: string | null
+  malicious_operators: Address[]
+}
+
+// Present when the name was reported stolen (backend compromised_names table)
+export type CompromisedInfoType = {
+  incident: CompromiseIncidentType
+  original_owner: Address
+  allowed_addresses: Address[]
+  taken_at: string | null
 }
 
 export type DomainOfferOrderDataType = {
@@ -275,7 +303,7 @@ export type WatchlistEntryType = {
   notifyOnComment: boolean
 }
 
-export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number]
+export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number] | typeof UNKNOWN
 
 export type CategoryType = {
   name: string
@@ -320,6 +348,7 @@ export type CategoryType = {
 export type NameActivityType = {
   id: number
   name: string
+  version: number
   event_type: ProfileActivityEventType
   actor_address: Address | null
   counterparty_address: Address | null

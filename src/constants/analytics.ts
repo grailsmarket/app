@@ -15,5 +15,3 @@ export const SOURCE_OPTIONS: DropdownOption[] = [
   { value: 'grails', label: 'Grails', icon: Grails },
   { value: 'opensea', label: 'OpenSea', icon: OpenSea },
 ]
-
-export const API_BASE_URL = 'https://api.grails.app/api/v1'

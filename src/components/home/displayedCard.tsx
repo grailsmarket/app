@@ -12,6 +12,7 @@ import Image from 'next/image'
 import ArrowIcon from 'public/icons/arrow-back.svg'
 import AnimateIn from '../ui/animateIn'
 import { useAppContainerWidth } from '@/hooks/useAppContainerWidth'
+import { useWindowSize } from 'ethereum-identity-kit'
 
 const CARD_WIDTH_MOBILE = 180
 const CARD_HEIGHT_MOBILE = 360
@@ -42,6 +43,7 @@ const VELOCITY_IDLE_MS = 100
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
 
 const DisplayedCards: React.FC = () => {
+  const { width: windowWidth } = useWindowSize()
   const { authStatus } = useUserContext()
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
@@ -52,10 +54,12 @@ const DisplayedCards: React.FC = () => {
   const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const isMobile = containerWidth > 0 && containerWidth < 640
+  const defaultXPos = isMobile ? ((windowWidth || 0) - CARD_WIDTH_MOBILE) / 2 : 0
   // The track's horizontal offset in pixels — the single source of truth for
   // where the carousel sits. Gestures, the settle spring and auto-flip all write
   // to it; React never re-renders to move the track.
-  const trackX = useMotionValue(0)
+  const trackX = useMotionValue(defaultXPos)
   // Logical index of the resting card within `trackItems`.
   const indexRef = useRef(0)
   // Handle to the in-flight settle animation so we can interrupt it.
@@ -68,7 +72,7 @@ const DisplayedCards: React.FC = () => {
     startIndex: 0,
     startPointerX: 0,
     startPointerY: 0,
-    startTrackX: 0,
+    startTrackX: defaultXPos,
     lastPointerX: 0,
     lastPointerTime: 0,
     velocity: 0, // px/s
@@ -115,7 +119,6 @@ const DisplayedCards: React.FC = () => {
     return () => observer.disconnect()
   }, [])
 
-  const isMobile = containerWidth > 0 && containerWidth < 640
   const cardWidth = isMobile ? CARD_WIDTH_MOBILE : CARD_WIDTH_DESKTOP
   const cardHeight = isMobile ? CARD_HEIGHT_MOBILE : CARD_HEIGHT_DESKTOP
   const step = cardWidth + CARD_GAP
@@ -136,10 +139,9 @@ const DisplayedCards: React.FC = () => {
   }, [domains, cloneCount])
 
   const hydratedWidth = isMounted ? width : null
-  const smallMobileOffset = hydratedWidth && hydratedWidth < 440 ? (hydratedWidth - cardWidth) / 2 - step : 0
 
   // Pixel offset at which a given logical index sits at rest.
-  const restX = useCallback((index: number) => -index * step + smallMobileOffset, [step, smallMobileOffset])
+  const restX = useCallback((index: number) => defaultXPos + -index * step, [step, defaultXPos])
 
   // After a settle lands on a clone, snap instantly to the equivalent real card.
   // The clone is visually identical to the real card, so the jump is invisible
@@ -299,14 +301,14 @@ const DisplayedCards: React.FC = () => {
       // Project where the throw would coast to, then snap to the nearest card,
       // capping the reach so a hard flick never travels past the clone buffer.
       const projected = trackX.get() + velocity * VELOCITY_PROJECTION
-      const nearestIndex = Math.round((smallMobileOffset - projected) / step)
+      const nearestIndex = Math.round((defaultXPos - projected) / step)
       const reach = Math.min(MAX_CARDS_PER_SWIPE, Math.max(1, Math.min(cloneCount, totalCards)))
       const target = clamp(nearestIndex, drag.startIndex - reach, drag.startIndex + reach)
 
       settleTo(target, velocity)
       pauseAutoFlip()
     },
-    [trackX, smallMobileOffset, step, cloneCount, totalCards, settleTo, pauseAutoFlip]
+    [trackX, defaultXPos, step, cloneCount, totalCards, settleTo, pauseAutoFlip]
   )
 
   // Cleanup
@@ -330,7 +332,7 @@ const DisplayedCards: React.FC = () => {
   const viewportWidth = Math.min(containerWidth, visibleCount * cardWidth + (visibleCount - 1) * CARD_GAP)
 
   return (
-    <AnimateIn className='relative mt-6 w-full @[40rem]/app:px-8 @[80rem]/app:px-4'>
+    <AnimateIn className='relative mt-6 w-full @[64rem]/app:px-4 @[80rem]/app:px-4'>
       <div ref={containerRef} className='w-full'>
         <div
           className='relative mx-auto'
@@ -340,14 +342,14 @@ const DisplayedCards: React.FC = () => {
             <>
               <button
                 onClick={() => handleManualNav(-1)}
-                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-1 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors @[40rem]/app:h-12 @[40rem]/app:w-12 @[48rem]/app:-left-6'
+                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-1 z-30 hidden h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-md border-2 backdrop-blur-sm transition-colors md:flex @[40rem]/app:h-12 @[40rem]/app:w-12 @[48rem]/app:-left-6 @[86rem]/app:-left-14'
                 aria-label='Previous card'
               >
                 <Image src={ArrowIcon} alt='' width={16} height={14} className='rotate-180 invert dark:invert-0' />
               </button>
               <button
                 onClick={() => handleManualNav(1)}
-                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-1 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors @[40rem]/app:h-12 @[40rem]/app:w-12 @[48rem]/app:-right-6'
+                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-1 z-30 hidden h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-md border-2 backdrop-blur-sm transition-colors md:flex @[40rem]/app:h-12 @[40rem]/app:w-12 @[48rem]/app:-right-6 @[86rem]/app:-right-14'
                 aria-label='Next card'
               >
                 <Image src={ArrowIcon} alt='' width={16} height={14} className='invert dark:invert-0' />
@@ -355,7 +357,7 @@ const DisplayedCards: React.FC = () => {
             </>
           )}
 
-          <div className='background-radial-primary absolute top-1/2 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 @[40rem]/app:h-[800px] @[40rem]/app:w-[800px]' />
+          <div className='background-radial-primary absolute top-1/2 left-1/2 -z-10 h-150 w-150 -translate-x-1/2 -translate-y-1/2 @[40rem]/app:h-200 @[40rem]/app:w-200' />
 
           <div
             className='touch-pan-y overflow-hidden'

@@ -174,6 +174,8 @@ export const ALL_SORT_FILTERS = [
   'listing_date_desc',
   'listing_expiry_asc',
   'listing_expiry_desc',
+  'character_count_asc',
+  'character_count_desc',
 ] as const
 
 // Sort types for the dropdown (without direction)
@@ -188,6 +190,7 @@ export const SORT_TYPES = [
   'clubs_count',
   'creation_date',
   'alphabetical',
+  'character_count',
   'ranking',
 ] as const
 
@@ -202,6 +205,7 @@ export const SORT_TYPE_LABELS: Record<SortType, string> = {
   watchers_count: 'Watchlist Count',
   view_count: 'View Count',
   alphabetical: 'Alphabetical',
+  character_count: 'Length',
   clubs_count: 'Categories Count',
   creation_date: 'Creation Date',
   ranking: 'Categories Ranking',
@@ -229,6 +233,8 @@ export const SORT_FILTER_LABELS = {
   view_count_desc: 'View Count (High to Low)',
   alphabetical_asc: 'Alphabetical (A-Z)',
   alphabetical_desc: 'Alphabetical (Z-A)',
+  character_count_asc: 'Length (Shortest First)',
+  character_count_desc: 'Length (Longest First)',
   clubs_count_asc: 'Clubs Count (Low to High)',
   clubs_count_desc: 'Categories Count (High to Low)',
   creation_date_asc: 'Creation Date (Old to New)',

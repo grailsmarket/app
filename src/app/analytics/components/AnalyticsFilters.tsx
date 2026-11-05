@@ -235,7 +235,6 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                       } else {
                         dispatch(addCategory(category.name))
                       }
-                      setIsCategoryOpen(false)
                     }}
                     className='hover:bg-tertiary text-md flex w-full items-center justify-between gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg'
                   >

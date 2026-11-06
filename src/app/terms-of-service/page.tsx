@@ -46,8 +46,8 @@ const TermsOfService = () => {
         <div className='flex w-full flex-col gap-1'>
           <p className='font-semibold'>5. Limitation of Liability</p>
           <p>
-            Use of Grails is at your own risk. To the maximum extent permitted by law, Follow Protocol Foundation shall
-            not be liable for:
+            Use of Grails is at your own risk. To the maximum extent permitted by law, Nomentum Labs shall not be liable
+            for:
           </p>
           <ul className='list-inside list-disc'>
             <li>Loss of funds or ENS names</li>

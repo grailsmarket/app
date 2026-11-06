@@ -8,10 +8,7 @@ const PrivacyPolicy = () => {
 
         <div className='flex w-full flex-col gap-1'>
           <p className='font-semibold'>1. Who We Are</p>
-          <p>
-            Grails is operated by Follow Protocol Foundation, a Delaware entity in the United States (“we,” “us,” or
-            “our”).
-          </p>
+          <p>Grails is operated by Nomentum Labs, a Delaware entity in the United States (“we,” “us,” or “our”).</p>
           <p>
             Grails is a web-based interface that allows users to discover, manage, and interact with Ethereum Name
             Service (“ENS”) names, among other things.
@@ -96,7 +93,7 @@ const PrivacyPolicy = () => {
 
         <div className='flex w-full flex-col gap-1'>
           <p className='font-semibold'>9. Contact</p>
-          <p>For privacy-related inquiries, contact: contact@ethfollow.xyz.</p>
+          <p>For privacy-related inquiries, contact: info@nomentum.dev.</p>
         </div>
 
         <div className='flex w-full flex-col gap-1'>

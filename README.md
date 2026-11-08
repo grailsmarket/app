@@ -4,7 +4,7 @@
   </a>
 </p>
 
-<h3 align="center">ENS Manager & Market</h3>
+<h3 align="center">ENS Market & Manager</h3>
 
 <p align="center">
   0% market fees. Bulk tools. Open source.

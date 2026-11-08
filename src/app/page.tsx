@@ -19,7 +19,7 @@ const Home = () => {
         <AnimateIn className='flex w-full flex-col items-center justify-center px-4 @[48rem]/app:px-8 @[64rem]/app:flex-row @[64rem]/app:items-start @[64rem]/app:justify-start @[80rem]/app:gap-0 @[80rem]/app:px-4'>
           <div className='flex w-full flex-col items-center justify-center gap-2'>
             <h1 className='font-sedan-sc text-center text-4xl @[40rem]/app:text-7xl @[80rem]/app:text-9xl'>
-              ENS Manager & Market
+              ENS Market & Manager
             </h1>
             <div className='mb-2 flex flex-wrap items-center justify-center gap-2 @[40rem]/app:mb-4 @[48rem]/app:gap-3'>
               {HERO_PILLS.map((pill) => (

@@ -3,6 +3,7 @@ import type { TxState } from '@/components/ui/modal/statusOrb'
 import type { TransferDomainType } from '@/state/reducers/modals/transferModal'
 import type { TransferStep, TransferTransaction } from '@/types/transfer'
 import { getTransferDomainKey, getTransferTransactionUrl } from '@/utils/transfer'
+import type { TransferRoleProgress } from '@/utils/transferRoles'
 import type {
   TransferActiveBatch,
   TransferApproval,
@@ -45,6 +46,7 @@ interface TransferProgressInput {
   activeBatch: TransferActiveBatch | null
   batchTotals: TransferBatchTotals | null
   network: string
+  roleRemoval: TransferRoleProgress | null
 }
 
 const isApprovalStep = ({ step, processingKind }: TransferProgressInput) =>
@@ -78,6 +80,26 @@ export const getTransferSteps = (input: TransferProgressInput): TxStep[] => {
     // Approvals are only sent for V1 batches.
     href: approval.hash ? getTransferTransactionUrl({ hash: approval.hash, version: 1 }) : undefined,
   }))
+
+  const roleRemoval = input.roleRemoval
+  if (roleRemoval && roleRemoval.total > 0) {
+    steps.unshift({
+      key: 'remove-roles',
+      label: 'Remove Blocking Roles',
+      status: roleRemoval.phase === 'done' ? 'done' : 'active',
+      batch:
+        roleRemoval.total > 1 && roleRemoval.phase !== 'done'
+          ? `${Math.min(roleRemoval.completed + 1, roleRemoval.total)} / ${roleRemoval.total}`
+          : undefined,
+      hash: roleRemoval.hash,
+      href: roleRemoval.hash ? getTransferTransactionUrl({ hash: roleRemoval.hash, version: 2 }) : undefined,
+      links: roleRemoval.hashes.map((hash) => ({
+        key: hash,
+        hash,
+        href: getTransferTransactionUrl({ hash, version: 2 }),
+      })),
+    })
+  }
 
   if (isSingle) {
     const isConfirming = step === 'confirming'
@@ -137,6 +159,28 @@ export interface TransferProgressStatus {
 // What is happening now, for the TxStatus above the steps.
 export const getTransferProgressStatus = (input: TransferProgressInput): TransferProgressStatus => {
   const { step, isSingle, network, approvingContract, completedNames, completedTransactions, batchTotals } = input
+
+  if (step === 'removing_roles') {
+    if (input.roleRemoval?.phase === 'wallet') {
+      return {
+        state: 'wallet',
+        title: 'Remove Blocking Roles',
+        message: 'Confirm the role removal transaction in your wallet',
+      }
+    }
+    if (input.roleRemoval?.phase === 'pending') {
+      return {
+        state: 'pending',
+        title: 'Removing Blocking Roles',
+        message: `${network} · Waiting for onchain confirmation before transferring...`,
+      }
+    }
+    return {
+      state: 'checking',
+      title: 'Checking Name Permissions',
+      message: 'Checking ownership and blocking roles before transferring...',
+    }
+  }
 
   if (step === 'preparing') {
     return {

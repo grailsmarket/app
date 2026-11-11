@@ -20,4 +20,12 @@ export interface TransferTransaction {
   version: 1 | 2
 }
 
-export type TransferStep = 'review' | 'preparing' | 'approving' | 'confirming' | 'processing' | 'success' | 'error'
+export type TransferStep =
+  | 'review'
+  | 'removing_roles'
+  | 'preparing'
+  | 'approving'
+  | 'confirming'
+  | 'processing'
+  | 'success'
+  | 'error'

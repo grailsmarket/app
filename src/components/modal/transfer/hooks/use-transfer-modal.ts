@@ -7,7 +7,12 @@ import { Address, Hex, isAddress, zeroAddress } from 'viem'
 import { fetchAccount } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setTransferModalDomains, TransferDomainType } from '@/state/reducers/modals/transferModal'
-import { clearBulkSelect, removeBulkSelectDomain, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import {
+  clearBulkSelect,
+  removeBulkSelectDomain,
+  removeBulkSelectNames,
+  selectBulkSelect,
+} from '@/state/reducers/modals/bulkSelectModal'
 import useTransferDomains from '@/hooks/registrar/useTransferDomains'
 import { useDebounce } from '@/hooks/useDebounce'
 import { accountQueryKey } from '@/utils/queryKeys'
@@ -17,6 +22,7 @@ import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import type { TransferBatch, TransferStep, TransferTransaction } from '@/types/transfer'
 import { config } from '@/lib/config'
+import { useTransferRoleRemoval } from './use-transfer-role-removal'
 
 type PendingTransaction = TransferTransaction &
   ({ kind: 'approval'; contractName: string } | { kind: 'transfer'; batch: TransferBatch })
@@ -99,11 +105,25 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
           : null
   const walletMismatch = !!target && target.sender.toLowerCase() !== address?.toLowerCase()
   const remainingDomains = domains.filter((domain) => !completedNames.has(getTransferDomainKey(domain)))
-  const isBusy = step === 'preparing' || step === 'approving' || step === 'confirming' || step === 'processing'
+  const roleRemoval = useTransferRoleRemoval(
+    remainingDomains,
+    target?.sender ?? address,
+    step === 'review',
+    publicClient,
+    prepareBatches
+  )
+  const isBusy =
+    step === 'removing_roles' ||
+    step === 'preparing' ||
+    step === 'approving' ||
+    step === 'confirming' ||
+    step === 'processing'
+  const canIgnoreRoleNames = domains.length > 1 && roleRemoval.query.isSuccess && roleRemoval.removals.length > 0
 
   const handleTransfer = async () => {
     if (submitting.current || !domains.length) return
-    if (!pending.current && (!address || !recipient || recipientError || isResolving || walletMismatch)) return
+    if (!address || !recipient || recipientError || isResolving || walletMismatch) return
+    if (!pending.current && !roleRemoval.getPendingHash() && !roleRemoval.ready) return
 
     const transferTarget = target ?? (address && recipient ? { sender: address, recipient } : null)
     if (!transferTarget) return
@@ -162,8 +182,14 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
     try {
       await confirmPending()
       // A resumed transaction has confirmed; the names are read and simulated again from here.
-      setStep('preparing')
       const remaining = domains.filter((domain) => !succeeded.has(getTransferDomainKey(domain)))
+      // A pending transfer already passed role removal. Its retry only confirms and transfers the remaining batches.
+      if (!resumed && remaining.some((domain) => domain.version === 2)) {
+        setStep('removing_roles')
+        await roleRemoval.remove()
+      }
+      setStep('preparing')
+      // Revoking roles can regenerate V2 token IDs; build every batch again after the removals confirm.
       const batches = await prepareBatches(remaining, transferTarget.sender)
       setTotalBatches(batches.length)
       setBatchTotals({
@@ -211,11 +237,12 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
       }
       setStep('success')
     } catch (error) {
-      const message = pending.current ? UNCONFIRMED_MESSAGE : getTransferError(error)
+      const hasPending = !!pending.current || !!roleRemoval.getPendingHash()
+      const message = hasPending ? UNCONFIRMED_MESSAGE : getTransferError(error)
       const raw = error instanceof Error ? error.message : null
       setError(message)
-      setErrorDetails(!pending.current && raw && raw !== message ? raw : null)
-      if (!pending.current && succeeded.size === 0) setTarget(null)
+      setErrorDetails(!hasPending && raw && raw !== message ? raw : null)
+      if (!hasPending && succeeded.size === 0) setTarget(null)
       setStep('error')
     } finally {
       submitting.current = false
@@ -227,6 +254,22 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
     if (step === 'success' && isSelecting) dispatch(clearBulkSelect())
     dispatch(setTransferModalDomains([]))
     onClose()
+  }
+
+  const handleIgnoreRoleNames = () => {
+    if (submitting.current || step !== 'review' || !canIgnoreRoleNames || roleRemoval.query.isFetching) return
+
+    const affected = new Set(roleRemoval.removals.map(({ name }) => getTransferDomainKey({ name, version: 2 })))
+    const kept = domains.filter((domain) => !affected.has(getTransferDomainKey(domain)))
+    dispatch(
+      removeBulkSelectNames(
+        selectedDomains.filter((domain) => affected.has(getTransferDomainKey(domain))).map((domain) => domain.name)
+      )
+    )
+    roleRemoval.setAcknowledged(false)
+    roleRemoval.resetProgress()
+    dispatch(setTransferModalDomains(kept))
+    if (!kept.some((domain) => !completedNames.has(getTransferDomainKey(domain)))) handleClose()
   }
 
   return {
@@ -242,8 +285,15 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
     isBusy,
     recipientLocked: !!target,
     walletMismatch,
-    canTransfer: !!address && !!recipient && !recipientError && !isResolving && !walletMismatch && domains.length > 0,
-    transaction,
+    canTransfer:
+      !!address &&
+      !!recipient &&
+      !recipientError &&
+      !isResolving &&
+      !walletMismatch &&
+      remainingDomains.length > 0 &&
+      roleRemoval.ready,
+    transaction: roleRemoval.pendingHash ? { hash: roleRemoval.pendingHash, version: 2 as const } : transaction,
     completedTransactions,
     completedNames,
     remainingDomains,
@@ -251,7 +301,10 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
     currentNetwork: activeChain.name,
     currentBatch,
     totalBatches,
-    hasPendingTransaction,
+    hasPendingTransaction: hasPendingTransaction || !!roleRemoval.pendingHash,
+    roleRemoval,
+    canIgnoreRoleNames,
+    handleIgnoreRoleNames,
     processingKind,
     approvals,
     activeBatch,

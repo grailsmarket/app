@@ -25,6 +25,7 @@ export const useTransferRoleRemoval = (
 ) => {
   const [consent, setConsent] = useState<string | null>(null)
   const [progress, setProgress] = useState<TransferRoleProgress | null>(null)
+
   const [pendingHash, setPendingHash] = useState<Hex | null>(null)
   const transaction = useRef<TransferRoleRemovalState>({ pending: null })
   const confirmedHashes = useRef<Hex[]>([])

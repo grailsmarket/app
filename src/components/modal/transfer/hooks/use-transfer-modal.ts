@@ -54,17 +54,10 @@ const toActiveBatch = (batch: TransferBatch): TransferActiveBatch => ({
 })
 
 export const useTransferModal = (domains: TransferDomainType[], onClose: () => void) => {
-  const dispatch = useAppDispatch()
-  const { address } = useAccount()
-  const { isSelecting, domains: selectedDomains } = useAppSelector(selectBulkSelect)
-  const queryClient = useQueryClient()
-  const { prepareBatches, getRequiredApprovals, approve, simulate, transfer, publicClient } = useTransferDomains()
   const [step, setStep] = useState<TransferStep>('review')
   const [error, setError] = useState<string | null>(null)
   const [errorDetails, setErrorDetails] = useState<string | null>(null)
   const [recipientInput, setRecipientInput] = useState('')
-  const input = recipientInput.trim()
-  const debouncedInput = useDebounce(input, 200)
   const [target, setTarget] = useState<{ sender: Address; recipient: Address } | null>(null)
   const [transaction, setTransaction] = useState<TransferTransaction | null>(null)
   const [completedTransactions, setCompletedTransactions] = useState<TransferTransaction[]>([])
@@ -77,6 +70,14 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
   const [approvals, setApprovals] = useState<TransferApproval[]>([])
   const [activeBatch, setActiveBatch] = useState<TransferActiveBatch | null>(null)
   const [batchTotals, setBatchTotals] = useState<TransferBatchTotals | null>(null)
+
+  const dispatch = useAppDispatch()
+  const { address } = useAccount()
+  const { isSelecting, domains: selectedDomains } = useAppSelector(selectBulkSelect)
+  const queryClient = useQueryClient()
+  const { prepareBatches, getRequiredApprovals, approve, simulate, transfer, publicClient } = useTransferDomains()
+  const input = recipientInput.trim()
+  const debouncedInput = useDebounce(input, 200)
   const pending = useRef<PendingTransaction | null>(null)
   const submitting = useRef(false)
 

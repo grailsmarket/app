@@ -83,7 +83,7 @@ const TxSteps: React.FC<TxStepsProps> = ({ steps, title, className }) => {
               </span>
 
               {/* The label keeps its width; hash pills that don't fit beside it wrap to their own line, right-aligned. */}
-              <div className='flex min-w-0 flex-1 flex-row flex-wrap items-center justify-between gap-x-2 gap-y-1 pt-0.5'>
+              <div className='flex min-w-0 flex-1 flex-row items-start justify-between gap-x-2 gap-y-1 pt-0.5'>
                 <span
                   className={cn(
                     'max-w-full shrink-0 text-lg transition-colors duration-300',
@@ -97,7 +97,7 @@ const TxSteps: React.FC<TxStepsProps> = ({ steps, title, className }) => {
                 </span>
                 {/* {showDetail && <span className='text-neutral text-md'>{step.detail}</span>} */}
                 {step.links && step.links.length > 0 && (
-                  <div className='ml-auto flex flex-wrap justify-end gap-1.5'>
+                  <div className='ml-auto flex flex-col flex-wrap justify-end gap-1.5'>
                     {step.links.map((link) => (
                       <TxLink key={link.key} hash={link.hash} href={link.href} />
                     ))}

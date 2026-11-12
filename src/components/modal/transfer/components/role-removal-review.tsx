@@ -18,7 +18,7 @@ const TransferRoleRemovalReview: React.FC<TransferRoleRemovalReviewProps> = ({
   if (!hasV2Names || (query.isSuccess && !query.isFetching && removals.length === 0)) return null
 
   return (
-    <div className='border-tertiary bg-secondary flex flex-col gap-3 rounded-md border p-4'>
+    <div className='border-tertiary bg-secondary flex flex-col gap-3 rounded-md border p-3'>
       {query.isFetching || query.isPending ? (
         <p role='status' className='text-neutral text-md'>
           Checking for blocking roles…
@@ -32,7 +32,7 @@ const TransferRoleRemovalReview: React.FC<TransferRoleRemovalReviewProps> = ({
         </>
       ) : (
         <>
-          <p id='transfer-blocking-roles-description' className='text-neutral text-md break-words'>
+          <p id='transfer-blocking-roles-description' className='text-neutral text-md wrap-break-word'>
             Other addresses have roles that block transfers of{' '}
             {Array.from(new Set(removals.map((removal) => beautifyName(removal.name)))).join(', ')}. These roles must be
             removed before transferring. Each removal requires an onchain transaction and stays in effect if the

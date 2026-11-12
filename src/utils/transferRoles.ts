@@ -5,6 +5,7 @@ import { normalizeName } from '@/lib/ens'
 import type { TransferEntry } from '@/types/transfer'
 import { readRoleHistory, readRoleSnapshot } from './records/v2Roles'
 import { waitForTransaction } from './web3/safeTransaction'
+import { ALL_ROLES, TRANSFER_ADMIN_ROLE } from '@/constants/ens/resolver'
 
 export type TransferRoleRemoval = {
   name: string
@@ -24,9 +25,6 @@ export type TransferRoleProgress = {
 }
 
 export type TransferRoleRemovalState = { pending: Hex | null }
-
-const TRANSFER_ADMIN_ROLE = BigInt(1) << BigInt(156)
-const ALL_ROLES = BigInt('0x1111111111111111111111111111111111111111111111111111111111111111')
 
 /** Entries come from prepareBatches, which resolves each name's current registry. */
 const checkTransferRoles = async (
@@ -81,6 +79,7 @@ export const readTransferRoleRemovals = async (
   signal?.throwIfAborted()
   const blockNumber = await client.getBlockNumber({ cacheTime: 0 })
   const checks = await checkTransferRoles(client, entries, owner, blockNumber)
+
   const removals = await Promise.all(
     checks.map(async ({ entry, state, onlyAssignee }) => {
       if (onlyAssignee) return []
@@ -108,6 +107,7 @@ export const readTransferRoleRemovals = async (
       }))
     })
   )
+
   return removals.flat()
 }
 
@@ -177,10 +177,12 @@ export const removeTransferRoles = async ({
     hash: null,
     hashes: [],
   }
+
   const update = (next: Partial<TransferRoleProgress>) => {
     progress = { ...progress, ...next }
     onProgress(progress)
   }
+
   const confirmPending = async () => {
     if (!state.pending) return
 

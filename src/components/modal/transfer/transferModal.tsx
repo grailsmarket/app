@@ -39,6 +39,9 @@ export type TransferModalViewState = Pick<
   | 'recipientLocked'
   | 'walletMismatch'
   | 'canTransfer'
+  | 'roleRemoval'
+  | 'canIgnoreRoleNames'
+  | 'handleIgnoreRoleNames'
   | 'transaction'
   | 'completedTransactions'
   | 'completedNames'
@@ -78,6 +81,7 @@ export const TransferModalView: React.FC<TransferModalViewProps> = ({ domains, m
     remainingDomains,
     hasPendingTransaction,
     batchTotals,
+    roleRemoval,
     handleTransfer,
     handleClose,
     handleRetry,
@@ -105,6 +109,7 @@ export const TransferModalView: React.FC<TransferModalViewProps> = ({ domains, m
     approvingContract: modal.approvingContract,
     activeBatch: modal.activeBatch,
     batchTotals,
+    roleRemoval: roleRemoval.progress,
     network: modal.currentNetwork,
   }
   const progressStatus = isBusy ? getTransferProgressStatus(progressInput) : null
@@ -122,6 +127,9 @@ export const TransferModalView: React.FC<TransferModalViewProps> = ({ domains, m
           recipientError={recipientError}
           recipientLocked={modal.recipientLocked}
           walletMismatch={modal.walletMismatch}
+          roleRemoval={roleRemoval}
+          canIgnoreRoleNames={modal.canIgnoreRoleNames}
+          onIgnoreRoleNames={modal.handleIgnoreRoleNames}
         />
       )
     }
@@ -154,9 +162,11 @@ export const TransferModalView: React.FC<TransferModalViewProps> = ({ domains, m
     return (
       <TransferErrorView
         unconfirmed={isUnconfirmed}
+        walletMismatch={modal.walletMismatch}
         error={error}
         errorDetails={errorDetails}
         pendingTransaction={transaction}
+        roleRemovalHashes={roleRemoval.progress?.hashes ?? []}
         partial={
           completedNames.size > 0
             ? { transferred: completedNames.size, total: domains.length, transactions: completedTransactions }
@@ -194,7 +204,11 @@ export const TransferModalView: React.FC<TransferModalViewProps> = ({ domains, m
 
     return (
       <>
-        <PrimaryButton onClick={isUnconfirmed ? handleTransfer : handleRetry} className={modalPrimaryActionClassName}>
+        <PrimaryButton
+          onClick={isUnconfirmed ? handleTransfer : handleRetry}
+          disabled={isUnconfirmed && modal.walletMismatch}
+          className={modalPrimaryActionClassName}
+        >
           {isUnconfirmed ? 'Check Transaction' : 'Try Again'}
         </PrimaryButton>
         <SecondaryButton onClick={handleClose} className={modalActionClassName}>

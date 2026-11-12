@@ -4,6 +4,8 @@ import type { TransferDomainType } from '@/state/reducers/modals/transferModal'
 import { getTransferDomainKey } from '@/utils/transfer'
 import { Avatar, Check, type AccountResponseType } from 'ethereum-identity-kit'
 import { isAddress } from 'viem'
+import TransferRoleRemovalReview from './role-removal-review'
+import type { useTransferModal } from '../hooks/use-transfer-modal'
 
 interface TransferReviewFormProps {
   domains: TransferDomainType[]
@@ -16,6 +18,9 @@ interface TransferReviewFormProps {
   recipientError: string | null
   recipientLocked: boolean
   walletMismatch: boolean
+  roleRemoval: ReturnType<typeof useTransferModal>['roleRemoval']
+  canIgnoreRoleNames: boolean
+  onIgnoreRoleNames: () => void
 }
 
 // The names, the recipient field and its notes; the Transfer and Cancel buttons sit in the modal footer.
@@ -29,6 +34,9 @@ const TransferReviewForm: React.FC<TransferReviewFormProps> = ({
   recipientError,
   recipientLocked,
   walletMismatch,
+  roleRemoval,
+  canIgnoreRoleNames,
+  onIgnoreRoleNames,
 }) => {
   const hasV2 = domains.some((domain) => domain.version === 2)
 
@@ -83,6 +91,11 @@ const TransferReviewForm: React.FC<TransferReviewFormProps> = ({
           <p className='text-neutral text-sm'>The recipient is fixed while completing the remaining transfers.</p>
         )}
       </div>
+      <TransferRoleRemovalReview
+        roleRemoval={roleRemoval}
+        canIgnoreRoleNames={canIgnoreRoleNames}
+        onIgnoreRoleNames={onIgnoreRoleNames}
+      />
       {hasV2 && (
         <p className='text-neutral text-sm'>
           Resolver configurations and their permissions stay unchanged when a name transfers.

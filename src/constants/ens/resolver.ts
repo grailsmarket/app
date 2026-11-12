@@ -29,4 +29,5 @@ export const RESOLVER_ADMIN_ROLES = [
 export const ALL_ROLES = BigInt('0x1111111111111111111111111111111111111111111111111111111111111111')
 export const LINK_ROLE = BigInt(1) << BigInt(28)
 export const SET_RESOLVER_ROLE = BigInt(1) << BigInt(24)
+export const TRANSFER_ADMIN_ROLE = BigInt(1) << BigInt(156)
 export const ROOT_NAME: Hex = '0x00'

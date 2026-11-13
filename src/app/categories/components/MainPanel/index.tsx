@@ -13,7 +13,6 @@ import CategoriesPageDomainsPanel from '../domainsPanel'
 import AllHoldersPanel from '../allHoldersPanel'
 import FilterPanel from '@/components/filters'
 import ActionButtons from '@/app/marketplace/components/actionButtons'
-import { useFilterUrlSync } from '@/hooks/filters/useFilterUrlSync'
 import { setViewType } from '@/state/reducers/view'
 import ActivityPanel from '../activity'
 import { useCategoriesPageDomains } from '../../hooks/useCategoriesPageDomains'
@@ -32,9 +31,6 @@ const MainPanel: React.FC = () => {
   useEffect(() => {
     dispatch(setViewType('list'))
   }, [])
-
-  // Sync filters with URL
-  useFilterUrlSync({ filterType: 'categoriesPage' })
 
   const showCategoriesPanel = selectedTab.value === 'categories'
   const showDomainsPanel =

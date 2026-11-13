@@ -46,6 +46,12 @@ import { changeCategoryTab } from '@/state/reducers/category/category'
 import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categoriesPage'
 import { changeBulkSearchTab } from '@/state/reducers/bulkSearch/bulkSearch'
 import { FeedFilterActions } from '@/state/reducers/filters/feedFilters'
+import {
+  setCategoriesPageSearch,
+  setCategoriesPageType,
+  setCategoriesPageSort,
+  setCategoriesPageSortDirection,
+} from '@/state/reducers/filters/categoriesPageFilters'
 
 interface UseFilterUrlSyncOptions {
   filterType: FilterContextType
@@ -196,6 +202,19 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
     (urlFilters: ParsedUrlFilters) => {
       if (!actions) return
 
+      // Categories tab of the categories page: its slice uses its own action names
+      // (setCategoriesPage*), so dispatch them directly instead of the generic actions
+      if (filterType === 'categoriesPage') {
+        const urlTab = urlFilters.tab && isValidTab(filterType, urlFilters.tab) ? urlFilters.tab : defaultTab
+        if (urlTab === 'categories') {
+          if (urlFilters.search !== undefined) dispatch(setCategoriesPageSearch(urlFilters.search))
+          if (urlFilters.catType !== undefined) dispatch(setCategoriesPageType(urlFilters.catType))
+          if (urlFilters.catSort !== undefined) dispatch(setCategoriesPageSort(urlFilters.catSort))
+          if (urlFilters.catDir !== undefined) dispatch(setCategoriesPageSortDirection(urlFilters.catDir))
+          return
+        }
+      }
+
       // Apply search
       if (urlFilters.search !== undefined) {
         dispatch(actions.setSearch(urlFilters.search))
@@ -330,21 +349,8 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
       if (urlFilters.creationDate !== undefined && actions.setCreationDate) {
         dispatch(actions.setCreationDate(urlFilters.creationDate))
       }
-
-      // Categories page filters
-      if (urlFilters.catType !== undefined && actions.setFiltersType) {
-        dispatch(actions.setFiltersType(urlFilters.catType))
-      }
-
-      if (urlFilters.catSort !== undefined && actions.setSort) {
-        dispatch(actions.setSort(urlFilters.catSort))
-      }
-
-      if (urlFilters.catDir !== undefined && (actions as any).setSortDirection) {
-        dispatch((actions as any).setSortDirection(urlFilters.catDir))
-      }
     },
-    [actions, dispatch, selectors.filters]
+    [actions, dispatch, selectors.filters, filterType, defaultTab]
   )
 
   // URL → Redux: Initialize from URL on mount

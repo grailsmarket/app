@@ -5,7 +5,12 @@ import {
   DEFAULT_TEXT_NON_MATCH_FILTERS_STATE,
 } from '@/constants/filters/name'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
-import { DEFAULT_CATEGORIES_PAGE_SORT, DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION } from '@/constants/filters/categories'
+import {
+  CATEGORIES_PAGE_SORT_OPTIONS,
+  CATEGORIES_PAGE_TYPE_OPTIONS,
+  DEFAULT_CATEGORIES_PAGE_SORT,
+  DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION,
+} from '@/constants/filters/categories'
 import {
   MarketFilterOption,
   MarketFiltersState,
@@ -626,19 +631,19 @@ export function deserializeFiltersFromUrl(searchParams: URLSearchParams): Parsed
     result.activityType = activityType.split(',').filter(Boolean)
   }
 
-  // Categories page filters
-  const catType = searchParams.get(URL_PARAMS.catType) as CategoriesPageTypeOption | null
-  if (catType) {
-    result.catType = catType
+  // Categories page filters (unknown values are ignored)
+  const catType = searchParams.get(URL_PARAMS.catType)
+  if (catType && (CATEGORIES_PAGE_TYPE_OPTIONS as readonly string[]).includes(catType)) {
+    result.catType = catType as CategoriesPageTypeOption
   }
 
-  const catSort = searchParams.get(URL_PARAMS.catSort) as CategoriesPageSortOption | null
-  if (catSort) {
-    result.catSort = catSort
+  const catSort = searchParams.get(URL_PARAMS.catSort)
+  if (catSort && (CATEGORIES_PAGE_SORT_OPTIONS as readonly string[]).includes(catSort)) {
+    result.catSort = catSort as CategoriesPageSortOption
   }
 
-  const catDir = searchParams.get(URL_PARAMS.catDir) as SortDirection | null
-  if (catDir) {
+  const catDir = searchParams.get(URL_PARAMS.catDir)
+  if (catDir === 'asc' || catDir === 'desc') {
     result.catDir = catDir
   }
 

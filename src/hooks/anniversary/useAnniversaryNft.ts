@@ -49,7 +49,7 @@ export const useAnniversaryNft = (address: Address | undefined, authenticated: b
   } = useQuery({
     queryKey: [...key, 'proof'],
     queryFn: () => getProof(address!),
-    enabled: enabled && status?.status === null,
+    enabled: enabled && (status?.status === null || status?.status === 'dismissed'),
     refetchOnWindowFocus: false,
   })
   const isProofLoading = proofFetching || proofRefetching
@@ -102,5 +102,16 @@ export const useAnniversaryNft = (address: Address | undefined, authenticated: b
     dispatch(openAnniversaryNftModal({ address: address!, tokenId: proofData.tokenId, proof: proofData.proof }))
   }, [address, enabled, status, isStatusLoading, proof, isProofLoading, claimed, otherModalOpen, cartOpen, dispatch])
 
-  return { isAnniversaryNftMinted: enabled && (status?.status === 'minted' || claimed === true) }
+  const isAnniversaryNftMinted = enabled && (status?.status === 'minted' || claimed === true)
+  const canOpenAnniversaryNft =
+    enabled && status?.status === 'dismissed' && proof?.data?.eligible === true && !isAnniversaryNftMinted
+
+  const openAnniversaryNft = () => {
+    const proofData = proof?.data
+    if (!canOpenAnniversaryNft || !address || !proofData) return
+
+    dispatch(openAnniversaryNftModal({ address, tokenId: proofData.tokenId, proof: proofData.proof }))
+  }
+
+  return { isAnniversaryNftMinted, canOpenAnniversaryNft, openAnniversaryNft }
 }

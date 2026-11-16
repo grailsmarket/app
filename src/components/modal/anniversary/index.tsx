@@ -2,6 +2,8 @@
 
 import Image from 'next/image'
 import { useEffect, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { fetchAccount } from 'ethereum-identity-kit'
 import GrailsLogo from 'public/logo.svg'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -17,6 +19,7 @@ import { ExternalLinkIcon } from '@/components/ui/modal/icons'
 import { ANNIVERSARY_NFT_COLLECTION_URL } from '@/constants/anniversaryNFT'
 import { activeChain } from '@/constants/web3/chain'
 import type { AnniversaryNftClaim } from '@/state/reducers/portfolio/anniversaryNFT'
+import { accountQueryKey } from '@/utils/queryKeys'
 import TokenArtwork from './TokenArtwork'
 import { useAnniversaryClaim } from './useAnniversaryClaim'
 
@@ -29,6 +32,11 @@ export const AnniversaryNftModalView = ({
 }) => {
   const success = flow.step === 'success'
   const dialog = useRef<HTMLDivElement>(null)
+  const { data: account, isLoading: accountLoading } = useQuery({
+    queryKey: accountQueryKey(claim.address),
+    queryFn: () => fetchAccount(claim.address),
+    refetchOnWindowFocus: false,
+  })
 
   useEffect(() => {
     const previousFocus = document.activeElement
@@ -137,7 +145,18 @@ export const AnniversaryNftModalView = ({
             </div>
             <DetailList
               rows={[
-                { key: 'recipient', label: 'Claiming with', value: <AccountChip address={claim.address} /> },
+                {
+                  key: 'recipient',
+                  label: 'Claiming with',
+                  value: (
+                    <AccountChip
+                      address={claim.address}
+                      name={account?.ens?.name}
+                      avatar={account?.ens?.avatar}
+                      loading={accountLoading}
+                    />
+                  ),
+                },
                 { key: 'network', label: 'Network', value: activeChain.name },
                 { key: 'price', label: 'Mint price', value: 'Free', sub: 'Network fee applies' },
               ]}

@@ -29,6 +29,8 @@ const SignInButton = () => {
     authStatus,
     isPoapClaimed,
     isAnniversaryNftMinted,
+    canOpenAnniversaryNft,
+    openAnniversaryNft,
     claimedPoapLink,
     poapClaimedYear,
     handleSignOut,
@@ -110,7 +112,7 @@ const SignInButton = () => {
             />
           </Link>
         ) : null}
-        {isAnniversaryNftMinted && (
+        {isAnniversaryNftMinted ? (
           <a
             href={ANNIVERSARY_NFT_COLLECTION_URL}
             target='_blank'
@@ -122,7 +124,18 @@ const SignInButton = () => {
             <Image src={ExternalLink} alt='' width={20} height={20} className='h-5 w-auto' />
             <span className='sr-only'> (opens in a new tab)</span>
           </a>
-        )}
+        ) : canOpenAnniversaryNft ? (
+          <button
+            type='button'
+            onClick={() => {
+              setIsDropdownOpen(false)
+              openAnniversaryNft()
+            }}
+            className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+          >
+            Anniversary NFT
+          </button>
+        ) : null}
         {userAddress && activeChain.id === 1 && (
           <Link
             href={`/profile/${userAddress}#${MIGRATION_REWARD_ID}`}

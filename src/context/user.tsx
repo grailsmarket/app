@@ -41,6 +41,8 @@ type userContextType = {
   isCartDomainsLoading: boolean
   isPoapClaimed: boolean
   isAnniversaryNftMinted: boolean
+  canOpenAnniversaryNft: boolean
+  openAnniversaryNft: () => void
   claimedPoapLink?: string
   poapClaimedYear?: string
   handleGetNonce: () => Promise<string> | string
@@ -98,7 +100,11 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   const claimedPoapLink = poapClaimData?.link || undefined
   const poapClaimedYear = poapClaimData?.claimed_at?.split('-')[0] || undefined
 
-  const { isAnniversaryNftMinted } = useAnniversaryNft(address, authStatus === 'authenticated', isCartOpen)
+  const { isAnniversaryNftMinted, canOpenAnniversaryNft, openAnniversaryNft } = useAnniversaryNft(
+    address,
+    authStatus === 'authenticated',
+    isCartOpen
+  )
 
   const handleGetNonce = useCallback(async () => {
     if (!address) throw new Error('No address found')
@@ -176,6 +182,8 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         isCartDomainsLoading,
         isPoapClaimed,
         isAnniversaryNftMinted,
+        canOpenAnniversaryNft,
+        openAnniversaryNft,
         claimedPoapLink,
         poapClaimedYear,
         handleGetNonce,

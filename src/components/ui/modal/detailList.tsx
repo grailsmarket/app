@@ -28,7 +28,7 @@ const DetailList: React.FC<DetailListProps> = ({ rows, total, className }) => {
       <div className='bg-secondary rounded-lg px-3 py-1'>
         <dl className='divide-line-subtle divide-y'>
           {rows.map((row) => (
-            <div key={row.key} className='flex items-baseline justify-between gap-4 py-2.5'>
+            <div key={row.key} className='flex items-center justify-between gap-4 px-1 py-2.5'>
               <dt className='text-neutral shrink-0 text-lg'>{row.label}</dt>
               <dd className='flex min-w-0 flex-col items-end gap-0.5 text-right text-lg font-semibold tabular-nums'>
                 <span className={cn(row.tone && TONE_CLASS_NAMES[row.tone])}>{row.value}</span>

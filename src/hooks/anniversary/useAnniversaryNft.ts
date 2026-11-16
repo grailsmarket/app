@@ -49,7 +49,7 @@ export const useAnniversaryNft = (address: Address | undefined, authenticated: b
   } = useQuery({
     queryKey: [...key, 'proof'],
     queryFn: () => getProof(address!),
-    enabled: enabled && (status?.status === null || status?.status === 'dismissed'),
+    enabled: enabled,
     refetchOnWindowFocus: false,
   })
   const isProofLoading = proofFetching || proofRefetching
@@ -113,5 +113,5 @@ export const useAnniversaryNft = (address: Address | undefined, authenticated: b
     dispatch(openAnniversaryNftModal({ address, tokenId: proofData.tokenId, proof: proofData.proof }))
   }
 
-  return { isAnniversaryNftMinted, canOpenAnniversaryNft, openAnniversaryNft }
+  return { isAnniversaryNftMinted, canOpenAnniversaryNft, openAnniversaryNft, tokenId: proof?.data?.tokenId }
 }

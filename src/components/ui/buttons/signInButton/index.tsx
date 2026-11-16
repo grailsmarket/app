@@ -29,6 +29,7 @@ const SignInButton = () => {
     authStatus,
     isPoapClaimed,
     isAnniversaryNftMinted,
+    anniversaryNftTokenId,
     canOpenAnniversaryNft,
     openAnniversaryNft,
     claimedPoapLink,
@@ -114,7 +115,7 @@ const SignInButton = () => {
         ) : null}
         {isAnniversaryNftMinted ? (
           <a
-            href={ANNIVERSARY_NFT_COLLECTION_URL}
+            href={`${ANNIVERSARY_NFT_COLLECTION_URL}/${anniversaryNftTokenId}`}
             target='_blank'
             rel='noopener noreferrer'
             onClick={() => setIsDropdownOpen(false)}

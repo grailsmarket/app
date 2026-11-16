@@ -67,7 +67,7 @@ const TokenArtwork = ({ tokenId }: { tokenId: number }) => {
       width={1000}
       height={1000}
       unoptimized
-      className='aspect-square h-auto w-full rounded-lg object-contain'
+      className='border-tertiary aspect-square h-auto w-full rounded-lg border object-contain shadow-md'
     />
   )
 }

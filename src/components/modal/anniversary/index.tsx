@@ -222,7 +222,7 @@ export const AnniversaryNftModalView = ({
             <div className='flex flex-wrap items-center justify-center gap-3 py-1'>
               <TxLink hash={flow.hash} />
               <a
-                href={ANNIVERSARY_NFT_COLLECTION_URL}
+                href={`${ANNIVERSARY_NFT_COLLECTION_URL}/${claim.tokenId}`}
                 target='_blank'
                 rel='noopener noreferrer'
                 className='text-primary inline-flex items-center gap-1.5 text-lg hover:underline'

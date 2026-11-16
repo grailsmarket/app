@@ -14,6 +14,7 @@ export const emptyFilterState: NameFilters = {
 // Initial State
 export const initialState: NamefiltersOpened = {
   ...DEFAULT_NAME_FILTERS_OPENED_STATE,
+  sort: 'price_asc',
 }
 
 // Slice

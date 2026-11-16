@@ -32,7 +32,6 @@ const AccountChip: React.FC<AccountChipProps> = ({ address, name, avatar, loadin
         style={{ width: '24px', height: '24px' }}
       />
       <span className='min-w-0 truncate text-lg font-semibold'>{name || truncateAddress(address)}</span>
-      {name && <span className='text-neutral text-md shrink-0 font-mono'>{truncateAddress(address)}</span>}
     </div>
   )
 }

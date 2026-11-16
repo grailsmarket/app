@@ -58,10 +58,10 @@ export async function waitForTransaction(
   publicClient: PublicClient,
   hash: `0x${string}`,
   account?: GetAccountReturnType,
-  options?: { confirmations?: number }
+  options?: { confirmations?: number; isSafe?: boolean }
 ) {
   let txHash = hash
-  const isSafe = account ? isSafeConnector(account) : isSafeAppContext()
+  const isSafe = options?.isSafe ?? (account ? isSafeConnector(account) : isSafeAppContext())
 
   if (isSafe) {
     const realHash = await getRealTxHashFromSafe(hash)

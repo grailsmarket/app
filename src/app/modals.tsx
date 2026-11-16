@@ -38,6 +38,9 @@ import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reduc
 import ListSettings from '@/components/modal/list-settings'
 import { selectRegistration } from '@/state/reducers/registration'
 import ChatSocketMount from '@/components/chat/socketMount'
+import AnniversaryNftModal from '@/components/modal/anniversary'
+import { closeAnniversaryNftModal, selectAnniversaryNftModal } from '@/state/reducers/portfolio/anniversaryNFT'
+import { useUserContext } from '@/context/user'
 
 const OpenSettingsFromUrl: React.FC = () => {
   useOpenSettingsFromUrl()
@@ -102,6 +105,12 @@ const Modals: React.FC = () => {
     list: listSettingsModalList,
   } = useAppSelector(selectListSettingsModal)
   const { isOpen: registrationModalOpen } = useAppSelector(selectRegistration)
+  const anniversaryNft = useAppSelector(selectAnniversaryNftModal)
+  const { userAddress, authStatus } = useUserContext()
+  const anniversaryNftOpen =
+    anniversaryNft.open &&
+    authStatus === 'authenticated' &&
+    anniversaryNft.claim?.address.toLowerCase() === userAddress?.toLowerCase()
 
   const anyModalOpen =
     makeOfferModalOpen ||
@@ -118,7 +127,8 @@ const Modals: React.FC = () => {
     editRecordsModalOpen ||
     bulkMigrationModalOpen ||
     listSettingsModalOpen ||
-    registrationModalOpen
+    registrationModalOpen ||
+    anniversaryNftOpen
 
   useEffect(() => {
     if (anyModalOpen) {
@@ -268,6 +278,15 @@ const Modals: React.FC = () => {
         />
       )}
       <ChatSocketMount />
+      <AnimatePresence>
+        {anniversaryNftOpen && anniversaryNft.claim && (
+          <AnniversaryNftModal
+            key={`anniversary-nft-${anniversaryNft.claim.address}`}
+            claim={anniversaryNft.claim}
+            onClose={() => dispatch(closeAnniversaryNftModal(anniversaryNft.claim!.address))}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

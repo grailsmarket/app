@@ -19,6 +19,7 @@
     "@ethersproject/bignumber": "^5.8.0",
     "@opensea/seaport-js": "^4.0.5",
     "@rainbow-me/rainbowkit": "^2.2.10",
+    "@redis/client": "^6.3.1",
     "@reduxjs/toolkit": "^2.9.0",
     "@safe-global/safe-apps-provider": "~0.18.6",
     "@safe-global/safe-apps-sdk": "^9.1.0",

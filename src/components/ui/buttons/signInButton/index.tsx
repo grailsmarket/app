@@ -15,6 +15,7 @@ import GrailsPoap2026 from 'public/art/grails-poap-2026.webp'
 import Link from 'next/link'
 import { activeChain } from '@/constants/web3/chain'
 import { MIGRATION_REWARD_ID, setMigrationRewardDismissed } from '@/hooks/migration/useMigrationRewardVisibility'
+import { ANNIVERSARY_NFT_COLLECTION_URL } from '@/constants/anniversaryNFT'
 
 const SignInButton = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -27,6 +28,10 @@ const SignInButton = () => {
     userAddress,
     authStatus,
     isPoapClaimed,
+    isAnniversaryNftMinted,
+    anniversaryNftTokenId,
+    canOpenAnniversaryNft,
+    openAnniversaryNft,
     claimedPoapLink,
     poapClaimedYear,
     handleSignOut,
@@ -107,6 +112,30 @@ const SignInButton = () => {
               className='h-5 w-auto md:h-6'
             />
           </Link>
+        ) : null}
+        {isAnniversaryNftMinted ? (
+          <a
+            href={`${ANNIVERSARY_NFT_COLLECTION_URL}/${anniversaryNftTokenId}`}
+            target='_blank'
+            rel='noopener noreferrer'
+            onClick={() => setIsDropdownOpen(false)}
+            className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+          >
+            Anniversary NFT
+            <Image src={ExternalLink} alt='' width={20} height={20} className='h-5 w-auto' />
+            <span className='sr-only'> (opens in a new tab)</span>
+          </a>
+        ) : canOpenAnniversaryNft ? (
+          <button
+            type='button'
+            onClick={() => {
+              setIsDropdownOpen(false)
+              openAnniversaryNft()
+            }}
+            className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+          >
+            Anniversary NFT
+          </button>
         ) : null}
         {userAddress && activeChain.id === 1 && (
           <Link

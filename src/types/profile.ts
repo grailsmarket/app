@@ -46,3 +46,5 @@ export type SearchENSProfile = {
 export type SearchENSProfilesResults = {
   domains: SearchENSProfile[]
 }
+
+export type AnniversaryNftStatus = 'minted' | 'dismissed'

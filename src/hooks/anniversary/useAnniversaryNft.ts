@@ -94,7 +94,8 @@ export const useAnniversaryNft = (address: Address | undefined, authenticated: b
       isProofLoading ||
       !proofData?.eligible ||
       otherModalOpen ||
-      cartOpen
+      cartOpen ||
+      claimed === true
     )
       return
 

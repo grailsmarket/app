@@ -47,6 +47,7 @@ const configSchema = z.object({
   ensNameWrapper: address(),
   ensBulkRegistrar: address(),
   bulkTransferContract: address(),
+  anniversaryNftContract: address(),
 
   // Pay for bulk registrations/renewals with ETH. Both optional: the ETH option is hidden without them.
   ensEthRouter: address().optional(),
@@ -114,6 +115,7 @@ export const config = configSchema.parse({
   ensNameWrapper: process.env.NEXT_PUBLIC_ENS_NAME_WRAPPER,
   ensBulkRegistrar: process.env.NEXT_PUBLIC_ENS_BULK_REGISTRAR,
   bulkTransferContract: process.env.NEXT_PUBLIC_BULK_TRANSFER_CONTRACT,
+  anniversaryNftContract: process.env.NEXT_PUBLIC_ANNIVERSARY_NFT_MAINNET,
 
   ensEthRouter: process.env.NEXT_PUBLIC_ENS_ETH_ROUTER || undefined,
   uniswapV4Quoter: process.env.NEXT_PUBLIC_UNISWAP_V4_QUOTER || undefined,

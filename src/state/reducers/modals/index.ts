@@ -17,6 +17,7 @@ import editRecordsModal from './editRecordsModal'
 import bulkEditRecordsModal from './bulkEditRecordsModal'
 import bulkMigrationModal from './bulkMigrationModal'
 import listSettingsModal from './listSettingsModal'
+import anniversaryNft from '../portfolio/anniversaryNFT'
 
 const modalReducer = combineReducers({
   searchReducer: searchModal,
@@ -36,6 +37,7 @@ const modalReducer = combineReducers({
   bulkEditRecordsReducer: bulkEditRecordsModal,
   bulkMigrationReducer: bulkMigrationModal,
   listSettingsReducer: listSettingsModal,
+  anniversaryNftReducer: anniversaryNft,
 })
 
 export default modalReducer

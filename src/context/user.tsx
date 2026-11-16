@@ -20,6 +20,7 @@ import {
 import { getCart } from '@/api/cart/getCart'
 import { checkPoap } from '@/api/user/checkPoap'
 import { setUserPoapClaimed } from '@/state/reducers/portfolio/profile'
+import { useAnniversaryNft } from '@/hooks/anniversary/useAnniversaryNft'
 
 type userContextType = {
   userAddress: Address | undefined
@@ -39,6 +40,7 @@ type userContextType = {
   cartDomains: CartDomainType[] | null | undefined
   isCartDomainsLoading: boolean
   isPoapClaimed: boolean
+  isAnniversaryNftMinted: boolean
   claimedPoapLink?: string
   poapClaimedYear?: string
   handleGetNonce: () => Promise<string> | string
@@ -95,6 +97,8 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   const isPoapClaimed = poapClaimData?.has_claimed || false
   const claimedPoapLink = poapClaimData?.link || undefined
   const poapClaimedYear = poapClaimData?.claimed_at?.split('-')[0] || undefined
+
+  const { isAnniversaryNftMinted } = useAnniversaryNft(address, authStatus === 'authenticated', isCartOpen)
 
   const handleGetNonce = useCallback(async () => {
     if (!address) throw new Error('No address found')
@@ -171,6 +175,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         cartDomains,
         isCartDomainsLoading,
         isPoapClaimed,
+        isAnniversaryNftMinted,
         claimedPoapLink,
         poapClaimedYear,
         handleGetNonce,

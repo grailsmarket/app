@@ -49,10 +49,10 @@ const TokenArtwork = ({ tokenId }: { tokenId: number }) => {
     )
   }
 
-  if (data.animation_url?.startsWith('data:text/html;base64,')) {
+  if (data.animationHtml) {
     return (
       <iframe
-        src={data.animation_url}
+        srcDoc={data.animationHtml}
         title={data.name}
         sandbox='allow-scripts'
         className='aspect-square w-full rounded-lg border-0'

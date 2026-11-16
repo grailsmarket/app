@@ -93,26 +93,13 @@ export const useAnniversaryNft = (address: Address | undefined, authenticated: b
       status?.status !== null ||
       isProofLoading ||
       !proofData?.eligible ||
-      modal.open ||
       otherModalOpen ||
       cartOpen
     )
       return
 
     dispatch(openAnniversaryNftModal({ address: address!, tokenId: proofData.tokenId, proof: proofData.proof }))
-  }, [
-    address,
-    enabled,
-    status,
-    isStatusLoading,
-    proof,
-    isProofLoading,
-    claimed,
-    modal.open,
-    otherModalOpen,
-    cartOpen,
-    dispatch,
-  ])
+  }, [address, enabled, status, isStatusLoading, proof, isProofLoading, claimed, otherModalOpen, cartOpen, dispatch])
 
   return { isAnniversaryNftMinted: enabled && (status?.status === 'minted' || claimed === true) }
 }

@@ -115,7 +115,8 @@ export const config = configSchema.parse({
   ensNameWrapper: process.env.NEXT_PUBLIC_ENS_NAME_WRAPPER,
   ensBulkRegistrar: process.env.NEXT_PUBLIC_ENS_BULK_REGISTRAR,
   bulkTransferContract: process.env.NEXT_PUBLIC_BULK_TRANSFER_CONTRACT,
-  anniversaryNftContract: process.env.NEXT_PUBLIC_ANNIVERSARY_NFT_MAINNET,
+  anniversaryNftContract:
+    process.env.NEXT_PUBLIC_ANNIVERSARY_NFT_MAINNET || '0x52B79805ba3518B7df3FEB6C5ED39b7B751f9915',
 
   ensEthRouter: process.env.NEXT_PUBLIC_ENS_ETH_ROUTER || undefined,
   uniswapV4Quoter: process.env.NEXT_PUBLIC_UNISWAP_V4_QUOTER || undefined,

@@ -122,7 +122,7 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
     }
 
     return (
-      <div className='px-lg py-md bg-secondary flex max-h-[300px] flex-col overflow-y-auto rounded-lg'>
+      <div className='px-lg py-md bg-secondary flex max-h-75 flex-col overflow-y-auto rounded-lg'>
         {listings.length > 1 && (
           <div className='flex justify-between border-b border-b-white/30 py-2'>
             <p className='font-sedan-sc text-label text-xl'>Names</p>

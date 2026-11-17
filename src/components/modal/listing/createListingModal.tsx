@@ -196,6 +196,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     { value: currentTimestamp + DAY_IN_SECONDS * 7, label: '1 Week' },
     { value: currentTimestamp + DAY_IN_SECONDS * 30, label: '1 Month' },
     { value: currentTimestamp + DAY_IN_SECONDS * 90, label: '3 Months' },
+    { value: currentTimestamp + DAY_IN_SECONDS * 180, label: '6 Months' },
     { value: 0, label: 'Custom' },
   ]
 

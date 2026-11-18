@@ -429,6 +429,15 @@ export const setScrollTop = (state: NamefiltersOpened, { payload }: PayloadActio
   state.scrollTop = payload
 }
 
+export const setFilters = (state: NamefiltersOpened, { payload }: PayloadAction<NamefiltersOpened>) => {
+  // cannot just assign state to a value so we iterate through state object's keys and
+  // then use those to specify the value getting assigned and the value from the payload's object
+  Object.keys(state).forEach((key) => {
+    // @ts-expect-error we can read values from an object using string keys
+    state[key] = payload[key]
+  })
+}
+
 export const clearFilters = (state: NamefiltersOpened) => {
   return {
     ...DEFAULT_NAME_FILTERS_STATE,
@@ -462,5 +471,6 @@ export const NAME_FILTERS_ACTIONS = {
   setSort,
   setSearch,
   setScrollTop,
+  setFilters,
   clearFilters,
 } as const

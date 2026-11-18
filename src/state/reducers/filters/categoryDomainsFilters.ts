@@ -54,6 +54,7 @@ export const {
   removeCategories,
   setSort,
   setScrollTop,
+  setFilters,
   clearFilters,
 } = CategoryDomainsFilterActions
 

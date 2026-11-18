@@ -489,7 +489,6 @@ export function useFilterRouter(): FilterRouter {
     const filtersWithoutOpen = _.omit(filters, 'open')
     const filtersWithoutScrollTop = _.omit(filtersWithoutOpen, 'scrollTop')
     const filtersWithoutSelectedTab = _.omit(filtersWithoutScrollTop, 'selectedTab')
-    // console.log(filtersWithoutScrollTop, emptyFilterState)
     return _.isEqual(filtersWithoutSelectedTab, _.omit(emptyFilterState, 'selectedTab'))
   }, [filters, emptyFilterState])
 

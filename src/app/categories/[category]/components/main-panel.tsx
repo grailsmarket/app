@@ -13,7 +13,10 @@ import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeCategoryTab, selectCategory, setLastVisitedCategory } from '@/state/reducers/category/category'
-import { clearFilters as clearCategoryDomainsFilters } from '@/state/reducers/filters/categoryDomainsFilters'
+import {
+  initialState as categoryDomainsInitialState,
+  setFilters as setCategoryDomainsFilters,
+} from '@/state/reducers/filters/categoryDomainsFilters'
 import { clearFilters as clearCategoryListingsFilters } from '@/state/reducers/filters/categoryListingsFilters'
 import { clearFilters as clearCategoryPremiumFilters } from '@/state/reducers/filters/categoryPremiumFilters'
 import { clearFilters as clearCategoryAvailableFilters } from '@/state/reducers/filters/categoryAvailableFilters'
@@ -33,7 +36,7 @@ const MainPanel: React.FC<Props> = ({ category }) => {
 
   useEffect(() => {
     if (lastVisitedCategory && lastVisitedCategory !== category) {
-      dispatch(clearCategoryDomainsFilters())
+      dispatch(setCategoryDomainsFilters(categoryDomainsInitialState))
       dispatch(clearCategoryListingsFilters())
       dispatch(clearCategoryPremiumFilters())
       dispatch(clearCategoryAvailableFilters())

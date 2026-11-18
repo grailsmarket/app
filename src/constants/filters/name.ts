@@ -429,13 +429,8 @@ export const setScrollTop = (state: NamefiltersOpened, { payload }: PayloadActio
   state.scrollTop = payload
 }
 
-export const setFilters = (state: NamefiltersOpened, { payload }: PayloadAction<NamefiltersOpened>) => {
-  // cannot just assign state to a value so we iterate through state object's keys and
-  // then use those to specify the value getting assigned and the value from the payload's object
-  Object.keys(state).forEach((key) => {
-    // @ts-expect-error we can read values from an object using string keys
-    state[key] = payload[key]
-  })
+export const setFilters = (_state: NamefiltersOpened, { payload }: PayloadAction<NamefiltersOpened>) => {
+  return payload
 }
 
 export const clearFilters = (state: NamefiltersOpened) => {

@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useMemo, useCallback } from 'react'
+import { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from './useFilterRouter'
 import { FilterContextType } from '@/types/filters/name'
 import {
+  URL_PARAMS,
   serializeFiltersToUrl,
   serializeFeedFiltersToUrl,
   serializeCategoriesPageFiltersToUrl,
@@ -17,6 +18,7 @@ import {
 } from '@/utils/filterUrlParams'
 import type { FeedFiltersState } from '@/types/filters/feed'
 import { ActionCreatorWithPayload } from '@reduxjs/toolkit'
+import type { Address } from 'viem'
 import { debounce } from 'lodash'
 
 // Import tab constants
@@ -27,18 +29,6 @@ import { CATEGORIES_PAGE_TABS } from '@/constants/categories/categoriesPageTabs'
 import { BULK_SEARCH_TABS } from '@/constants/domains/bulkSearch/tabs'
 import { FEED_TABS } from '@/constants/filters/feed'
 
-// Import empty filter states for comparison
-import { emptyFilterState as marketplaceEmptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
-import { emptyFilterState as profileDomainsEmptyFilterState } from '@/state/reducers/filters/profileDomainsFilters'
-import { emptyFilterState as categoryDomainsEmptyFilterState } from '@/state/reducers/filters/categoryDomainsFilters'
-import { emptyFilterState as categoriesPageEmptyFilterState } from '@/state/reducers/filters/categoriesPageFilters'
-import { emptyFilterState as categoriesNamesEmptyFilterState } from '@/state/reducers/filters/categoriesNamesFilters'
-import { emptyFilterState as categoriesPremiumEmptyFilterState } from '@/state/reducers/filters/categoriesPremiumDomainsFilters'
-import { emptyFilterState as categoriesAvailableEmptyFilterState } from '@/state/reducers/filters/categoriesAvailableDomainsFilters'
-import { emptyFilterState as categoriesActivityEmptyFilterState } from '@/state/reducers/filters/categoriesActivityFilters'
-import { emptyFilterState as bulkSearchEmptyFilterState } from '@/state/reducers/filters/bulkSearchFilters'
-import { emptyFilterState as feedEmptyFilterState } from '@/state/reducers/filters/feedFilters'
-
 // Import tab change actions
 import { changeTab } from '@/state/reducers/portfolio/profile'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
@@ -46,6 +36,7 @@ import { changeCategoryTab } from '@/state/reducers/category/category'
 import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categoriesPage'
 import { changeBulkSearchTab } from '@/state/reducers/bulkSearch/bulkSearch'
 import { FeedFilterActions } from '@/state/reducers/filters/feedFilters'
+import { openProfileFilters } from '@/state/reducers/filters/profileFilters'
 import {
   setCategoriesPageSearch,
   setCategoriesPageType,
@@ -55,6 +46,7 @@ import {
 
 interface UseFilterUrlSyncOptions {
   filterType: FilterContextType
+  profileAddress?: Address
 }
 
 // Get default tab value for each filter type
@@ -117,26 +109,6 @@ function findTabByValue(filterType: FilterContextType, value: string) {
   }
 }
 
-// Get empty filter state for each filter type
-function getEmptyFilterState(filterType: FilterContextType): BaseFilterState | CategoriesPageFilterState {
-  switch (filterType) {
-    case 'profile':
-      return profileDomainsEmptyFilterState as BaseFilterState
-    case 'marketplace':
-      return marketplaceEmptyFilterState as BaseFilterState
-    case 'category':
-      return categoryDomainsEmptyFilterState as BaseFilterState
-    case 'categoriesPage':
-      return categoriesPageEmptyFilterState as CategoriesPageFilterState
-    case 'bulkSearch':
-      return bulkSearchEmptyFilterState as BaseFilterState
-    case 'feed':
-      return feedEmptyFilterState as unknown as BaseFilterState
-    default:
-      return marketplaceEmptyFilterState as BaseFilterState
-  }
-}
-
 // Validate tab value is allowed
 function isValidTab(filterType: FilterContextType, tabValue: string): boolean {
   const tabs =
@@ -158,24 +130,39 @@ function isValidTab(filterType: FilterContextType, tabValue: string): boolean {
 }
 
 export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
-  const { filterType } = options
+  const { filterType, profileAddress } = options
 
   const dispatch = useAppDispatch()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { actions, selectors, profileTab, marketplaceTab, categoryTab, categoriesPageTab, bulkSearchTab, feedTab } =
-    useFilterRouter()
+  const {
+    actions,
+    selectors,
+    emptyFilterState,
+    profileTab,
+    marketplaceTab,
+    categoryTab,
+    categoriesPageTab,
+    bulkSearchTab,
+    feedTab,
+  } = useFilterRouter()
 
   // Refs to prevent infinite loops
   const isSyncingFromUrl = useRef(false)
-  const lastWrittenUrl = useRef<string>('')
-  const isInitialized = useRef(false)
-  const pendingUrlFilters = useRef<ParsedUrlFilters | null>(null)
+  const lastWrittenUrl = useRef<string | null>(null)
+  const lastReadUrl = useRef<string | null>(null)
+  const [pendingUrlFilters, setPendingUrlFilters] = useState<{
+    filters: ParsedUrlFilters
+    tab: string
+    locationKey: string
+  } | null>(null)
+  const [syncPhase, setSyncPhase] = useState<'initializing' | 'applying' | 'ready'>('initializing')
+  const queryString = searchParams.toString()
+  const locationKey = queryString ? `${pathname}?${queryString}` : pathname
 
   const defaultTab = getDefaultTab(filterType)
   const tabChangeAction = getTabChangeAction(filterType)
-  const emptyFilterState = getEmptyFilterState(filterType)
 
   // Get current tab value from Redux
   const currentTab = useMemo(() => {
@@ -216,7 +203,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
       }
 
       // Apply search
-      if (urlFilters.search !== undefined) {
+      if (urlFilters.search !== undefined && actions.setSearch) {
         dispatch(actions.setSearch(urlFilters.search))
       }
 
@@ -263,6 +250,11 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
         dispatch(actions.setFiltersLength(urlFilters.length))
       }
 
+      // Changing denomination clears the price range, so apply it first.
+      if (urlFilters.denomination !== undefined && actions.setPriceDenomination) {
+        dispatch(actions.setPriceDenomination(urlFilters.denomination))
+      }
+
       // Apply price range
       if (urlFilters.priceRange !== undefined && actions.setPriceRange) {
         dispatch(actions.setPriceRange(urlFilters.priceRange))
@@ -273,9 +265,16 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
         dispatch(actions.setOfferRange(urlFilters.offerRange))
       }
 
-      // Apply denomination
-      if (urlFilters.denomination !== undefined && actions.setPriceDenomination) {
-        dispatch(actions.setPriceDenomination(urlFilters.denomination))
+      if (urlFilters.watchersCount !== undefined && actions.setWatchersCount) {
+        dispatch(actions.setWatchersCount(urlFilters.watchersCount))
+      }
+
+      if (urlFilters.viewCount !== undefined && actions.setViewCount) {
+        dispatch(actions.setViewCount(urlFilters.viewCount))
+      }
+
+      if (urlFilters.clubsCount !== undefined && actions.setClubsCount) {
+        dispatch(actions.setClubsCount(urlFilters.clubsCount))
       }
 
       // Apply categories
@@ -290,7 +289,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
       }
 
       // Apply type filters
-      if (urlFilters.type !== undefined && actions.setFiltersType) {
+      if (urlFilters.type !== undefined && actions.setFiltersType && !Array.isArray(selectors.filters.type)) {
         const currentType = (selectors.filters as any).type || {}
         dispatch(
           actions.setFiltersType({
@@ -353,76 +352,60 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
     [actions, dispatch, selectors.filters, filterType, defaultTab]
   )
 
-  // URL → Redux: Initialize from URL on mount
+  // Initialize once for other pages, and on incoming profile navigation. Ignore
+  // replacements made by this hook: manual filter changes remain the source of truth.
   useEffect(() => {
-    if (isInitialized.current) return
-    isInitialized.current = true
+    if (lastReadUrl.current === locationKey) return
+    if (lastWrittenUrl.current === locationKey) {
+      lastReadUrl.current = locationKey
+      lastWrittenUrl.current = null
+      return
+    }
+    if (lastReadUrl.current !== null && filterType !== 'profile') {
+      lastReadUrl.current = locationKey
+      return
+    }
 
-    const urlFilters = deserializeFiltersFromUrl(searchParams)
-    const urlTab = getTabFromParams(searchParams, defaultTab)
-
-    // Mark that we're syncing from URL
+    lastReadUrl.current = locationKey
     isSyncingFromUrl.current = true
-
-    // Validate and apply tab first
+    const params = new URLSearchParams(queryString)
+    const urlFilters = deserializeFiltersFromUrl(params)
+    const urlTab = getTabFromParams(params, defaultTab)
     const validTab = isValidTab(filterType, urlTab) ? urlTab : defaultTab
-    if (validTab !== defaultTab || urlFilters.tab) {
-      const tabObj = findTabByValue(filterType, validTab)
-      dispatch(tabChangeAction(tabObj))
+    const hasFilters = Object.keys(urlFilters).some((key) => key !== 'tab')
+
+    if (filterType === 'profile' && profileAddress) {
+      const tab = PROFILE_TABS.find((item) => item.value === validTab) ?? PROFILE_TABS[0]
+      dispatch(openProfileFilters({ address: profileAddress, resetTab: hasFilters ? tab.value : undefined }))
     }
 
-    // If tab was invalid (e.g., unauthorized watchlist), update URL
-    if (urlTab !== validTab) {
-      let newUrl: string
-      if (filterType === 'feed') {
-        newUrl = serializeFeedFiltersToUrl(selectors.filters as unknown as FeedFiltersState, feedEmptyFilterState)
-      } else if (filterType === 'categoriesPage' && validTab === 'categories') {
-        newUrl = serializeCategoriesPageFiltersToUrl(
-          selectors.filters as unknown as CategoriesPageFilterState,
-          categoriesPageEmptyFilterState as CategoriesPageFilterState,
-          validTab,
-          defaultTab
-        )
-      } else {
-        newUrl = serializeFiltersToUrl(
-          selectors.filters as BaseFilterState,
-          validTab,
-          defaultTab,
-          emptyFilterState as BaseFilterState
-        )
-      }
-      const urlString = newUrl ? `${pathname}?${newUrl}` : pathname
-      router.replace(urlString, { scroll: false })
-      lastWrittenUrl.current = newUrl
+    const shouldSelectTab = filterType === 'profile' || hasFilters || !!urlFilters.tab
+    const targetTab = shouldSelectTab ? validTab : currentTab
+    if (shouldSelectTab) {
+      dispatch(tabChangeAction(findTabByValue(filterType, targetTab)))
     }
 
-    // Store filters to be applied when actions are ready
-    // Check if there are any URL filters to apply
-    const hasFiltersToApply = Object.keys(urlFilters).some((key) => key !== 'tab')
-    if (hasFiltersToApply) {
-      pendingUrlFilters.current = urlFilters
-    } else {
-      // No filters to apply, reset sync flag
-      requestAnimationFrame(() => {
-        isSyncingFromUrl.current = false
-      })
-    }
-  }, []) // Only run on mount
+    setPendingUrlFilters({ filters: { ...urlFilters, tab: targetTab }, tab: targetTab, locationKey })
+    setSyncPhase('applying')
+  }, [locationKey, queryString, profileAddress, filterType, defaultTab, currentTab, dispatch, tabChangeAction])
 
-  // Apply pending URL filters when actions are ready
+  // Wait for the render containing both the destination profile and the selected
+  // tab. Actions captured before that render still belong to the previous tab.
   useEffect(() => {
-    if (!pendingUrlFilters.current || !actions) return
+    const pending = pendingUrlFilters
+    if (syncPhase !== 'applying' || !pending || pending.locationKey !== locationKey || currentTab !== pending.tab)
+      return
 
-    // Apply the pending filters directly - no need to clear first
-    // since URL filters will overwrite the relevant values
-    applyFiltersFromUrl(pendingUrlFilters.current)
-    pendingUrlFilters.current = null
+    if (!(filterType === 'profile' && pending.tab === 'broker')) applyFiltersFromUrl(pending.filters)
+    setPendingUrlFilters(null)
+    setSyncPhase('ready')
+  }, [syncPhase, currentTab, applyFiltersFromUrl, pendingUrlFilters, locationKey, filterType])
 
-    // Reset sync flag after all updates
-    requestAnimationFrame(() => {
+  useEffect(() => {
+    if (syncPhase === 'ready' && !pendingUrlFilters) {
       isSyncingFromUrl.current = false
-    })
-  }, [actions, applyFiltersFromUrl, dispatch])
+    }
+  }, [syncPhase, pendingUrlFilters])
 
   // Debounced URL update function
   const debouncedUpdateUrl = useMemo(
@@ -431,36 +414,23 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
         if (isSyncingFromUrl.current) return
 
         let newUrl: string
-        if (filterType === 'feed') {
-          newUrl = serializeFeedFiltersToUrl(filters as unknown as FeedFiltersState, feedEmptyFilterState)
-        } else if (filterType === 'categoriesPage') {
-          // Categories page has different filter types per tab
-          if (tab === 'categories') {
-            // Categories tab uses special categories page filters
-            newUrl = serializeCategoriesPageFiltersToUrl(
-              filters as CategoriesPageFilterState,
-              categoriesPageEmptyFilterState as CategoriesPageFilterState,
-              tab,
-              defaultTab
-            )
-          } else {
-            // Names, Premium, Available tabs use domain filters
-            const tabEmptyState =
-              tab === 'names'
-                ? categoriesNamesEmptyFilterState
-                : tab === 'premium'
-                  ? categoriesPremiumEmptyFilterState
-                  : tab === 'available'
-                    ? categoriesAvailableEmptyFilterState
-                    : categoriesActivityEmptyFilterState
-
-            newUrl = serializeFiltersToUrl(
-              filters as BaseFilterState,
-              tab,
-              defaultTab,
-              tabEmptyState as BaseFilterState
-            )
-          }
+        if (
+          (filterType === 'profile' && tab === 'broker') ||
+          ((filterType === 'categoriesPage' || filterType === 'category') && tab === 'holders')
+        ) {
+          newUrl = new URLSearchParams({ tab }).toString()
+        } else if (filterType === 'feed') {
+          newUrl = serializeFeedFiltersToUrl(
+            filters as unknown as FeedFiltersState,
+            emptyFilterState as FeedFiltersState
+          )
+        } else if (filterType === 'categoriesPage' && tab === 'categories') {
+          newUrl = serializeCategoriesPageFiltersToUrl(
+            filters as CategoriesPageFilterState,
+            emptyFilterState as CategoriesPageFilterState,
+            tab,
+            defaultTab
+          )
         } else {
           newUrl = serializeFiltersToUrl(
             filters as BaseFilterState,
@@ -470,11 +440,24 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
           )
         }
 
-        // Skip if URL hasn't changed
-        if (newUrl === lastWrittenUrl.current) return
+        if (filterType === 'profile') {
+          const url = new URL(window.location.href)
+          if (url.pathname !== pathname) return
+          const currentLocation = url.searchParams.size ? `${pathname}?${url.searchParams}` : pathname
+          if (currentLocation !== lastReadUrl.current && currentLocation !== lastWrittenUrl.current) return
+          for (const key of Object.values(URL_PARAMS)) url.searchParams.delete(key)
+          new URLSearchParams(newUrl).forEach((value, key) => url.searchParams.set(key, value))
+          const nextLocation = url.searchParams.size ? `${pathname}?${url.searchParams}` : pathname
+          if (nextLocation === currentLocation) return
+          lastWrittenUrl.current = nextLocation
+          window.history.replaceState(null, '', nextLocation + url.hash)
+          return
+        }
 
-        lastWrittenUrl.current = newUrl
         const urlString = newUrl ? `${pathname}?${newUrl}` : pathname
+        if (urlString === lastReadUrl.current) return
+
+        lastWrittenUrl.current = urlString
         router.replace(urlString, { scroll: false })
       }, 300),
     [pathname, router, defaultTab, emptyFilterState, filterType]
@@ -483,7 +466,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
   // Redux → URL: Update URL when filters or tab change
   useEffect(() => {
     // Skip if we're syncing from URL or not initialized
-    if (isSyncingFromUrl.current || !isInitialized.current) return
+    if (isSyncingFromUrl.current || syncPhase !== 'ready') return
 
     // Skip if filters aren't loaded yet
     if (!selectors.filters) return
@@ -494,14 +477,11 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
     return () => {
       debouncedUpdateUrl.cancel()
     }
-  }, [selectors.filters, currentTab, debouncedUpdateUrl])
-
-  // NOTE: Browser back/forward navigation intentionally does NOT sync URL → Redux
-  // URL params are only read on initial page load for sharing/bookmarking purposes
-  // After initial load, Redux is the source of truth and URL is updated from Redux
+  }, [selectors.filters, currentTab, debouncedUpdateUrl, syncPhase, locationKey])
 
   return {
     currentTab,
-    isInitialized: isInitialized.current,
+    isInitialized:
+      syncPhase === 'ready' && (lastReadUrl.current === locationKey || lastWrittenUrl.current === locationKey),
   }
 }

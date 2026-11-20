@@ -78,9 +78,10 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     if (useLocalScrollTop) {
       return () => {} // No-op for local scroll
     } else {
+      console.log('setting stored scrolled top')
       return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
     }
-  }, [useLocalScrollTop, actions])
+  }, [useLocalScrollTop])
 
   // Calculate columns based on container width
   const columnsCount = useMemo(() => {

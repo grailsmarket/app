@@ -1,34 +1,16 @@
 import Image from 'next/image'
 import React from 'react'
 import watchlist from 'public/icons/watchlist.svg'
-import { useAppDispatch } from '@/state/hooks'
-import { changeTab } from '@/state/reducers/portfolio/profile'
 import { useUserContext } from '@/context/user'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 const Watchlist = () => {
-  const router = useRouter()
-  const dispatch = useAppDispatch()
   const { authStatus, userAddress } = useUserContext()
   if (!userAddress || authStatus !== 'authenticated') return null
-
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dispatch(
-      changeTab({
-        label: 'Watchlist',
-        value: 'watchlist',
-      })
-    )
-    router.push(`/profile/${userAddress}`)
-  }
 
   return (
     <Link
       href={`/profile/${userAddress}?tab=watchlist`}
-      onClick={handleClick}
       className='flex shrink-0 cursor-pointer items-center justify-center rounded-md'
       aria-label='Open watchlist'
     >

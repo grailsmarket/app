@@ -18,7 +18,9 @@ import { MarketplaceTabType } from '@/state/reducers/marketplace/marketplace'
 import { CategoryTabType } from '@/state/reducers/category/category'
 import { CategoriesPageTabType } from '@/constants/categories/categoriesPageTabs'
 import { BulkSearchTabType } from '@/constants/domains/bulkSearch/tabs'
-import type { FeedTab } from './feed'
+import type { FeedFiltersState, FeedTab } from './feed'
+import type { ActivityFiltersState } from './activity'
+import type { CategoriesPageFiltersState } from './categories'
 
 export type StatusType = (typeof NAME_STATUS_FILTER_LABELS)[number]
 
@@ -141,6 +143,7 @@ export interface FilterRouterActions {
 }
 
 export interface FilterRouter {
+  emptyFilterState: NameFilters | ActivityFiltersState | CategoriesPageFiltersState | FeedFiltersState
   selectors: FilterRouterSelectors
   actions: FilterRouterActions
   context: FilterContextType

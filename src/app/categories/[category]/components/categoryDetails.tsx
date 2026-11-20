@@ -100,7 +100,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               </p>
             </div>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+              <div className='flex items-center gap-0.75 text-lg font-semibold'>
                 <p>{localizeNumber(categoryDetails.registered_count ?? 0)}</p>
                 <p className='text-md text-neutral pt-px font-medium'>
                   ({(categoryDetails.registered_percent ?? 0).toFixed(1)}%)
@@ -109,7 +109,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               <p className='text-neutral text-lg'>Registered</p>
             </div>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+              <div className='flex items-center gap-0.75 text-lg font-semibold'>
                 <p>{localizeNumber(categoryDetails.grace_count ?? 0)}</p>
                 <p className='text-md text-neutral pt-px font-medium'>
                   ({(categoryDetails.grace_percent ?? 0).toFixed(1)}%)
@@ -118,7 +118,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               <p className='text-grace text-lg font-medium'>Grace</p>
             </div>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+              <div className='flex items-center gap-0.75 text-lg font-semibold'>
                 <p>{localizeNumber(categoryDetails.premium_count ?? 0)}</p>
                 <p className='text-md text-neutral pt-px font-medium'>
                   (
@@ -136,7 +136,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               <p className='text-premium text-lg font-medium'>Premium</p>
             </div>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+              <div className='flex items-center gap-0.75 text-lg font-semibold'>
                 <p>{localizeNumber(categoryDetails.available_count ?? 0)}</p>
                 <p className='text-md text-neutral pt-px font-medium'>
                   (
@@ -154,7 +154,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               <p className='text-available text-lg font-medium'>Available</p>
             </div>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+              <div className='flex items-center gap-0.75 text-lg font-semibold'>
                 <p>{localizeNumber(categoryDetails.listings_count ?? 0)}</p>
                 <p className='text-md text-neutral pt-px font-medium'>
                   ({(categoryDetails.listings_percent ?? 0).toFixed(1)}%)
@@ -163,7 +163,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               <p className='text-neutral text-lg font-medium'>Listings</p>
             </div>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+              <div className='flex items-center gap-0.75 text-lg font-semibold'>
                 <p>{localizeNumber(categoryDetails.reg_count_1mo ?? 0)}</p>
               </div>
               <p className='text-neutral text-lg font-medium'>Registrations (1mo)</p>
@@ -181,7 +181,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               </p>
             </div>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+              <div className='flex items-center gap-0.75 text-lg font-semibold'>
                 <p>{localizeNumber(categoryDetails.holders_count ?? 0)}</p>
                 <p className='text-md text-neutral pt-px font-medium'>
                   (

@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from '../../index'
+import type { RootState } from '../../index'
+import { selectActiveProfileFilters } from './selectActiveProfileFilters'
 import { NameFilters, NamefiltersOpened } from '@/types/filters/name'
 import {
   DEFAULT_NAME_FILTERS_OPENED_STATE,
@@ -56,7 +57,8 @@ export const {
 } = receivedOffersFiltersActions
 
 // Selectors ------------------------------------------
-export const selectReceivedOffersFilters = (state: RootState) => state.filters.receivedOffersFilters
+export const selectReceivedOffersFilters = (state: RootState) =>
+  selectActiveProfileFilters(state)?.received_offers ?? initialState
 
 // Reducer --------------------------------------------
 export default receivedOffersFiltersSlice.reducer

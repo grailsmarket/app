@@ -30,6 +30,7 @@ interface UserProps {
   alignTooltip?: 'left' | 'right'
   disableTooltip?: boolean
   disableLink?: boolean
+  useParentLink?: boolean
   hideHeaderImage?: boolean
   // We get owner name from the search endpoint, therefore skipping profileData fetch
   name?: string
@@ -47,6 +48,7 @@ const User: React.FC<UserProps> = ({
   alignTooltip = 'right',
   disableTooltip = false,
   disableLink = false,
+  useParentLink = false,
   hideHeaderImage = false,
   name,
   skipProfileFetch = false,
@@ -87,7 +89,12 @@ const User: React.FC<UserProps> = ({
       disableTooltip={disableTooltip}
     >
       <div className={cn('flex justify-end', wrapperClassName)}>
-        <LinkWrapper address={profile?.address} disableLink={disableLink} className={cn(className, radiusClassName)}>
+        <LinkWrapper
+          address={address}
+          disableLink={disableLink}
+          useParentLink={useParentLink}
+          className={cn(className, radiusClassName)}
+        >
           {!hideHeaderImage && (
             <Image
               src={headerImageSrc ?? DEFAULT_FALLBACK_HEADER}
@@ -158,15 +165,18 @@ interface LinkWrapperProps {
   children: React.ReactNode
   address: Address | undefined
   disableLink: boolean
+  useParentLink: boolean
   className?: string
 }
 
-const LinkWrapper: React.FC<LinkWrapperProps> = ({ children, address, disableLink, className }) => {
+const LinkWrapper: React.FC<LinkWrapperProps> = ({ children, address, disableLink, useParentLink, className }) => {
   const router = useRouter()
   const containerClassName = cn(
     'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
     className
   )
+
+  if (useParentLink) return <div className={containerClassName}>{children}</div>
 
   if (disableLink)
     return (

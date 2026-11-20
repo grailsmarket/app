@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Suspense, useEffect, useMemo } from 'react'
+import React, { Suspense, useEffect } from 'react'
 import { FilterProvider } from '@/context/filters'
 import { Address, isAddress } from 'viem'
 import FilterPanel from '@/components/filters'
@@ -18,128 +18,40 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import ActionButtons from './actionButtons'
-import {
-  clearFilters,
-  setFiltersScrollTop as setActivityScrollTop,
-} from '@/state/reducers/filters/profileActivityFilters'
-import {
-  clearFilters as clearReceivedOffersFilters,
-  setScrollTop as setReceivedOffersScrollTop,
-} from '@/state/reducers/filters/receivedOffersFilters'
-import {
-  clearFilters as clearMyOffersFilters,
-  setScrollTop as setMyOffersScrollTop,
-} from '@/state/reducers/filters/myOffersFilters'
-import {
-  clearFilters as clearWatchlistFilters,
-  setScrollTop as setWatchlistFiltersScrollTop,
-} from '@/state/reducers/filters/watchlistFilters'
-import {
-  clearFilters as clearListingsFilters,
-  setScrollTop as setListingsScrollTop,
-} from '@/state/reducers/filters/profileListingsFilter'
-import {
-  clearFilters as clearGraceFilters,
-  setScrollTop as setGraceScrollTop,
-} from '@/state/reducers/filters/profileGraceFilters'
-import {
-  clearFilters as clearExpiredFilters,
-  setScrollTop as setExpiredScrollTop,
-} from '@/state/reducers/filters/profileExpiredFilters'
-import {
-  clearFilters as clearDomainsFilters,
-  setScrollTop as setDomainsScrollTop,
-} from '@/state/reducers/filters/profileDomainsFilters'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { accountQueryKey } from '@/utils/queryKeys'
 
 interface Props {
-  user: Address | string
+  user: string
+  list?: number
+  resolvedOwner?: Address
 }
 
-const MainPanel: React.FC<Props> = ({ user }) => {
-  const dispatch = useAppDispatch()
+const MainPanel: React.FC<Props> = ({ user, list, resolvedOwner }) => {
   const { userAddress, authStatus } = useUserContext()
-  const { selectedTab, lastVisitedProfile } = useAppSelector(selectUserProfile)
+  const { selectedTab } = useAppSelector(selectUserProfile)
   const profileTab = selectedTab.value
-  const { data: fetchedUserAccount } = useQuery({
-    queryKey: accountQueryKey(user),
+  const routeAddress = isAddress(user, { strict: false }) ? user : undefined
+  const { data: fetchedUserAccount, isLoading } = useQuery({
+    queryKey: list === undefined ? accountQueryKey(user) : ['listAccount', list],
     queryFn: async () => {
-      const account = await fetchAccount(user)
+      const account = await fetchAccount(user, list)
       return account?.address ? account : null
     },
-    enabled: !!user,
+    enabled: !routeAddress && !resolvedOwner,
   })
-  const userAccount =
-    fetchedUserAccount ||
-    (isAddress(user)
-      ? {
-          address: user,
-          ens: null,
-          primary_list: null,
-        }
-      : null)
+  const owner = routeAddress ?? resolvedOwner ?? fetchedUserAccount?.address
+  const address = owner && isAddress(owner, { strict: false }) ? (owner.toLowerCase() as Address) : undefined
+  const isMyProfile = !!address && authStatus === 'authenticated' && address === userAddress?.toLowerCase()
 
-  const isMyProfile = useMemo(
-    () =>
-      (userAccount?.address || user)?.toLowerCase() === userAddress?.toLowerCase() && authStatus === 'authenticated',
-    [user, userAddress, authStatus, userAccount?.address]
-  )
-
-  useEffect(() => {
-    // reset filters when visiting a new profile
-    if (lastVisitedProfile && lastVisitedProfile !== user) {
-      if (profileTab !== 'watchlist') {
-        dispatch(changeTab(PROFILE_TABS[0]))
-      }
-
-      dispatch(clearDomainsFilters())
-      dispatch(clearListingsFilters())
-      dispatch(clearMyOffersFilters())
-      dispatch(clearReceivedOffersFilters())
-      dispatch(clearWatchlistFilters())
-      dispatch(clearFilters())
-      dispatch(clearGraceFilters())
-      dispatch(clearExpiredFilters())
-      // Reset all scroll positions
-      dispatch(setDomainsScrollTop(0))
-      dispatch(setListingsScrollTop(0))
-      dispatch(setActivityScrollTop(0))
-      dispatch(setMyOffersScrollTop(0))
-      dispatch(setReceivedOffersScrollTop(0))
-      dispatch(setWatchlistFiltersScrollTop(0))
-      dispatch(setGraceScrollTop(0))
-      dispatch(setExpiredScrollTop(0))
-      dispatch(clearBulkSelect())
-      document.scrollingElement?.scrollTo({ top: 0, behavior: 'instant' })
-      window.scrollTo({ top: 0, behavior: 'instant' })
-    }
-
-    dispatch(setLastVisitedProfile(user))
-  }, [user])
-
-  // ensure that only the owner of the profile can see the watchlist
-  useEffect(() => {
-    if (profileTab !== 'watchlist') return
-
-    // if the auth status is loading, wait for it to resolve
-    if (authStatus === 'loading') return
-
-    // if the user is not authenticated, switch to domains
-    if (authStatus !== 'authenticated') {
-      dispatch(changeTab(PROFILE_TABS[0]))
-      return
-    }
-
-    // if the user is authenticated but account data not loaded yet, we can't determine if they are the owner
-    if (!userAccount?.address) return
-
-    // if the user is not the profile owner, switch to domains
-    if (!isMyProfile) {
-      dispatch(changeTab(PROFILE_TABS[0]))
-    }
-  }, [profileTab, isMyProfile, authStatus, userAccount?.address, dispatch])
+  if (!address) {
+    return (
+      <p className='p-4' role='status'>
+        {isLoading ? 'Loading profile…' : 'Could not resolve this profile’s address.'}
+      </p>
+    )
+  }
 
   const showDomainsPanel =
     profileTab === 'domains' ||
@@ -153,15 +65,15 @@ const MainPanel: React.FC<Props> = ({ user }) => {
 
   return (
     <Suspense>
-      <FilterProvider filterType='profile' profileTab={selectedTab} profileAddress={userAccount?.address || user}>
+      <FilterProvider key={address} filterType='profile' profileTab={selectedTab} profileAddress={address}>
         <div className='w-full'>
           <div className='z-10 w-full'>
             <div className='bg-background relative flex min-h-[calc(100dvh-56px)] w-full flex-col gap-0 md:min-h-[calc(100dvh-70px)]'>
-              <TabSwitcher user={userAccount?.address} />
+              <TabSwitcher user={address} />
               <div className='relative flex w-full flex-row gap-0 transition-all duration-300'>
                 <FilterPanel />
                 <ProfileContent
-                  userAddress={userAccount?.address}
+                  userAddress={address}
                   showDomainsPanel={showDomainsPanel}
                   showOfferPanel={showOfferPanel}
                   showActivityPanel={showActivityPanel}
@@ -198,8 +110,50 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
 }) => {
   const isClient = useIsClient()
   const { width: responsiveWidth } = useResponsiveSize()
-  const { selectors } = useFilterRouter()
+  const { selectors, profileTab, actions } = useFilterRouter()
+  const { lastVisitedProfile } = useAppSelector(selectUserProfile)
+  const dispatch = useAppDispatch()
+  const { authStatus } = useUserContext()
   const filtersOpen = selectors.filters.open
+
+  // Scroll to top if this user profile isn't the one most recently visited
+  // Makes sure that exploring a user's profile does not always reset scroll position
+  // which is why we use the "lastViewedProfile", but when going to a new profile we
+  // scroll to the top so the user can be sure they navigated to the correct profile
+  useEffect(() => {
+    if (!userAddress || lastVisitedProfile === userAddress) return
+    if (lastVisitedProfile) {
+      dispatch(actions?.setScrollTop?.(0))
+      dispatch(clearBulkSelect())
+    }
+
+    document.scrollingElement?.scrollTo({ top: 0, behavior: 'instant' })
+    window.scrollTo({ top: 0, behavior: 'instant' })
+
+    dispatch(setLastVisitedProfile(userAddress))
+  }, [userAddress, lastVisitedProfile])
+
+  // ensure that only the owner of the profile can see the watchlist
+  useEffect(() => {
+    if (profileTab?.value !== 'watchlist') return
+
+    // if the auth status is loading, wait for it to resolve
+    if (authStatus === 'loading') return
+
+    // if the user is not authenticated, switch to domains
+    if (authStatus !== 'authenticated') {
+      dispatch(changeTab(PROFILE_TABS[0]))
+      return
+    }
+
+    // if the user is authenticated but account data not loaded yet, we can't determine if they are the owner
+    if (!userAddress) return
+
+    // if the user is not the profile owner, switch to domains
+    if (!isMyProfile) {
+      dispatch(changeTab(PROFILE_TABS[0]))
+    }
+  }, [profileTab, isMyProfile, authStatus, userAddress, dispatch])
 
   const getContentWidth = () => {
     if (!isClient || !responsiveWidth) return '100%'

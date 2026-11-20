@@ -26,7 +26,7 @@ type profileState = {
   discord: string | null
   telegram: string | null
   poapClaimed: boolean
-  lastVisitedProfile: Address | string | null
+  lastVisitedProfile: Address | null
   offerNotificationThreshold: number | null
   notifyOnListingSold: boolean
   notifyOnOfferReceived: boolean
@@ -126,7 +126,7 @@ export const profileSlice = createSlice({
     changeTab(state, { payload }: PayloadAction<ProfileTabType>) {
       state.selectedTab = payload
     },
-    setLastVisitedProfile(state, { payload }: PayloadAction<Address | string | null>) {
+    setLastVisitedProfile(state, { payload }: PayloadAction<Address | null>) {
       state.lastVisitedProfile = payload
     },
     resetUserProfile(state) {

@@ -164,7 +164,7 @@ const UserPage = async (props: Props) => {
         <ProfileSemanticSummary user={user} profile={profile} />
       </HideOnClient>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <Profile user={user} />
+        <Profile user={user} list={listNum} />
       </HydrationBoundary>
     </main>
   )

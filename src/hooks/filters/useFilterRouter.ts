@@ -505,6 +505,7 @@ export function useFilterRouter(): FilterRouter {
       // Override setFiltersOpen to use the shared filter panel action
       setFiltersOpen: setFilterPanelOpen,
     } as any,
+    emptyFilterState,
     context: filterType,
     profileTab: profileState.selectedTab,
     marketplaceTab: marketplaceState.selectedTab,

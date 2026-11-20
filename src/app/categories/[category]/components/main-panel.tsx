@@ -46,6 +46,9 @@ const MainPanel: React.FC<Props> = ({ category }) => {
     dispatch(setLastVisitedCategory(category))
   }, [lastVisitedCategory, category, dispatch])
 
+  // Initialize the category before its URL filters select a tab.
+  if (lastVisitedCategory && lastVisitedCategory !== category) return null
+
   return (
     <Suspense>
       <FilterProvider filterType='category' categoryTab={selectedTab}>

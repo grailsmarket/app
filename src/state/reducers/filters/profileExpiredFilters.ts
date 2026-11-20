@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from '../../index'
+import type { RootState } from '../../index'
+import { selectActiveProfileFilters } from './selectActiveProfileFilters'
 import { NameFilters, NamefiltersOpened } from '@/types/filters/name'
 import {
   DEFAULT_NAME_FILTERS_OPENED_STATE,
@@ -65,7 +66,8 @@ export const {
 } = ProfileExpiredFilterActions
 
 // Selectors
-export const selectProfileExpiredFilters = (state: RootState) => state.filters.profileExpiredFilters
+export const selectProfileExpiredFilters = (state: RootState) =>
+  selectActiveProfileFilters(state)?.expired ?? initialState
 
 // Reducer
 export default profileExpiredFiltersSlice.reducer

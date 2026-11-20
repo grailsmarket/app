@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from '../../index'
+import type { RootState } from '../../index'
+import { selectActiveProfileFilters } from './selectActiveProfileFilters'
 import {
   DEFAULT_NAME_FILTERS_OPENED_STATE,
   DEFAULT_NAME_FILTERS_STATE,
@@ -54,7 +55,7 @@ export const {
 } = WatchlistFilterActions
 
 // Selectors ------------------------------------------
-export const selectWatchlistFilters = (state: RootState) => state.filters.watchlistFilters
+export const selectWatchlistFilters = (state: RootState) => selectActiveProfileFilters(state)?.watchlist ?? initialState
 
 // Reducer --------------------------------------------
 export default watchlistFiltersSlice.reducer

@@ -19,7 +19,7 @@ interface FilterContextValue {
   profileTab?: ProfileTabType
   categoryTab?: CategoryTabType
   feedTab?: FeedTab
-  profileAddress?: Address | string
+  profileAddress?: Address
 }
 
 const FilterContext = createContext<FilterContextValue | undefined>(undefined)
@@ -30,7 +30,7 @@ interface FilterProviderProps {
   profileTab?: ProfileTabType
   categoryTab?: CategoryTabType
   feedTab?: FeedTab
-  profileAddress?: Address | string
+  profileAddress?: Address
 }
 
 export const FilterProvider: React.FC<FilterProviderProps> = ({
@@ -100,8 +100,11 @@ interface FilterUrlSyncWrapperProps {
 
 const FilterUrlSyncWrapper: React.FC<FilterUrlSyncWrapperProps> = ({ children, filterType }) => {
   // This hook handles all URL <-> Redux sync
-  useFilterUrlSync({ filterType })
+  const { profileAddress } = useFilterContext()
+  const { isInitialized } = useFilterUrlSync({ filterType, profileAddress })
 
+  // Mount the list after its address, tab and saved scroll position are ready.
+  if (filterType === 'profile' && !isInitialized) return null
   return <>{children}</>
 }
 

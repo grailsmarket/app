@@ -1,17 +1,6 @@
-import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useAppDispatch } from '@/state/hooks'
+import { useVirtualScroll } from '@/hooks/useVirtualScroll'
 import clsx from 'clsx'
-import React, {
-  useCallback,
-  forwardRef,
-  ReactElement,
-  ForwardedRef,
-  useEffect,
-  useState,
-  useMemo,
-  useRef,
-  useLayoutEffect,
-} from 'react'
+import React, { useCallback, forwardRef, ReactElement, ForwardedRef, useEffect, useState, useMemo, useRef } from 'react'
 
 export interface VirtualListProps<T = unknown> {
   items: T[]
@@ -49,13 +38,15 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
     containerHeight,
   } = props
 
-  const dispatch = useAppDispatch()
-  const { selectors, actions } = useFilterRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [scrollState, setScrollState] = useState({ scrollY: 0, viewportHeight: 0 })
-  const [elementTop, setElementTop] = useState(0)
-  const hasRestoredScroll = useRef(false)
+  const { elementTop, relativeScrollTop } = useVirtualScroll(
+    containerRef,
+    scrollState.scrollY,
+    useLocalScrollTop,
+    containerScroll
+  )
   const onScrollNearBottomRef = useRef(onScrollNearBottom)
 
   // Keep onScrollNearBottom ref updated
@@ -63,65 +54,8 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
     onScrollNearBottomRef.current = onScrollNearBottom
   }, [onScrollNearBottom])
 
-  // Get stored scroll position
-  const storedScrollTop = useMemo(
-    () => (useLocalScrollTop || containerScroll ? 0 : selectors.filters.scrollTop),
-    [useLocalScrollTop, containerScroll, selectors.filters.scrollTop]
-  )
-
-  const setStoredScrollTop = useMemo(() => {
-    if (useLocalScrollTop || containerScroll) {
-      return () => {} // No-op for local scroll or container scroll
-    } else {
-      if (actions.setScrollTop) {
-        return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
-      }
-
-      return () => {} // No-op fif no setScrollTop function
-    }
-  }, [useLocalScrollTop, containerScroll, actions])
-
   // Total height of the list content
   const totalHeight = items.length * (rowHeight + gap)
-
-  // Calculate element's position in document on mount and resize (only for window scroll mode)
-  useEffect(() => {
-    if (containerScroll) return
-
-    const updateElementTop = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect()
-        setElementTop(rect.top + window.scrollY)
-      }
-    }
-
-    updateElementTop()
-
-    // Update on resize
-    window.addEventListener('resize', updateElementTop)
-
-    // Use ResizeObserver for more accurate updates
-    const resizeObserver = new ResizeObserver(updateElementTop)
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current)
-    }
-
-    return () => {
-      window.removeEventListener('resize', updateElementTop)
-      resizeObserver.disconnect()
-    }
-  }, [containerScroll])
-
-  // Restore scroll position on mount (only for window scroll mode)
-  useLayoutEffect(() => {
-    if (containerScroll) return
-    if (!hasRestoredScroll.current && storedScrollTop > 0 && elementTop > 0) {
-      // Calculate the window scroll position that would put us at the stored position
-      const targetWindowScroll = elementTop + storedScrollTop
-      window.scrollTo({ top: targetWindowScroll, behavior: 'instant' })
-      hasRestoredScroll.current = true
-    }
-  }, [storedScrollTop, elementTop, containerScroll])
 
   // Listen to scroll events (window or container based on mode)
   useEffect(() => {
@@ -166,25 +100,6 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
       }
     }
   }, [containerScroll])
-
-  // Calculate scroll position relative to the list
-  const relativeScrollTop = useMemo(() => {
-    if (containerScroll) {
-      return scrollState.scrollY
-    }
-    return Math.max(0, scrollState.scrollY - elementTop)
-  }, [scrollState.scrollY, elementTop, containerScroll])
-
-  // Store scroll position for restoration (debounced, only for window scroll mode)
-  useEffect(() => {
-    if (containerScroll) return
-    if (!!setStoredScrollTop && (hasRestoredScroll.current || storedScrollTop === 0)) {
-      const timeoutId = setTimeout(() => {
-        setStoredScrollTop(relativeScrollTop)
-      }, 100)
-      return () => clearTimeout(timeoutId)
-    }
-  }, [relativeScrollTop, setStoredScrollTop, storedScrollTop, containerScroll])
 
   // Check if we're near the bottom of the list content
   useEffect(() => {

@@ -2,20 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { useAppDispatch } from '@/state/hooks'
 import type { Holder } from '@/api/holders'
-import { setLastVisitedProfile } from '@/state/reducers/portfolio/profile'
-import { clearFilters } from '@/state/reducers/filters/profileActivityFilters'
-import { clearFilters as clearListingsFilters } from '@/state/reducers/filters/profileListingsFilter'
-import { clearFilters as clearGraceFilters } from '@/state/reducers/filters/profileGraceFilters'
-import { clearFilters as clearExpiredFilters } from '@/state/reducers/filters/profileExpiredFilters'
-import { clearFilters as clearMyOffersFilters } from '@/state/reducers/filters/myOffersFilters'
-import { clearFilters as clearReceivedOffersFilters } from '@/state/reducers/filters/receivedOffersFilters'
-import { clearFilters as clearWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
-import {
-  clearFilters as clearDomainsFilters,
-  setFiltersCategory as setProfileDomainsFiltersCategory,
-} from '@/state/reducers/filters/profileDomainsFilters'
 import User from '@/components/ui/user'
 import { FollowButton } from 'ethereum-identity-kit'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
@@ -28,27 +15,12 @@ interface HolderRowProps {
 }
 
 const HolderRow: React.FC<HolderRowProps> = ({ holder, category, rank }) => {
-  const dispatch = useAppDispatch()
   const { openConnectModal } = useConnectModal()
   const { userAddress } = useUserContext()
 
-  const handleClick = () => {
-    dispatch(setLastVisitedProfile(null))
-    dispatch(clearDomainsFilters())
-    dispatch(clearListingsFilters())
-    dispatch(clearMyOffersFilters())
-    dispatch(clearReceivedOffersFilters())
-    dispatch(clearWatchlistFilters())
-    dispatch(clearFilters())
-    dispatch(clearGraceFilters())
-    dispatch(clearExpiredFilters())
-    dispatch(setProfileDomainsFiltersCategory(category))
-  }
-
   return (
     <Link
-      href={`/profile/${holder.address}`}
-      onClick={handleClick}
+      href={{ pathname: `/profile/${holder.address}`, query: { categories: category } }}
       className='group border-tertiary hover:bg-foreground/10 px-md @[64rem]/app:px-lg flex h-[60px] w-full flex-row items-center border-b transition'
     >
       <p className='text-neutral w-[30px] text-center text-lg font-semibold @[40rem]/app:w-[48px] @[40rem]/app:text-xl'>
@@ -75,6 +47,7 @@ const HolderRow: React.FC<HolderRowProps> = ({ holder, category, rank }) => {
         )} */}
         <User
           address={holder.address}
+          useParentLink
           alignTooltip='left'
           wrapperClassName='justify-start max-w-[95%]'
           className='max-w-full px-2 py-1.5'

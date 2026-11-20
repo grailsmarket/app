@@ -876,7 +876,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               </>
             ) : roleRemoval.removals.length > 0 ? (
               <>
-                <p id='listing-blocking-roles-description' className='text-neutral text-md break-words'>
+                <p id='listing-blocking-roles-description' className='text-neutral text-md wrap-break-word'>
                   Other addresses have roles that block transfers of{' '}
                   {Array.from(new Set(roleRemoval.removals.map((removal) => beautifyName(removal.name)))).join(', ')}.
                   These roles must be removed before listing. Each removal requires an onchain transaction and stays in
@@ -1007,7 +1007,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                     title: 'Some blocking roles were removed.',
                     body: 'Confirmed removals remain in effect. Retrying only removes roles that are still present.',
                   }
-                : undefined
+                : null
             }
           />
         )

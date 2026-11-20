@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from '../../index'
+import type { RootState } from '../../index'
+import { selectActiveProfileFilters } from './selectActiveProfileFilters'
 import {
   DEFAULT_NAME_FILTERS_OPENED_STATE,
   DEFAULT_NAME_FILTERS_STATE,
@@ -67,7 +68,7 @@ export const {
 } = ProfileGraceFilterActions
 
 // Selectors
-export const selectProfileGraceFilters = (state: RootState) => state.filters.profileGraceFilters
+export const selectProfileGraceFilters = (state: RootState) => selectActiveProfileFilters(state)?.grace ?? initialState
 
 // Reducer
 export default profileGraceFiltersSlice.reducer

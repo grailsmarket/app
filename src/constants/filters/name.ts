@@ -377,7 +377,7 @@ export const setWatchersCount = (state: NamefiltersOpened, { payload }: PayloadA
 }
 
 export const setViewCount = (state: NamefiltersOpened, { payload }: PayloadAction<ViewCountType>) => {
-  state.clubsCount = payload
+  state.viewCount = payload
 }
 
 export const setCreationDate = (

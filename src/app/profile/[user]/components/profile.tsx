@@ -34,9 +34,10 @@ import MigrationReward from './migrationReward'
 
 interface Props {
   user: Address | string
+  list?: number
 }
 
-const Profile: React.FC<Props> = ({ user }) => {
+const Profile: React.FC<Props> = ({ user, list }) => {
   const [isFollowersAndFollowingOpen, setIsFollowersAndFollowingOpen] = useState(false)
   const [defaultTab, setDefaultTab] = useState<ProfileTabType>('following')
   const [resolvedOwner, setResolvedOwner] = useState<{ user: string; address: Address }>()
@@ -62,7 +63,7 @@ const Profile: React.FC<Props> = ({ user }) => {
 
   const { data: userProfile } = useQuery({
     queryKey: ['profile', user, undefined, false, undefined],
-    queryFn: () => (user ? fetchProfileDetails(user) : null),
+    queryFn: () => (user ? fetchProfileDetails(user, list) : null),
     refetchOnWindowFocus: false,
   })
 
@@ -159,7 +160,7 @@ const Profile: React.FC<Props> = ({ user }) => {
         {isMyProfile && userAddress && <MigrationReward owner={userAddress} />}
         <div className='w-full'>
           <PersistGate loading={null} persistor={persistor}>
-            <MainPanel user={user} />
+            <MainPanel user={user} list={list} resolvedOwner={profileOwner} />
           </PersistGate>
         </div>
       </div>

@@ -4,14 +4,6 @@ import marketplaceListingsFiltersReducer from './marketplaceListingsFilters'
 import marketplacePremiumFiltersReducer from './marketplacePremiumFilters'
 import marketplaceAvailableFiltersReducer from './marketplaceAvailableFilters'
 import marketplaceActivityFiltersReducer from './marketplaceActivityFilters'
-import watchlistFiltersReducer from './watchlistFilters'
-import myOffersFiltersReducer from './myOffersFilters'
-import receivedOffersFiltersReducer from './receivedOffersFilters'
-import profileListingsFiltersReducer from './profileListingsFilter'
-import profileDomainsFiltersReducer from './profileDomainsFilters'
-import profileGraceFiltersReducer from './profileGraceFilters'
-import profileExpiredFiltersReducer from './profileExpiredFilters'
-import profileActivityFiltersReducer from './profileActivityFilters'
 import categoryDomainsFiltersReducer from './categoryDomainsFilters'
 import categoryListingsFiltersReducer from './categoryListingsFilters'
 import categoryPremiumFiltersReducer from './categoryPremiumFilters'
@@ -25,21 +17,15 @@ import categoriesAvailableDomainsFiltersReducer from './categoriesAvailableDomai
 import categoriesActivityFiltersReducer from './categoriesActivityFilters'
 import bulkSearchFiltersReducer from './bulkSearchFilters'
 import feedFiltersReducer from './feedFilters'
+import profileFiltersReducer from './profileFilters'
 
 const filtersReducer = combineReducers({
-  myOffersFilters: myOffersFiltersReducer,
-  watchlistFilters: watchlistFiltersReducer,
+  profileFilters: profileFiltersReducer,
   marketplaceFilters: marketplaceFiltersReducer,
   marketplaceListingsFilters: marketplaceListingsFiltersReducer,
   marketplacePremiumFilters: marketplacePremiumFiltersReducer,
   marketplaceAvailableFilters: marketplaceAvailableFiltersReducer,
   marketplaceActivityFilters: marketplaceActivityFiltersReducer,
-  receivedOffersFilters: receivedOffersFiltersReducer,
-  profileDomainsFilters: profileDomainsFiltersReducer,
-  profileGraceFilters: profileGraceFiltersReducer,
-  profileListingsFilters: profileListingsFiltersReducer,
-  profileExpiredFilters: profileExpiredFiltersReducer,
-  profileActivityFilters: profileActivityFiltersReducer,
   categoryDomainsFilters: categoryDomainsFiltersReducer,
   categoryListingsFilters: categoryListingsFiltersReducer,
   categoryPremiumFilters: categoryPremiumFiltersReducer,

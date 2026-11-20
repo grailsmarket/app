@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from '../../index'
+import type { RootState } from '../../index'
+import { selectActiveProfileFilters } from './selectActiveProfileFilters'
 import {
   ACTIVITY_FILTERS_ACTIONS,
   DEFAULT_ACTIVITY_FILTERS_OPENED_STATE,
@@ -30,7 +31,8 @@ export const { toggleFiltersType, setFiltersType, clearFilters, setFiltersOpen, 
   profileActivityFiltersActions
 
 // Selectors
-export const selectProfileActivityFilters = (state: RootState) => state.filters.profileActivityFilters
+export const selectProfileActivityFilters = (state: RootState) =>
+  selectActiveProfileFilters(state)?.activity ?? initialState
 
 // Reducer
 export default profileActivityFiltersSlice.reducer

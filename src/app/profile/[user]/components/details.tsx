@@ -51,7 +51,7 @@ const Details: React.FC<Props> = ({ user }) => {
   })
 
   return (
-    <div className='border-tertiary bg-secondary flex w-full flex-col justify-between gap-2 p-2 @[40rem]/app:gap-4 @[48rem]/app:p-4 @[64rem]/app:w-[380px] @[64rem]/app:border-l-2'>
+    <div className='border-tertiary bg-secondary flex w-full flex-col justify-between gap-2 p-2 @[40rem]/app:gap-4 @[48rem]/app:p-4 @[64rem]/app:w-95 @[64rem]/app:border-l-2'>
       <div className='flex flex-col gap-3'>
         {user && isAddress(user as string) && <SendMessageButton recipient={user as string} className='w-full' />}
         {/* <h3 className='font-sedan-sc hidden text-3xl lg:block'>Account</h3> */}

@@ -265,34 +265,34 @@ export function serializeFiltersToUrl(
   }
 
   // Offer Range
-  if (filters.offerRange?.min !== null && filters.offerRange?.min !== emptyFilterState.offerRange?.min) {
+  if (filters.offerRange?.min != null && filters.offerRange?.min !== emptyFilterState.offerRange?.min) {
     params.set(URL_PARAMS.offerMin, String(filters.offerRange.min))
   }
-  if (filters.offerRange?.max !== null && filters.offerRange?.max !== emptyFilterState.offerRange?.max) {
+  if (filters.offerRange?.max != null && filters.offerRange?.max !== emptyFilterState.offerRange?.max) {
     params.set(URL_PARAMS.offerMax, String(filters.offerRange.max))
   }
 
   // Watchers Count
-  if (filters.watchersCount?.min !== null && filters.watchersCount?.min !== emptyFilterState.watchersCount?.min) {
+  if (filters.watchersCount?.min != null && filters.watchersCount?.min !== emptyFilterState.watchersCount?.min) {
     params.set(URL_PARAMS.watchersMin, String(filters.watchersCount.min))
   }
-  if (filters.watchersCount?.max !== null && filters.watchersCount?.max !== emptyFilterState.watchersCount?.max) {
+  if (filters.watchersCount?.max != null && filters.watchersCount?.max !== emptyFilterState.watchersCount?.max) {
     params.set(URL_PARAMS.watchersMax, String(filters.watchersCount.max))
   }
 
   // View Count
-  if (filters.viewCount?.min !== null && filters.viewCount?.min !== emptyFilterState.viewCount?.min) {
+  if (filters.viewCount?.min != null && filters.viewCount?.min !== emptyFilterState.viewCount?.min) {
     params.set(URL_PARAMS.viewsMin, String(filters.viewCount.min))
   }
-  if (filters.viewCount?.max !== null && filters.viewCount?.max !== emptyFilterState.viewCount?.max) {
+  if (filters.viewCount?.max != null && filters.viewCount?.max !== emptyFilterState.viewCount?.max) {
     params.set(URL_PARAMS.viewsMax, String(filters.viewCount.max))
   }
 
   // Clubs Count (Categories Count)
-  if (filters.clubsCount?.min !== null && filters.clubsCount?.min !== emptyFilterState.clubsCount?.min) {
+  if (filters.clubsCount?.min != null && filters.clubsCount?.min !== emptyFilterState.clubsCount?.min) {
     params.set(URL_PARAMS.categoriesCountMin, String(filters.clubsCount.min))
   }
-  if (filters.clubsCount?.max !== null && filters.clubsCount?.max !== emptyFilterState.clubsCount?.max) {
+  if (filters.clubsCount?.max != null && filters.clubsCount?.max !== emptyFilterState.clubsCount?.max) {
     params.set(URL_PARAMS.categoriesCountMax, String(filters.clubsCount.max))
   }
 
@@ -305,7 +305,7 @@ export function serializeFiltersToUrl(
   }
 
   // Denomination (only if not default)
-  if (filters.denomination !== emptyFilterState.denomination) {
+  if (filters.denomination && filters.denomination !== emptyFilterState.denomination) {
     params.set(URL_PARAMS.denomination, filters.denomination)
   }
 

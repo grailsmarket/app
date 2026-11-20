@@ -20,7 +20,7 @@ import TextMatchFilter from '../TextMatchFilter'
 import TextNonMatchFilter from '../TextNonMatchFilter'
 import { CategoryType } from '@/types/domains'
 import ExpandableTab from '@/components/ui/expandableTab'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import FilterSelector from '../FilterSelector'
 import { useAppDispatch } from '@/state/hooks'
 import CategoryFilterNone from '../CategoryFilterButtons/CategoryFilterNone'
@@ -65,43 +65,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     }
   })
 
-  // Local state for search input to prevent glitchy typing
-  const [localSearch, setLocalSearch] = useState(selectors.filters.search || '')
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
-  const userHasTyped = useRef(false)
-
-  // Sync local state from Redux only on initial page load
-  // Once user starts typing, local state becomes the source of truth
-  useEffect(() => {
-    if (!userHasTyped.current) {
-      setLocalSearch(selectors.filters.search || '')
-    }
-  }, [selectors.filters.search])
-
-  // Debounced search handler - only updates Redux, useFilterUrlSync handles URL
-  const handleSearchChange = (value: string) => {
-    userHasTyped.current = true
-    setLocalSearch(value)
-
-    // Clear previous timeout
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
-    }
-
-    // Debounce the Redux update (URL is handled by useFilterUrlSync)
-    debounceRef.current = setTimeout(() => {
-      dispatch(actions.setSearch(value))
-    }, 300)
-  }
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
-      }
-    }
-  }, [])
+  const search = selectors.filters.search ?? ''
 
   if (!isClient) return null
 
@@ -171,16 +135,13 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
                 <input
                   type='text'
                   placeholder='Search'
-                  value={localSearch}
-                  onChange={(e) => handleSearchChange(e.target.value)}
+                  value={search}
+                  onChange={(e) => dispatch(actions.setSearch(e.target.value))}
                   className='w-full bg-transparent text-lg outline-none'
                 />
-                {localSearch.length > 0 ? (
+                {search.length > 0 ? (
                   <Cross
-                    onClick={() => {
-                      setLocalSearch('')
-                      handleSearchChange('')
-                    }}
+                    onClick={() => dispatch(actions.setSearch(''))}
                     className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
                   />
                 ) : (

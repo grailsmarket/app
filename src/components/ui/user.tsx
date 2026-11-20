@@ -18,6 +18,7 @@ import { useUserContext } from '@/context/user'
 import { beautifyName } from '@/lib/ens'
 import { config } from '@/lib/config'
 import { accountQueryKey } from '@/utils/queryKeys'
+import { previousEntryIsProfile } from '@/utils/profileNavigation'
 
 interface UserProps {
   address: Address
@@ -163,7 +164,7 @@ const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
 
 interface LinkWrapperProps {
   children: React.ReactNode
-  address: Address | undefined
+  address: Address
   disableLink: boolean
   useParentLink: boolean
   className?: string
@@ -185,7 +186,8 @@ const LinkWrapper: React.FC<LinkWrapperProps> = ({ children, address, disableLin
         onClick={(e) => {
           e.stopPropagation()
           e.preventDefault()
-          router.push(`/profile/${address}`)
+          if (previousEntryIsProfile(address)) router.back()
+          else router.push(`/profile/${address}`)
         }}
       >
         {children}
@@ -193,7 +195,17 @@ const LinkWrapper: React.FC<LinkWrapperProps> = ({ children, address, disableLin
     )
 
   return (
-    <Link href={`/profile/${address}`} className={containerClassName} onClick={(e) => e.stopPropagation()}>
+    <Link
+      href={`/profile/${address}`}
+      className={containerClassName}
+      onClick={(e) => e.stopPropagation()}
+      onNavigate={(event) => {
+        if (previousEntryIsProfile(address)) {
+          event.preventDefault()
+          router.back()
+        }
+      }}
+    >
       {children}
     </Link>
   )

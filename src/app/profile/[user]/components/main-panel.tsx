@@ -13,12 +13,11 @@ import ActivityPanel from './activity'
 import BrokerPanel from './brokerPanel'
 import { useQuery } from '@tanstack/react-query'
 import OfferPanel from './offerPanel'
-import { changeTab, selectUserProfile, setLastVisitedProfile } from '@/state/reducers/portfolio/profile'
+import { changeTab, selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import ActionButtons from './actionButtons'
-import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { accountQueryKey } from '@/utils/queryKeys'
 
@@ -73,6 +72,7 @@ const MainPanel: React.FC<Props> = ({ user, list, resolvedOwner }) => {
               <div className='relative flex w-full flex-row gap-0 transition-all duration-300'>
                 <FilterPanel />
                 <ProfileContent
+                  key={profileTab}
                   userAddress={address}
                   showDomainsPanel={showDomainsPanel}
                   showOfferPanel={showOfferPanel}
@@ -110,28 +110,10 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
 }) => {
   const isClient = useIsClient()
   const { width: responsiveWidth } = useResponsiveSize()
-  const { selectors, profileTab, actions } = useFilterRouter()
-  const { lastVisitedProfile } = useAppSelector(selectUserProfile)
+  const { selectors, profileTab } = useFilterRouter()
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
   const filtersOpen = selectors.filters.open
-
-  // Scroll to top if this user profile isn't the one most recently visited
-  // Makes sure that exploring a user's profile does not always reset scroll position
-  // which is why we use the "lastViewedProfile", but when going to a new profile we
-  // scroll to the top so the user can be sure they navigated to the correct profile
-  useEffect(() => {
-    if (!userAddress || lastVisitedProfile === userAddress) return
-    if (lastVisitedProfile) {
-      dispatch(actions?.setScrollTop?.(0))
-      dispatch(clearBulkSelect())
-    }
-
-    document.scrollingElement?.scrollTo({ top: 0, behavior: 'instant' })
-    window.scrollTo({ top: 0, behavior: 'instant' })
-
-    dispatch(setLastVisitedProfile(userAddress))
-  }, [userAddress, lastVisitedProfile])
 
   // ensure that only the owner of the profile can see the watchlist
   useEffect(() => {

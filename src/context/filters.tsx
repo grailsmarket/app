@@ -101,8 +101,10 @@ interface FilterUrlSyncWrapperProps {
 const FilterUrlSyncWrapper: React.FC<FilterUrlSyncWrapperProps> = ({ children, filterType }) => {
   // This hook handles all URL <-> Redux sync
   const { profileAddress } = useFilterContext()
-  useFilterUrlSync({ filterType, profileAddress })
+  const { isInitialized } = useFilterUrlSync({ filterType, profileAddress })
 
+  // Mount the list after its address, tab and saved scroll position are ready.
+  if (filterType === 'profile' && !isInitialized) return null
   return <>{children}</>
 }
 

@@ -1,10 +1,13 @@
 import _ from 'lodash'
+import { createSelector } from '@reduxjs/toolkit'
 import { RootState } from '@/state'
 import { useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
 import { FilterRouter } from '@/types/filters/name'
 import { selectFilterPanel, setFilterPanelOpen } from '@/state/reducers/filterPanel'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { setBrokerScrollTop } from '@/state/reducers/filters/profileFilters'
+import { selectActiveProfileFilters } from '@/state/reducers/filters/selectActiveProfileFilters'
 import { useMemo } from 'react'
 import { selectCategory } from '@/state/reducers/category/category'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
@@ -170,6 +173,12 @@ import {
   FeedFilterActions,
 } from '@/state/reducers/filters/feedFilters'
 
+// The broker panel uses the domains table controls and has its own scroll position.
+const selectBrokerFilters = createSelector(
+  [selectProfileDomainsFilters, (state: RootState) => selectActiveProfileFilters(state)?.broker?.scrollTop ?? 0],
+  (filters, scrollTop) => ({ ...filters, scrollTop })
+)
+
 export function useFilterRouter(): FilterRouter {
   const { filterType } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
@@ -268,6 +277,8 @@ export function useFilterRouter(): FilterRouter {
 
     if (filterType === 'profile') {
       switch (activeProfileTab) {
+        case 'broker':
+          return selectBrokerFilters(state)
         case 'domains':
           return selectProfileDomainsFilters(state)
         case 'listings':
@@ -340,6 +351,8 @@ export function useFilterRouter(): FilterRouter {
 
     if (filterType === 'profile') {
       switch (activeProfileTab) {
+        case 'broker':
+          return { ...ProfileDomainsFilterActions, setScrollTop: setBrokerScrollTop }
         case 'domains':
           return ProfileDomainsFilterActions
         case 'listings':
@@ -355,7 +368,7 @@ export function useFilterRouter(): FilterRouter {
         case 'watchlist':
           return WatchlistFilterActions
         case 'activity':
-          return profileActivityFiltersActions
+          return { ...profileActivityFiltersActions, setScrollTop: profileActivityFiltersActions.setFiltersScrollTop }
         default:
           return ProfileDomainsFilterActions
       }

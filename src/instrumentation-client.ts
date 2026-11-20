@@ -1,6 +1,8 @@
 import posthog from 'posthog-js'
 import { redactCapturedEvent } from '@/lib/posthog-redact'
 
+export { trackProfileNavigation as onRouterTransitionStart } from '@/utils/profileNavigation'
+
 const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
 const host = process.env.NEXT_PUBLIC_POSTHOG_HOST
 

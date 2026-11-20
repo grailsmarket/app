@@ -37,6 +37,7 @@ import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categor
 import { changeBulkSearchTab } from '@/state/reducers/bulkSearch/bulkSearch'
 import { FeedFilterActions } from '@/state/reducers/filters/feedFilters'
 import { openProfileFilters } from '@/state/reducers/filters/profileFilters'
+import { enterProfileRoute, navigationSequence } from '@/utils/profileNavigation'
 import {
   setCategoriesPageSearch,
   setCategoriesPageType,
@@ -376,7 +377,11 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
 
     if (filterType === 'profile' && profileAddress) {
       const tab = PROFILE_TABS.find((item) => item.value === validTab) ?? PROFILE_TABS[0]
-      dispatch(openProfileFilters({ address: profileAddress, resetTab: hasFilters ? tab.value : undefined }))
+      const restoreScroll = enterProfileRoute(pathname, profileAddress)
+      dispatch(
+        openProfileFilters({ address: profileAddress, resetTab: hasFilters ? tab.value : undefined, restoreScroll })
+      )
+      if (!restoreScroll) window.scrollTo({ top: 0, behavior: 'instant' })
     }
 
     const shouldSelectTab = filterType === 'profile' || hasFilters || !!urlFilters.tab
@@ -387,7 +392,17 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
 
     setPendingUrlFilters({ filters: { ...urlFilters, tab: targetTab }, tab: targetTab, locationKey })
     setSyncPhase('applying')
-  }, [locationKey, queryString, profileAddress, filterType, defaultTab, currentTab, dispatch, tabChangeAction])
+  }, [
+    locationKey,
+    pathname,
+    queryString,
+    profileAddress,
+    filterType,
+    defaultTab,
+    currentTab,
+    dispatch,
+    tabChangeAction,
+  ])
 
   // Wait for the render containing both the destination profile and the selected
   // tab. Actions captured before that render still belong to the previous tab.
@@ -410,8 +425,10 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
   // Debounced URL update function
   const debouncedUpdateUrl = useMemo(
     () =>
-      debounce((filters: BaseFilterState | CategoriesPageFilterState, tab: string) => {
+      debounce((filters: BaseFilterState | CategoriesPageFilterState, tab: string, scheduledNavigation: number) => {
         if (isSyncingFromUrl.current) return
+        // A delayed replaceState during a pending link navigation can cancel that navigation.
+        if (filterType === 'profile' && scheduledNavigation !== navigationSequence) return
 
         let newUrl: string
         if (
@@ -471,7 +488,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
     // Skip if filters aren't loaded yet
     if (!selectors.filters) return
 
-    debouncedUpdateUrl(selectors.filters as BaseFilterState, currentTab)
+    debouncedUpdateUrl(selectors.filters as BaseFilterState, currentTab, navigationSequence)
 
     // Cleanup debounce on unmount
     return () => {

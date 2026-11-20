@@ -1,17 +1,6 @@
-import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useAppDispatch } from '@/state/hooks'
+import { useVirtualScroll } from '@/hooks/useVirtualScroll'
 import clsx from 'clsx'
-import React, {
-  useState,
-  useCallback,
-  forwardRef,
-  ReactElement,
-  ForwardedRef,
-  useMemo,
-  useEffect,
-  useRef,
-  useLayoutEffect,
-} from 'react'
+import React, { useState, useCallback, forwardRef, ReactElement, ForwardedRef, useMemo, useEffect, useRef } from 'react'
 
 export interface VirtualGridProps<T = unknown> {
   items: T[]
@@ -55,33 +44,15 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     minCardWidth = 120,
   } = props
 
-  const dispatch = useAppDispatch()
-  const { selectors, actions } = useFilterRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const [scrollState, setScrollState] = useState({ scrollY: 0, viewportHeight: 0 })
-  const [elementTop, setElementTop] = useState(0)
-  const hasRestoredScroll = useRef(false)
+  const { elementTop, relativeScrollTop } = useVirtualScroll(containerRef, scrollState.scrollY, useLocalScrollTop)
   const onScrollNearBottomRef = useRef(onScrollNearBottom)
 
   // Keep onScrollNearBottom ref updated
   useEffect(() => {
     onScrollNearBottomRef.current = onScrollNearBottom
   }, [onScrollNearBottom])
-
-  // Get stored scroll position
-  const storedScrollTop = useMemo(
-    () => (useLocalScrollTop ? 0 : selectors.filters.scrollTop),
-    [useLocalScrollTop, selectors.filters.scrollTop]
-  )
-
-  const setStoredScrollTop = useMemo(() => {
-    if (useLocalScrollTop) {
-      return () => {} // No-op for local scroll
-    } else {
-      console.log('setting stored scrolled top')
-      return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
-    }
-  }, [useLocalScrollTop])
 
   // Calculate columns based on container width
   const columnsCount = useMemo(() => {
@@ -107,42 +78,6 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
   const rowHeight = cardHeight + gap
   const totalHeight = totalRows * rowHeight
 
-  // Calculate element's position in document on mount and resize
-  useEffect(() => {
-    const updateElementTop = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect()
-        setElementTop(rect.top + window.scrollY)
-      }
-    }
-
-    updateElementTop()
-
-    // Update on resize
-    window.addEventListener('resize', updateElementTop)
-
-    // Use ResizeObserver for more accurate updates
-    const resizeObserver = new ResizeObserver(updateElementTop)
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current)
-    }
-
-    return () => {
-      window.removeEventListener('resize', updateElementTop)
-      resizeObserver.disconnect()
-    }
-  }, [])
-
-  // Restore scroll position on mount
-  useLayoutEffect(() => {
-    if (!hasRestoredScroll.current && storedScrollTop > 0 && elementTop > 0) {
-      // Calculate the window scroll position that would put us at the stored position
-      const targetWindowScroll = elementTop + storedScrollTop
-      window.scrollTo({ top: targetWindowScroll, behavior: 'instant' })
-      hasRestoredScroll.current = true
-    }
-  }, [storedScrollTop, elementTop])
-
   // Listen to window scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -163,21 +98,6 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
       window.removeEventListener('resize', handleScroll)
     }
   }, [])
-
-  // Calculate scroll position relative to the grid
-  const relativeScrollTop = useMemo(() => {
-    return Math.max(0, scrollState.scrollY - elementTop)
-  }, [scrollState.scrollY, elementTop])
-
-  // Store scroll position for restoration (debounced)
-  useEffect(() => {
-    if (hasRestoredScroll.current || storedScrollTop === 0) {
-      const timeoutId = setTimeout(() => {
-        setStoredScrollTop(relativeScrollTop)
-      }, 100)
-      return () => clearTimeout(timeoutId)
-    }
-  }, [relativeScrollTop, setStoredScrollTop, storedScrollTop])
 
   // Check if we're near the bottom of the grid content
   useEffect(() => {

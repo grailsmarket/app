@@ -1,4 +1,4 @@
-import { combineReducers, createAction, type UnknownAction } from '@reduxjs/toolkit'
+import { combineReducers, createAction, createNextState, createReducer, type UnknownAction } from '@reduxjs/toolkit'
 import type { Address } from 'viem'
 import type { ProfileTabType } from '../portfolio/profile'
 import profileDomainsFilters from './profileDomainsFilters'
@@ -10,6 +10,8 @@ import watchlistFilters from './watchlistFilters'
 import myOffersFilters from './myOffersFilters'
 import receivedOffersFilters from './receivedOffersFilters'
 
+export const setBrokerScrollTop = createAction<number>('profileBroker/setScrollTop')
+
 const profileFiltersReducer = combineReducers({
   domains: profileDomainsFilters,
   listings: profileListingsFilters,
@@ -19,6 +21,11 @@ const profileFiltersReducer = combineReducers({
   watchlist: watchlistFilters,
   sent_offers: myOffersFilters,
   received_offers: receivedOffersFilters,
+  broker: createReducer({ scrollTop: 0 }, (builder) =>
+    builder.addCase(setBrokerScrollTop, (state, { payload }) => {
+      state.scrollTop = payload
+    })
+  ),
 })
 
 export type ProfileFilters = ReturnType<typeof profileFiltersReducer>
@@ -32,16 +39,27 @@ const initialState: ProfileFiltersState = { activeProfileId: null, byProfile: {}
 
 const defaults = profileFiltersReducer(undefined, { type: '@@INIT' })
 
-export const openProfileFilters = createAction<{ address: Address; resetTab?: ProfileTabType['value'] }>(
-  'profileFilters/open'
-)
+export const openProfileFilters = createAction<{
+  address: Address
+  resetTab?: ProfileTabType['value']
+  restoreScroll: boolean
+}>('profileFilters/open')
 
 export default function reducer(state = initialState, action: UnknownAction): ProfileFiltersState {
   if (openProfileFilters.match(action)) {
-    const { address, resetTab } = action.payload
+    const { address, resetTab, restoreScroll } = action.payload
     const id = address.toLowerCase() as Address
     const previous = state.byProfile[id] ?? defaults
-    const filters = resetTab && resetTab !== 'broker' ? { ...previous, [resetTab]: defaults[resetTab] } : previous
+    const filters = createNextState(previous, (draft) => {
+      if (resetTab && resetTab !== 'broker') {
+        Object.assign(draft, { [resetTab]: { ...defaults[resetTab], scrollTop: draft[resetTab].scrollTop } })
+      }
+
+      if (!restoreScroll) {
+        for (const tab of Object.values(draft)) tab.scrollTop = 0
+      }
+    })
+
     return { activeProfileId: id, byProfile: { ...state.byProfile, [id]: filters } }
   }
 

@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { type Address, type PublicClient, labelhash, namehash, zeroAddress } from 'viem'
+import { normalize } from 'viem/ens'
 import { configurationsQueryOptions, ensNameQueryOptions, resolverQueryOptions } from '@/api/resolvers/queries'
 import { configurationPreferencesQueryOptions, configurationRecords } from '@/api/resolvers/preferences'
 import { config } from '@/lib/config'
@@ -34,16 +35,18 @@ export const loadNameResolver = async (
   if (!details.resolver || details.resolver === zeroAddress || !details.label)
     return readNameResolver(client, name, config.ensV2Registry, account)
 
-  const state = await client.readContract({
-    address: details.registry,
-    abi: REGISTRY_V2_ABI,
-    functionName: 'getState',
-    args: [BigInt(labelhash(details.label))],
-  })
+  // A confirmed resolver change can reach the registry before the name indexer.
+  const registry = { address: details.registry, abi: REGISTRY_V2_ABI } as const
+  const [state, directResolver] = await Promise.all([
+    client.readContract({ ...registry, functionName: 'getState', args: [BigInt(labelhash(details.label))] }),
+    client.readContract({ ...registry, functionName: 'getResolver', args: [details.label] }),
+  ])
+  if (directResolver === zeroAddress) return readNameResolver(client, name, config.ensV2Registry, account)
 
+  const registered = state.status === 2
   const canSetResolver =
     !!account &&
-    details.status === 'registered' &&
+    registered &&
     (await client.readContract({
       address: details.registry,
       abi: REGISTRY_V2_ABI,
@@ -52,13 +55,15 @@ export const loadNameResolver = async (
     }))
 
   return {
+    owner: registered ? state.latestOwner : null,
+    tokenId: state.tokenId,
     registry: details.registry,
-    resolver: details.resolver,
-    directResolver: details.resolver,
+    resolver: directResolver,
+    directResolver,
     label: details.label,
     resource: state.resource,
     canSetResolver,
-    registered: details.status === 'registered',
+    registered,
     inherited: false,
   }
 }
@@ -99,7 +104,7 @@ export const loadResolverState = async (
             address: resolver,
             abi: PERMISSIONED_RESOLVER_ABI,
             functionName: 'getRecordId',
-            args: [namehash(name)],
+            args: [namehash(normalize(name))],
             blockNumber: state.blockNumber,
           })
   }

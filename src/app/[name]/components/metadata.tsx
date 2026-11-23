@@ -22,7 +22,7 @@ interface NameDetailsProps {
   name: string
   version?: number
   registrationStatus: RegistrationStatus
-  nameOwner?: string | null
+  isOwnerOrV1Manager: boolean
   metadata?: MetadataType[]
   isMetadataLoading: boolean
   openEditMetadataModal: () => void
@@ -33,18 +33,17 @@ const Metadata: React.FC<NameDetailsProps> = ({
   name,
   version,
   registrationStatus,
-  nameOwner,
+  isOwnerOrV1Manager,
   metadata = [],
   isMetadataLoading,
   openEditMetadataModal,
   isRecordEditorReady,
 }) => {
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
-  const { userAddress, authStatus } = useUserContext()
-  const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()
+  const { authStatus } = useUserContext()
   // Resolver delegates can edit V2 records without owning the name; the modal checks their onchain roles.
   const canEditMetadata =
-    (isNameOwner || (version === 2 && authStatus === 'authenticated')) && registrationStatus === REGISTERED
+    authStatus === 'authenticated' && (isOwnerOrV1Manager || version === 2) && registrationStatus === REGISTERED
 
   // Mirror the cache-busting flow used by `NameImage` so a metadata refresh
   // also blows past any cached avatar/header image bytes. See `imageRefresh`

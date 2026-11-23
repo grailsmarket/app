@@ -14,6 +14,7 @@ import SimilarNames from './similarNames'
 import { cn } from '@/utils/tailwind'
 import CompromisedBanner from '@/components/compromised/compromisedBanner'
 import { useRegistrationPrice } from '@/hooks/registrar/useRegistrationPrice'
+import { useUserContext } from '@/context/user'
 
 interface Props {
   name: string
@@ -43,6 +44,12 @@ const NamePage: React.FC<Props> = ({ name }) => {
     openMigrationModal,
     isRecordEditorReady,
   } = useName(name)
+  const { userAddress } = useUserContext()
+  const wallet = userAddress?.toLowerCase()
+  const isOwnerOrV1Manager =
+    !!wallet &&
+    (wallet === nameDetails?.owner?.toLowerCase() ||
+      (nameDetails?.version === 1 && wallet === roles?.manager?.toLowerCase()))
 
   useEffect(() => {
     setSelectedTab('market')
@@ -93,6 +100,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             }
             registrationExpiryDate={registrationPrice?.expiryDate}
             isSubname={isSubname}
+            isOwnerOrV1Manager={isOwnerOrV1Manager}
             openEditMetadataModal={openEditMetadataModal}
             isRecordEditorReady={isRecordEditorReady}
             openMigrationModal={openMigrationModal}
@@ -155,6 +163,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
                 isMetadataLoading={isMetadataLoading}
                 roles={roles}
                 isRolesLoading={isRolesLoading}
+                isOwnerOrV1Manager={isOwnerOrV1Manager}
                 openEditMetadataModal={openEditMetadataModal}
                 isRecordEditorReady={isRecordEditorReady}
               />

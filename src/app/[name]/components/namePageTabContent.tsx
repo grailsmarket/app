@@ -26,6 +26,7 @@ interface Props {
   isMetadataLoading: boolean
   roles?: RolesType | null
   isRolesLoading: boolean
+  isOwnerOrV1Manager: boolean
   openEditMetadataModal: () => void
   isRecordEditorReady: boolean
 }
@@ -43,6 +44,7 @@ const NamePageTabContent: React.FC<Props> = ({
   isMetadataLoading,
   roles,
   isRolesLoading,
+  isOwnerOrV1Manager,
   openEditMetadataModal,
   isRecordEditorReady,
 }) => {
@@ -71,7 +73,7 @@ const NamePageTabContent: React.FC<Props> = ({
             name={name}
             version={nameDetails?.version}
             registrationStatus={registrationStatus}
-            nameOwner={nameDetails?.owner}
+            isOwnerOrV1Manager={isOwnerOrV1Manager}
             metadata={metadata}
             isMetadataLoading={isMetadataLoading}
             openEditMetadataModal={openEditMetadataModal}

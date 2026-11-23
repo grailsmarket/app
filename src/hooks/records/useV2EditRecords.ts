@@ -21,7 +21,7 @@ import {
   loadResolverState,
 } from '@/utils/records/loadResolver'
 import { buildRecordCalls, dnsEncodeName, recordKey, uint256, validateRecordField } from '@/utils/records/v2Records'
-import type { V2Record, V2RecordField, V2RecordMode } from '@/types/records'
+import type { V2Record, V2RecordField, V2RecordMode, V2ResolverCatalog } from '@/types/records'
 import type { EditStep } from './useEditRecords'
 import { useAppDispatch } from '@/state/hooks'
 import { markImageForRefresh } from '@/state/reducers/imageRefresh'
@@ -29,6 +29,21 @@ import { config } from '@/lib/config'
 import { createV2RecordsClient } from '@/utils/records/client'
 import { newResolverVersion } from '@/utils/records/resolverDeployment'
 import { readConfigurationNames } from '@/utils/settings/configurations'
+import { DEFAULT_V2_FIELDS } from '@/constants/ens/records'
+import { replacementSetters, type ResolverReplacement } from '@/utils/records/replaceResolver'
+
+const emptyCatalog: V2ResolverCatalog = {
+  blockNumber: BigInt(0),
+  recordCount: BigInt(0),
+  defaultRecordId: BigInt(0),
+  linkedRecordId: BigInt(0),
+  canLink: false,
+  historyComplete: true,
+  fields: new Map(),
+  names: new Map(),
+  interfaces: new Map(),
+}
+const emptyRecords = DEFAULT_V2_FIELDS.map((field) => ({ ...field, editable: false, value: '', initialValue: '' }))
 
 type PendingWrite = { hash: Hex; kind: 'records' | 'resolver' | 'deploy'; sender: Address }
 
@@ -44,7 +59,7 @@ const errorDetailsText = (error: unknown) =>
 /** While `confirming`: still checking before any prompt, or the wallet prompt is open. */
 export type V2EditPhase = 'checking' | 'wallet' | null
 
-export const useV2EditRecords = (name: string, recordsEnabled = true) => {
+export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolverChanged: () => void) => {
   const { address } = useAccount()
   const getWalletClient = useGetWalletClient()
   const { deployResolver, getDeployedResolver } = usePermissionedResolver()
@@ -77,6 +92,9 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
 
   const resolver = binding.data?.resolver
   const resolverExists = !!resolver && resolver !== zeroAddress
+  const ownerCanSwitch =
+    !!address && !!binding.data?.canSetResolver && binding.data.owner?.toLowerCase() === address.toLowerCase()
+  const needsFirstResolver = ownerCanSwitch && resolver === zeroAddress
   const snapshot = useQuery({
     queryKey: ['v2-records', 'state', activeChain.id, resolver, name, address],
     queryFn: ({ signal }) => loadResolverState(queryClient, client, resolver!, name, address, signal),
@@ -95,7 +113,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     retry: false,
   })
 
-  const catalog = { data: history.data ?? snapshot.data }
+  const catalog = { data: needsFirstResolver ? emptyCatalog : (history.data ?? snapshot.data) }
   const mode =
     selectedMode ??
     (catalog.data?.linkedRecordId === BigInt(0) && catalog.data.defaultRecordId === BigInt(0) ? 'new' : 'shared')
@@ -179,10 +197,10 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     refetchOnWindowFocus: false,
     retry: false,
   })
-  const recordData = recordQuery.data
+  const recordData = needsFirstResolver ? emptyRecords : recordQuery.data
   const hasCompleteRecords = !!recordData && !!catalog.data?.historyComplete
   const discoveryError = history.error
-  const viewKey = `${address}:${resolver}:${selected}:${mode}`
+  const viewKey = `${address}:${name}:${resolver}:${selected}:${mode}`
   const activeView = useRef(viewKey)
   activeView.current = viewKey
   const rows = new Map(
@@ -203,6 +221,10 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     }
 
   const records = [...rows.values()]
+  // Only the active configuration can be carried over to a different resolver.
+  const canEditBySwitching =
+    ownerCanSwitch && selectedId === catalog.data?.linkedRecordId && (selectedMode === null || mode === 'shared')
+  const needsReplacement = canEditBySwitching && records.some((row) => !row.editable && row.value !== row.initialValue)
   const isLoading =
     binding.isPending ||
     binding.isFetching ||
@@ -217,10 +239,18 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     (selectedMode !== null && mode !== 'shared') ||
     (!!catalog.data && selectedId !== catalog.data.linkedRecordId) ||
     records.some((row) => row.value !== row.initialValue)
+  const canCreateEmpty = mode !== 'shared' && records.some((row) => row.editable)
   let validationError = selectionError
   let calls: Hex[] = []
 
-  if (catalog.data && recordData && !validationError) {
+  if (needsReplacement) {
+    try {
+      if (!hasCompleteRecords) throw new Error('Load all existing records before switching resolvers.')
+      calls = replacementSetters(name, records)
+    } catch (error) {
+      validationError = errorText(error)
+    }
+  } else if (catalog.data && recordData && !validationError && (hasChanges || canCreateEmpty)) {
     try {
       if (mode === 'copy' && !hasCompleteRecords) {
         throw new Error('Load all additional records before copying this configuration.')
@@ -246,21 +276,18 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   }
 
   const canSave =
-    !!address &&
-    !isBusy &&
-    !pending &&
-    !isAdding &&
-    !isLoading &&
-    !loadError &&
-    !validationError &&
-    (hasChanges || mode !== 'shared') &&
-    calls.length > 0
+    !!address && !isBusy && !pending && !isAdding && !isLoading && !loadError && !validationError && calls.length > 0
 
   const updateRecord = (key: string, value: string) => {
-    setDraft({
+    const row = rows.get(key)
+    if (!row || !(row.editable || canEditBySwitching)) return
+    setDraft((previous) => ({
       key: viewKey,
-      rows: records.map((row) => (recordKey(row) === key && row.editable ? { ...row, value } : row)),
-    })
+      rows: [
+        ...(previous?.key === viewKey ? previous.rows.filter((item) => recordKey(item) !== key) : []),
+        { ...row, value },
+      ],
+    }))
   }
 
   const changeView = (nextMode: V2RecordMode, nextSelection = selected) => {
@@ -284,15 +311,17 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
       if (records.some((row) => recordKey(row) === recordKey(valid))) throw new Error('That record is already shown.')
 
       setIsAdding(true)
-      const rows = await loadConfiguration({
-        client,
-        resolver,
-        catalog: catalog.data,
-        name,
-        selectedId,
-        account: address,
-        extraFields: [valid],
-      })
+      const rows = needsFirstResolver
+        ? [{ ...valid, value: '', initialValue: '', editable: false }]
+        : await loadConfiguration({
+            client,
+            resolver,
+            catalog: catalog.data,
+            name,
+            selectedId,
+            account: address,
+            extraFields: [valid],
+          })
 
       if (activeView.current !== key) return false
 
@@ -303,7 +332,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
 
       setDraft((previous) => ({
         key,
-        rows: [...(previous?.key === key ? previous.rows : records), added],
+        rows: [...(previous?.key === key ? previous.rows : []), added],
       }))
       setError(null)
 
@@ -350,6 +379,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
       setResolverInput(null)
       discardChanges()
       setStep('editing')
+      onResolverChanged()
     } else {
       // A deployment does not replace the name's resolver or discard drafts in other tabs.
       setStep('editing')
@@ -416,6 +446,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   const save = () =>
     run(async () => {
       setOperation('records')
+      if (needsReplacement) throw new Error('Review the resolver change before saving these records.')
       if (!canSave || !catalog.data || !binding.data || !resolver)
         throw new Error(validationError || 'Wait for the records to load before saving.')
       const wallet = await getWallet()
@@ -506,7 +537,23 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     })
 
   return {
-    records,
+    records: canEditBySwitching ? records.map((row) => ({ ...row, editable: true })) : records,
+    canEditBySwitching: canEditBySwitching && records.some((row) => !row.editable),
+    needsFirstResolver,
+    replacement:
+      needsReplacement && address && binding.data && catalog.data
+        ? ({
+            name,
+            account: address,
+            binding: binding.data,
+            catalog: catalog.data,
+            records,
+          } satisfies ResolverReplacement)
+        : null,
+    replacementSaved: () => {
+      setResolverInput(null)
+      void completed('records')
+    },
     updateRecord,
     addRecord,
     isAdding,
@@ -517,10 +564,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     binding: binding.data,
     catalog: catalog.data,
     configurationNameCount: configurationNameCount ?? configurationNames.data,
-    resolvers:
-      resolverExists && !directory.resolvers.some((item) => item.address.toLowerCase() === resolver.toLowerCase())
-        ? [{ address: resolver, name: null }, ...directory.resolvers]
-        : directory.resolvers,
+    resolvers: directory.resolvers,
     hasCompleteRecords,
     isDiscovering: history.isFetching || recordQuery.isFetching,
     discoveryError: discoveryError ? errorText(discoveryError) : null,

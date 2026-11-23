@@ -79,7 +79,7 @@ const migrations: Record<string, (state: any) => any> = {
 const persistConfig = {
   key: 'root',
   whitelist: PERSISTED_KEYS,
-  version: 2,
+  version: 3,
   storage,
   migrate: createMigrate(migrations, { debug: false }),
 }

@@ -54,6 +54,7 @@ interface NameDetailsProps {
   registrationStatusIsLoading?: boolean
   registrationExpiryDate?: string | null
   isSubname: boolean
+  isOwnerOrV1Manager: boolean
   openEditMetadataModal: () => void
   isRecordEditorReady: boolean
   openMigrationModal: () => void
@@ -67,6 +68,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   registrationStatusIsLoading = false,
   registrationExpiryDate,
   isSubname,
+  isOwnerOrV1Manager,
   openEditMetadataModal,
   isRecordEditorReady,
   openMigrationModal,
@@ -201,30 +203,30 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             Migrate to V2
           </PrimaryButton>
         )}
-        {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
+        {REGISTERED_STATUSES.includes(registrationStatus) && (isOwnerOrV1Manager || !isSubname) && (
           <div className='flex w-full flex-row items-center justify-between gap-2'>
             {!isSubname && (
               <PrimaryButton onClick={openExtendNameModal} className='w-full text-lg'>
                 Extend
               </PrimaryButton>
             )}
-            {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && registrationStatus === REGISTERED && (
-              <>
-                <SecondaryButton
-                  onClick={openTransferModal}
-                  className='w-full text-lg'
-                  disabled={authStatus !== 'authenticated'}
-                >
-                  Transfer
-                </SecondaryButton>
-                <SecondaryButton
-                  onClick={openEditMetadataModal}
-                  className='w-full text-lg'
-                  disabled={authStatus !== 'authenticated' || !isRecordEditorReady}
-                >
-                  Edit
-                </SecondaryButton>
-              </>
+            {isOwner && registrationStatus === REGISTERED && (
+              <SecondaryButton
+                onClick={openTransferModal}
+                className='w-full text-lg'
+                disabled={authStatus !== 'authenticated'}
+              >
+                Transfer
+              </SecondaryButton>
+            )}
+            {isOwnerOrV1Manager && registrationStatus === REGISTERED && (
+              <SecondaryButton
+                onClick={openEditMetadataModal}
+                className='w-full text-lg'
+                disabled={authStatus !== 'authenticated' || !isRecordEditorReady}
+              >
+                Edit
+              </SecondaryButton>
             )}
             {nameDetails && !isOwner && (
               <button

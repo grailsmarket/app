@@ -8,6 +8,7 @@ import { Address } from 'viem'
 export interface DropdownOption {
   value: string | number | Address
   label: string
+  description?: React.ReactNode
   icon?: string
 }
 
@@ -119,7 +120,14 @@ const Dropdown: React.FC<DropdownProps> = ({
                   )}
                 >
                   {option.icon && <Image src={option.icon} alt={option.label} height={24} className='h-6 w-auto' />}
-                  {option.label}
+                  {option.description ? (
+                    <span className='min-w-0'>
+                      <span className='block font-medium break-all'>{option.label}</span>
+                      <span className='text-neutral text-md block'>{option.description}</span>
+                    </span>
+                  ) : (
+                    option.label
+                  )}
                 </button>
               ))}
             </div>

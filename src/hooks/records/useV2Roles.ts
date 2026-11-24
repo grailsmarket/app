@@ -158,6 +158,7 @@ export const useV2RoleAuthority = (change?: RoleChange) => {
     refetchOnWindowFocus: false,
     retry: false,
   })
+
   return {
     validationError,
     error: access.error ? roleErrorText(access.error) : undefined,

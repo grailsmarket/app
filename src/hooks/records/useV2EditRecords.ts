@@ -37,14 +37,14 @@ const errorText = (error: unknown) => {
   return error instanceof Error ? error.message : 'Could not save these changes.'
 }
 
-/** The raw error text behind errorText, for the error screen's details, when it says more. */
+// The raw error text behind errorText, for the error screen's details, when it says more.
 const errorDetailsText = (error: unknown) =>
   error instanceof BaseError && error.message !== error.shortMessage ? error.message : null
 
-/** While `confirming`: still checking before any prompt, or the wallet prompt is open. */
+// While `confirming`: still checking before any prompt, or the wallet prompt is open.
 export type V2EditPhase = 'checking' | 'wallet' | null
 
-export const useV2EditRecords = (name: string, recordsEnabled = true) => {
+export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolverChanged: () => void) => {
   const { address } = useAccount()
   const getWalletClient = useGetWalletClient()
   const { deployResolver, getDeployedResolver } = usePermissionedResolver()
@@ -182,7 +182,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   const recordData = recordQuery.data
   const hasCompleteRecords = !!recordData && !!catalog.data?.historyComplete
   const discoveryError = history.error
-  const viewKey = `${address}:${resolver}:${selected}:${mode}`
+  const viewKey = `${address}:${name}:${resolver}:${selected}:${mode}`
   const activeView = useRef(viewKey)
   activeView.current = viewKey
   const rows = new Map(
@@ -203,6 +203,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     }
 
   const records = [...rows.values()]
+
   const isLoading =
     binding.isPending ||
     binding.isFetching ||
@@ -217,10 +218,12 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     (selectedMode !== null && mode !== 'shared') ||
     (!!catalog.data && selectedId !== catalog.data.linkedRecordId) ||
     records.some((row) => row.value !== row.initialValue)
+  const canCreateEmpty = mode !== 'shared' && records.some((row) => row.editable)
+
   let validationError = selectionError
   let calls: Hex[] = []
 
-  if (catalog.data && recordData && !validationError) {
+  if (catalog.data && recordData && !validationError && (hasChanges || canCreateEmpty)) {
     try {
       if (mode === 'copy' && !hasCompleteRecords) {
         throw new Error('Load all additional records before copying this configuration.')
@@ -246,21 +249,18 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   }
 
   const canSave =
-    !!address &&
-    !isBusy &&
-    !pending &&
-    !isAdding &&
-    !isLoading &&
-    !loadError &&
-    !validationError &&
-    (hasChanges || mode !== 'shared') &&
-    calls.length > 0
+    !!address && !isBusy && !pending && !isAdding && !isLoading && !loadError && !validationError && calls.length > 0
 
   const updateRecord = (key: string, value: string) => {
-    setDraft({
+    const row = rows.get(key)
+    if (!row?.editable) return
+    setDraft((previous) => ({
       key: viewKey,
-      rows: records.map((row) => (recordKey(row) === key && row.editable ? { ...row, value } : row)),
-    })
+      rows: [
+        ...(previous?.key === viewKey ? previous.rows.filter((item) => recordKey(item) !== key) : []),
+        { ...row, value },
+      ],
+    }))
   }
 
   const changeView = (nextMode: V2RecordMode, nextSelection = selected) => {
@@ -303,7 +303,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
 
       setDraft((previous) => ({
         key,
-        rows: [...(previous?.key === key ? previous.rows : records), added],
+        rows: [...(previous?.key === key ? previous.rows : []), added],
       }))
       setError(null)
 
@@ -340,6 +340,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   const completed = async (kind: PendingWrite['kind']) => {
     track(null)
     void invalidateNameMetadataCache(name).catch(() => {})
+
     if (kind === 'records') {
       setDraft(null)
       setSelection(null)
@@ -350,6 +351,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
       setResolverInput(null)
       discardChanges()
       setStep('editing')
+      onResolverChanged()
     } else {
       // A deployment does not replace the name's resolver or discard drafts in other tabs.
       setStep('editing')

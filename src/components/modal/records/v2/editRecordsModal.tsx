@@ -21,7 +21,8 @@ import { TxScreenPanel, plural, shortAddress } from '../components/txScreen'
 import { getRolesScreen, getV2EditorScreen } from '../components/recordsTxScreens'
 import { useConfigurationPreferences } from '@/hooks/settings/useResolverPreferences'
 import { configurationName, resolverDefaultName } from '@/utils/settings/labels'
-import { ResolverAddress } from '@/components/settings/shared'
+import ResolverRecordAccess from './resolverRecordAccess'
+import { isAddress, zeroAddress } from 'viem'
 
 const V2EditRecordsModal = ({
   name,
@@ -33,22 +34,34 @@ const V2EditRecordsModal = ({
   onClose: () => void
 }) => {
   const [tab, setTab] = useState<string>(defaultTab)
-  const editor = useV2EditRecords(name, tab !== 'roles')
-  const preferences = useConfigurationPreferences(editor.binding?.resolver, editor.resolverExists && tab === 'records')
-  const roles = useV2RoleEditor(name, tab === 'roles')
-  const roleTransaction = useV2RoleTransaction(name, roles.onConfirmed)
   const [rolesOpened, setRolesOpened] = useState(defaultTab === 'roles')
   const [discardAction, setDiscardAction] = useState<'close' | 'resolver' | null>(null)
-  const [resolverFocused, setResolverFocused] = useState(false)
   const [configExpanded, setConfigExpanded] = useState(false)
   // What the running save changes, captured on click: the drafts are cleared once it succeeds.
   const [recordsRun, setRecordsRun] = useState<{ meta?: string; message?: string }>({})
   const [roleChangeCount, setRoleChangeCount] = useState(0)
+
+  const editor = useV2EditRecords(name, tab !== 'roles', () => setTab('records'))
+  const preferences = useConfigurationPreferences(editor.binding?.resolver, editor.resolverExists && tab === 'records')
+  const roles = useV2RoleEditor(name, tab === 'roles')
+  const roleTransaction = useV2RoleTransaction(name, roles.onConfirmed)
   const contentRef = useRef<HTMLDivElement>(null)
   const busy = editor.isBusy || roleTransaction.busy
   const hasRecordChanges = editor.step !== 'success' && editor.hasChanges
   const hasChanges =
     hasRecordChanges || editor.hasResolverChanges || roles.hasChanges || !!editor.pending || !!roleTransaction.pending
+
+  const resolverDropdownOptions = [
+    {
+      label: 'Custom (enter address manually)',
+      value: '',
+    },
+    ...editor.resolvers.map((resolver) => ({
+      label: resolver.address,
+      value: resolver.address,
+      description: <ResolverRecordAccess resolver={resolver.address} wallet={roles.data.address} />,
+    })),
+  ]
 
   const close = () => {
     if (busy) return
@@ -84,19 +97,16 @@ const V2EditRecordsModal = ({
   }
 
   const catalog = editor.catalog
+  const showResolverSettings = tab === 'resolver' || (tab === 'records' && !editor.resolverExists)
   // IDs are sequential onchain; discovering the list does not require indexed events.
   const count = catalog?.recordCount ?? BigInt(0)
   const ids = Array.from({ length: Number(count > BigInt(1000) ? BigInt(1000) : count) }, (_, index) => `${index + 1}`)
   if (editor.selectedId > BigInt(1000)) ids.push(editor.selected)
-  const options = editor.resolvers.filter(
-    (resolver) =>
-      !editor.resolverInput ||
-      resolver.address.toLowerCase().includes(editor.resolverInput.toLowerCase()) ||
-      resolver.name?.toLowerCase().includes(editor.resolverInput.toLowerCase())
-  )
-  const resolverLabel = editor.resolvers.find(
+  const selectedResolver = editor.resolvers.find(
     (resolver) => resolver.address.toLowerCase() === editor.resolverInput.toLowerCase()
-  )?.name
+  )
+  const resolverLabel = selectedResolver?.name
+  const shownRecordsReadOnly = editor.records.length > 0 && editor.records.every((record) => !record.editable)
   const configurationLabel =
     editor.selectedId === BigInt(0)
       ? resolverDefaultName(preferences.data, catalog?.defaultRecordId)
@@ -188,7 +198,10 @@ const V2EditRecordsModal = ({
         }}
       >
         <div
-          className='bg-background border-tertiary flex h-[calc(100dvh-56px)] w-full flex-col overflow-hidden rounded-md border-t shadow-lg md:max-h-200 md:max-w-xl md:border-2'
+          className={cn(
+            'bg-background border-tertiary flex w-full flex-col overflow-hidden rounded-md border-t shadow-lg md:max-h-240 md:max-w-xl md:border-2',
+            screen ? 'h-auto' : 'h-[calc(100dvh-56px)]'
+          )}
           onClick={(event) => event.stopPropagation()}
         >
           <div className='border-tertiary flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2 sm:pl-6'>
@@ -241,47 +254,40 @@ const V2EditRecordsModal = ({
                     <RolesEditor editor={roles} transaction={roleTransaction} />
                   </div>
                 )}
-                {editor.binding && (tab === 'resolver' || (tab === 'records' && !editor.resolverExists)) && (
+                {editor.binding && showResolverSettings && (
                   <div className='flex flex-col gap-3'>
-                    <Input
-                      label='Address'
-                      aria-label='Resolver address'
-                      autoComplete='off'
-                      spellCheck={false}
-                      value={editor.resolverInput}
-                      onChange={(event) => editor.setResolverInput(event.target.value)}
-                      onFocus={() => setResolverFocused(true)}
-                      onBlur={() => setResolverFocused(false)}
-                      disabled={!editor.binding?.canSetResolver}
-                      placeholder='0x…'
-                    />
-                    {resolverFocused && options.length > 0 && (
-                      <div className='border-tertiary max-h-36 overflow-y-auto rounded-md border'>
-                        {options.map((resolver, index) => (
-                          <button
-                            type='button'
-                            key={resolver.address}
-                            className={cn(
-                              'hover:bg-secondary flex w-full cursor-pointer flex-col px-3 py-2 text-left text-sm',
-                              index > 0 && 'border-tertiary border-t'
-                            )}
-                            onMouseDown={(event) => event.preventDefault()}
-                            onClick={() => {
-                              editor.setResolverInput(resolver.address)
-                              setResolverFocused(false)
-                            }}
-                          >
-                            <ResolverAddress
-                              address={resolver.address}
-                              name={resolver.name}
-                              showLabel
-                              canCopy={false}
-                              etherscan={false}
-                              truncate={false}
-                            />
-                          </button>
-                        ))}
+                    {editor.binding.canSetResolver && editor.resolvers.length > 0 && (
+                      <Dropdown
+                        label='Resolver'
+                        onSelect={(value) => editor.setResolverInput(String(value))}
+                        options={resolverDropdownOptions}
+                        value={selectedResolver?.address ?? ''}
+                        placeholder='Select existing resolver'
+                        className='text-lg'
+                      />
+                    )}
+                    {!selectedResolver?.address && (
+                      <Input
+                        label='Address'
+                        aria-label='Resolver address'
+                        autoComplete='off'
+                        spellCheck={false}
+                        value={editor.resolverInput}
+                        onChange={(event) => editor.setResolverInput(event.target.value)}
+                        disabled={!editor.binding?.canSetResolver}
+                        placeholder='0x…'
+                      />
+                    )}
+                    {roles.data.address && isAddress(editor.resolverInput) && editor.resolverInput !== zeroAddress && (
+                      <div className='bg-secondary border-tertiary rounded-md border p-3' role='status'>
+                        <ResolverRecordAccess resolver={editor.resolverInput} wallet={roles.data.address} detailed />
                       </div>
+                    )}
+                    {editor.binding.canSetResolver && editor.hasResolverChanges && (
+                      <p className='text-grace text-sm' role='status'>
+                        Once confirmed, {name} will use the new resolver’s records, including its receiving address.
+                        Copy any records you want to keep before switching.
+                      </p>
                     )}
                     {editor.binding?.canSetResolver ? (
                       <div className='bg-secondary border-tertiary p-lg flex items-center justify-between gap-4 rounded-md border'>
@@ -331,6 +337,22 @@ const V2EditRecordsModal = ({
                 )}
                 {tab === 'records' && catalog && !editor.isLoading && !editor.loadError && (
                   <>
+                    {shownRecordsReadOnly && roles.data.address && (
+                      <div className='bg-secondary border-tertiary flex flex-col items-start gap-2 rounded-md border p-3'>
+                        <p className='text-lg'>Records shown are read-only for your wallet on this resolver.</p>
+                        <div className='flex flex-row items-center gap-2'>
+                          <p className='text-neutral text-md'>
+                            Ask the resolver administrator for write access
+                            {editor.binding?.canSetResolver
+                              ? ', or switch this name to a resolver where your wallet can edit records.'
+                              : '.'}
+                          </p>
+                          {editor.binding?.canSetResolver && (
+                            <SecondaryButton onClick={() => setTab('resolver')}>Switch</SecondaryButton>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     <div className='border-tertiary rounded-md border p-3'>
                       <button
                         type='button'
@@ -418,12 +440,14 @@ const V2EditRecordsModal = ({
                           </div>
                         </div>
                       )}
-                      {editor.mode !== 'shared' && !editor.records.some((row) => row.value) && (
-                        <p className='text-grace mt-2 text-sm'>
-                          You are creating an empty configuration. This name will have no records, including no
-                          receiving address.
-                        </p>
-                      )}
+                      {editor.mode !== 'shared' &&
+                        !shownRecordsReadOnly &&
+                        !editor.records.some((row) => row.value) && (
+                          <p className='text-grace mt-2 text-sm'>
+                            You are creating an empty configuration. This name will have no records, including no
+                            receiving address.
+                          </p>
+                        )}
                       {editor.mode === 'copy' && (
                         <p className='text-neutral mt-2 text-xs'>
                           Copying requires write permission for every populated record.
@@ -452,12 +476,12 @@ const V2EditRecordsModal = ({
                       isAdding={editor.isAdding}
                     />
                     {editor.validationError && (
-                      <p className='text-sm text-red-400' role='alert'>
+                      <p className='text-md text-center text-red-400' role='alert'>
                         {editor.validationError}
                       </p>
                     )}
                     {editor.error && (
-                      <p className='text-sm text-red-400' role='alert'>
+                      <p className='text-md text-red-400' role='alert'>
                         {editor.error}
                       </p>
                     )}
@@ -499,16 +523,17 @@ const V2EditRecordsModal = ({
                     </PrimaryButton>
                   </>
                 )}
-                {tab === 'resolver' && (
+                {editor.binding && showResolverSettings && (
                   <PrimaryButton
                     className='w-full'
                     onClick={changeResolver}
                     disabled={
+                      !editor.binding?.canSetResolver ||
                       !editor.resolverInput ||
                       editor.resolverInput.toLowerCase() === editor.binding?.directResolver.toLowerCase()
                     }
                   >
-                    Confirm
+                    Confirm resolver change
                   </PrimaryButton>
                 )}
                 <SecondaryButton className='w-full' onClick={close}>

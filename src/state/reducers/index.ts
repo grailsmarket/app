@@ -74,6 +74,20 @@ const migrations: Record<string, (state: any) => any> = {
       },
     }
   },
+  3: (state) => {
+    // V2 normally persisted only registration, view and profile.
+    if (state?.filters === undefined) return state
+
+    // Older filter snapshots can contain per-tab profile keys that predate the address-keyed reducer.
+    const defaults = filtersReducer(undefined, { type: '@@INIT' })
+    const filters = Object.fromEntries(
+      Object.entries(defaults).map(([key, initialValue]) => [
+        key,
+        key === 'profileFilters' ? initialValue : (state.filters?.[key] ?? initialValue),
+      ])
+    )
+    return { ...state, filters }
+  },
 }
 
 const persistConfig = {

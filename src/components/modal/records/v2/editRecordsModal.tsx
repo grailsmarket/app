@@ -263,6 +263,7 @@ const V2EditRecordsModal = ({
                         options={resolverDropdownOptions}
                         value={selectedResolver?.address ?? ''}
                         placeholder='Select existing resolver'
+                        className='text-lg'
                       />
                     )}
                     {!selectedResolver?.address && (

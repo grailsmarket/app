@@ -122,8 +122,8 @@ const Dropdown: React.FC<DropdownProps> = ({
                   {option.icon && <Image src={option.icon} alt={option.label} height={24} className='h-6 w-auto' />}
                   {option.description ? (
                     <span className='min-w-0'>
-                      <span className='block break-all'>{option.label}</span>
-                      <span className='text-neutral block text-sm'>{option.description}</span>
+                      <span className='block font-medium break-all'>{option.label}</span>
+                      <span className='text-neutral text-md block'>{option.description}</span>
                     </span>
                   ) : (
                     option.label

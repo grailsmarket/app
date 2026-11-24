@@ -89,8 +89,6 @@ export const readNameResolver = async (
           })
         ))
       return {
-        owner: state.status === 2 ? state.latestOwner : null,
-        tokenId: state.tokenId,
         registry,
         resolver,
         directResolver,
@@ -111,8 +109,6 @@ export const readNameResolver = async (
     )
     if (child === zeroAddress) {
       return {
-        owner: null,
-        tokenId: BigInt(0),
         registry: zeroAddress,
         resolver,
         directResolver: zeroAddress,

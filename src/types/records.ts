@@ -15,8 +15,6 @@ export type V2Record = V2RecordField & {
 }
 
 export type V2NameResolver = {
-  owner: Address | null
-  tokenId: bigint
   registry: Address
   resolver: Address
   directResolver: Address

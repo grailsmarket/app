@@ -21,7 +21,7 @@ import { resolverNameCount } from '@/utils/settings/resolverData'
 import { useSettingsTransaction } from '@/hooks/settings/useSettingsTransaction'
 import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
 import { roleErrorText, useRoleSection } from '@/hooks/records/useV2Roles'
-import { RESOLVER_ROLE_DEFINITIONS, adminRole, hasRole } from '@/utils/records/v2Roles'
+import { ALL_RECORD_SETTERS, FULL_RESOLVER_CONTROL, hasRole } from '@/utils/records/v2Roles'
 import { newResolverVersion } from '@/utils/records/resolverDeployment'
 import { loadResolverState } from '@/utils/records/loadResolver'
 import { createV2RecordsClient } from '@/utils/records/client'
@@ -56,10 +56,6 @@ export const ResolverAccess: React.FC<ResolverAccessProps> = ({ resolver, access
   if (!section.snapshot.data) return <span className='text-neutral'>Unavailable</span>
 
   const root = section.snapshot.data.viewerRootRoles
-  const all = RESOLVER_ROLE_DEFINITIONS.reduce((bits, role) => bits | role.bit | adminRole(role.bit), BigInt(0))
-  const setters = RESOLVER_ROLE_DEFINITIONS.filter(
-    (role) => role.field || ['contenthash', 'name'].includes(role.id)
-  ).reduce((bits, role) => bits | role.bit, BigInt(0))
   const scoped =
     section.assignments.some(
       (item) => item.account.toLowerCase() === address?.toLowerCase() && item.bitmap !== BigInt(0)
@@ -68,9 +64,9 @@ export const ResolverAccess: React.FC<ResolverAccessProps> = ({ resolver, access
 
   return (
     <span>
-      {hasRole(root, all) ? (
+      {hasRole(root, FULL_RESOLVER_CONTROL) ? (
         'Full control'
-      ) : hasRole(root, setters) ? (
+      ) : hasRole(root, ALL_RECORD_SETTERS) ? (
         'Record editor'
       ) : root || scoped ? (
         'Limited access'

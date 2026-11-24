@@ -56,8 +56,6 @@ export const loadNameResolver = async (
   const canSetResolver = registered && ownerHasResolverRoles
 
   return {
-    owner: registered ? state.latestOwner : null,
-    tokenId: state.tokenId,
     registry: details.registry,
     resolver: directResolver,
     directResolver,

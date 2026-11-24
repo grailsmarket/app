@@ -4,15 +4,18 @@ import {
   concat,
   createPublicClient,
   encodeAbiParameters,
+  encodeFunctionData,
   getCreate2Address,
   keccak256,
   parseEventLogs,
+  stringToHex,
 } from 'viem'
 import { transports } from '@/lib/wagmi'
 import { useAccount } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import { ownedResolverData } from '@/utils/records/resolverDeployment'
+import { ALL_ROLES } from '@/constants/ens/resolver'
+import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
 import { VERIFIABLE_FACTORY_ABI } from '@/constants/web3/abi/VerifiableFactory'
 import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
@@ -54,7 +57,25 @@ export const usePermissionedResolver = () => {
   const getResolverData = (version: bigint, owner = address) => {
     if (!owner) throw new Error('No wallet detected. Connect your wallet!')
 
-    return ownedResolverData(owner, version)
+    const resolverSalt = BigInt(
+      keccak256(
+        encodeAbiParameters(
+          [{ type: 'bytes32' }, { type: 'address' }, { type: 'uint256' }],
+          [keccak256(stringToHex('OwnedResolver')), owner, version]
+        )
+      )
+    )
+
+    const resolverInitData = encodeFunctionData({
+      abi: PERMISSIONED_RESOLVER_ABI,
+      functionName: 'initialize',
+      args: [[{ account: owner, roleBitmap: ALL_ROLES }], []],
+    })
+
+    return {
+      resolverSalt,
+      resolverInitData,
+    }
   }
 
   const isUserResolverDeployed = async (version: number = 0, owner = address): Promise<Address | false> => {

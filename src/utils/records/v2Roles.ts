@@ -54,6 +54,15 @@ export const RESOLVER_ROLE_DEFINITIONS: RoleDefinition[] = [
   { id: 'upgrade', label: 'Upgrade', bit: bit(124) },
 ]
 
+export const RECORD_SETTERS = RESOLVER_ROLE_DEFINITIONS.filter(
+  (role) => role.field || role.id === 'name' || role.id === 'contenthash'
+)
+export const ALL_RECORD_SETTERS = RECORD_SETTERS.reduce((bits, role) => bits | role.bit, BigInt(0))
+export const FULL_RESOLVER_CONTROL = RESOLVER_ROLE_DEFINITIONS.reduce(
+  (bits, role) => bits | role.bit | adminRole(role.bit),
+  BigInt(0)
+)
+
 export const roleDefinitions = (kind: RoleKind) => (kind === 'name' ? NAME_ROLES : RESOLVER_ROLE_DEFINITIONS)
 export type RoleAssignment = { account: Address; resource: bigint; bitmap: bigint; argument?: Hex }
 export type RoleSnapshot = {

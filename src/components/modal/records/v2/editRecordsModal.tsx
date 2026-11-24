@@ -21,9 +21,8 @@ import { TxScreenPanel, plural, shortAddress } from '../components/txScreen'
 import { getRolesScreen, getV2EditorScreen } from '../components/recordsTxScreens'
 import { useConfigurationPreferences } from '@/hooks/settings/useResolverPreferences'
 import { configurationName, resolverDefaultName } from '@/utils/settings/labels'
-import ReplaceResolverReview from './replaceResolverReview'
-import type { ResolverReplacement } from '@/utils/records/replaceResolver'
-import type { Address } from 'viem'
+import ResolverRecordAccess from './resolverRecordAccess'
+import { isAddress, zeroAddress } from 'viem'
 
 const V2EditRecordsModal = ({
   name,
@@ -38,7 +37,6 @@ const V2EditRecordsModal = ({
   const [rolesOpened, setRolesOpened] = useState(defaultTab === 'roles')
   const [discardAction, setDiscardAction] = useState<'close' | 'resolver' | null>(null)
   const [configExpanded, setConfigExpanded] = useState(false)
-  const [review, setReview] = useState<{ draft: ResolverReplacement; preferred?: Address } | null>(null)
   // What the running save changes, captured on click: the drafts are cleared once it succeeds.
   const [recordsRun, setRecordsRun] = useState<{ meta?: string; message?: string }>({})
   const [roleChangeCount, setRoleChangeCount] = useState(0)
@@ -61,6 +59,7 @@ const V2EditRecordsModal = ({
     ...editor.resolvers.map((resolver) => ({
       label: resolver.address,
       value: resolver.address,
+      description: <ResolverRecordAccess resolver={resolver.address} wallet={roles.data.address} />,
     })),
   ]
 
@@ -76,7 +75,7 @@ const V2EditRecordsModal = ({
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !event.defaultPrevented && !discardAction && !review) {
+      if (event.key === 'Escape' && !event.defaultPrevented && !discardAction) {
         event.preventDefault()
         close()
       }
@@ -98,8 +97,7 @@ const V2EditRecordsModal = ({
   }
 
   const catalog = editor.catalog
-  const showResolverSettings =
-    tab === 'resolver' || (tab === 'records' && !editor.resolverExists && !editor.needsFirstResolver)
+  const showResolverSettings = tab === 'resolver' || (tab === 'records' && !editor.resolverExists)
   // IDs are sequential onchain; discovering the list does not require indexed events.
   const count = catalog?.recordCount ?? BigInt(0)
   const ids = Array.from({ length: Number(count > BigInt(1000) ? BigInt(1000) : count) }, (_, index) => `${index + 1}`)
@@ -115,13 +113,6 @@ const V2EditRecordsModal = ({
       : configurationName(preferences.data, editor.selectedId)
 
   const saveRecords = () => {
-    if (editor.replacement) {
-      setReview({
-        draft: editor.replacement,
-        preferred: editor.resolvers.find((resolver) => resolver.isDefault)?.address,
-      })
-      return
-    }
     const display = beautifyName(name)
     const changed = editor.records.filter((row) => row.value !== row.initialValue).length
     const isDefault = editor.selectedId === BigInt(0)
@@ -193,21 +184,6 @@ const V2EditRecordsModal = ({
   })
   // The busy flow first; otherwise a records result, then a permissions result.
   const screen = roleTransaction.busy ? rolesScreen : (recordsScreen ?? rolesScreen)
-
-  if (review)
-    return (
-      <ReplaceResolverReview
-        review={review.draft}
-        preferred={review.preferred}
-        onCancel={() => setReview(null)}
-        onSaved={editor.replacementSaved}
-        onFinish={() => {
-          setReview(null)
-          if (roles.hasChanges) editor.retry()
-          else onClose()
-        }}
-      />
-    )
 
   return (
     <>
@@ -301,6 +277,11 @@ const V2EditRecordsModal = ({
                         placeholder='0x…'
                       />
                     )}
+                    {roles.data.address && isAddress(editor.resolverInput) && editor.resolverInput !== zeroAddress && (
+                      <div className='bg-secondary border-tertiary rounded-md border p-3' role='status'>
+                        <ResolverRecordAccess resolver={editor.resolverInput} wallet={roles.data.address} detailed />
+                      </div>
+                    )}
                     {editor.binding.canSetResolver && editor.hasResolverChanges && (
                       <p className='text-grace text-sm' role='status'>
                         Once confirmed, {name} will use the new resolver’s records, including its receiving address.
@@ -371,15 +352,7 @@ const V2EditRecordsModal = ({
                         </div>
                       </div>
                     )}
-                    {editor.canEditBySwitching && (
-                      <p className='border-tertiary text-grace rounded-md border p-3' role='status'>
-                        {editor.needsFirstResolver
-                          ? 'This name needs a resolver.'
-                          : 'Some records require a different resolver.'}{' '}
-                        You can edit them here and review the resolver change before saving.
-                      </p>
-                    )}
-                    <div hidden={editor.needsFirstResolver} className='border-tertiary rounded-md border p-3'>
+                    <div className='border-tertiary rounded-md border p-3'>
                       <button
                         type='button'
                         aria-expanded={configExpanded}
@@ -468,7 +441,6 @@ const V2EditRecordsModal = ({
                       )}
                       {editor.mode !== 'shared' &&
                         !shownRecordsReadOnly &&
-                        !editor.canEditBySwitching &&
                         !editor.records.some((row) => row.value) && (
                           <p className='text-grace mt-2 text-sm'>
                             You are creating an empty configuration. This name will have no records, including no
@@ -516,10 +488,9 @@ const V2EditRecordsModal = ({
                 )}
               </div>
               <div className='border-tertiary flex shrink-0 flex-col gap-2 border-t p-4 sm:px-6'>
-                {tab === 'records' && (editor.resolverExists || editor.needsFirstResolver) && (
+                {tab === 'records' && editor.resolverExists && (
                   <>
-                    {!editor.replacement &&
-                      editor.mode === 'shared' &&
+                    {editor.mode === 'shared' &&
                       !editor.isLoading &&
                       !editor.loadError &&
                       (editor.configurationNameCount ?? 0) > 1 && (
@@ -531,11 +502,7 @@ const V2EditRecordsModal = ({
                         </p>
                       )}
                     <PrimaryButton className='w-full' onClick={saveRecords} disabled={!editor.canSave}>
-                      {editor.replacement
-                        ? 'Review resolver change'
-                        : editor.mode === 'shared' || editor.canEditBySwitching
-                          ? 'Save changes'
-                          : 'Create configuration'}
+                      {editor.mode === 'shared' ? 'Save changes' : 'Create configuration'}
                     </PrimaryButton>
                   </>
                 )}

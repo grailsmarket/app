@@ -52,11 +52,11 @@ const errorText = (error: unknown) => {
   return error instanceof Error ? error.message : 'Could not save these changes.'
 }
 
-/** The raw error text behind errorText, for the error screen's details, when it says more. */
+// The raw error text behind errorText, for the error screen's details, when it says more.
 const errorDetailsText = (error: unknown) =>
   error instanceof BaseError && error.message !== error.shortMessage ? error.message : null
 
-/** While `confirming`: still checking before any prompt, or the wallet prompt is open. */
+// While `confirming`: still checking before any prompt, or the wallet prompt is open.
 export type V2EditPhase = 'checking' | 'wallet' | null
 
 export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolverChanged: () => void) => {
@@ -221,10 +221,12 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
     }
 
   const records = [...rows.values()]
+
   // Only the active configuration can be carried over to a different resolver.
   const canEditBySwitching =
     ownerCanSwitch && selectedId === catalog.data?.linkedRecordId && (selectedMode === null || mode === 'shared')
   const needsReplacement = canEditBySwitching && records.some((row) => !row.editable && row.value !== row.initialValue)
+
   const isLoading =
     binding.isPending ||
     binding.isFetching ||
@@ -240,6 +242,7 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
     (!!catalog.data && selectedId !== catalog.data.linkedRecordId) ||
     records.some((row) => row.value !== row.initialValue)
   const canCreateEmpty = mode !== 'shared' && records.some((row) => row.editable)
+
   let validationError = selectionError
   let calls: Hex[] = []
 
@@ -369,6 +372,7 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
   const completed = async (kind: PendingWrite['kind']) => {
     track(null)
     void invalidateNameMetadataCache(name).catch(() => {})
+
     if (kind === 'records') {
       setDraft(null)
       setSelection(null)

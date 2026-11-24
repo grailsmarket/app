@@ -21,6 +21,7 @@ export const loadNameResolver = async (
   signal?: AbortSignal
 ): Promise<V2NameResolver> => {
   signal?.throwIfAborted()
+
   let details
   try {
     details = await queries.fetchQuery(ensNameQueryOptions(name))
@@ -44,15 +45,15 @@ export const loadNameResolver = async (
   if (directResolver === zeroAddress) return readNameResolver(client, name, config.ensV2Registry, account)
 
   const registered = state.status === 2
-  const canSetResolver =
-    !!account &&
-    registered &&
-    (await client.readContract({
-      address: details.registry,
-      abi: REGISTRY_V2_ABI,
-      functionName: 'hasRoles',
-      args: [state.resource, SET_RESOLVER_ROLE, account],
-    }))
+  const ownerHasResolverRoles = account
+    ? await client.readContract({
+        address: details.registry,
+        abi: REGISTRY_V2_ABI,
+        functionName: 'hasRoles',
+        args: [state.resource, SET_RESOLVER_ROLE, account],
+      })
+    : false
+  const canSetResolver = registered && ownerHasResolverRoles
 
   return {
     owner: registered ? state.latestOwner : null,

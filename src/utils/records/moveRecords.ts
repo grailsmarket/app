@@ -170,7 +170,9 @@ export const moveRecordSteps = ({
         const target = await getTarget(account)
         destination = target.address
 
-        if (target.version === undefined) {
+        // A previous save may have deployed this target before the owner declined the name move.
+        const code = target.version !== undefined ? await client.getCode({ address: destination }) : undefined
+        if (target.version === undefined || (code && code !== '0x')) {
           if (!(await controlsResolver(client, destination, account)))
             throw new Error('Your permissions on the destination resolver changed. Reopen the editor.')
           // Unlink first in the same transaction so these setters always create a name-specific configuration.

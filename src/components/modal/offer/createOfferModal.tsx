@@ -320,6 +320,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
           options={currencyOptions}
           value={currency}
           onSelect={(value) => setCurrency(value as 'WETH' | 'USDC')}
+          dropdownPosition='top'
         />
       </div>
 

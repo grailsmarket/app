@@ -57,7 +57,6 @@ const ResolverPermissions: React.FC<ResolverPermissionsProps> = ({ resolver }) =
         showHeader={false}
       >
         <AddRoleAccount
-          kind='resolver'
           viewer={address}
           section={section}
           disabled={disabled}

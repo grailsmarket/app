@@ -1,6 +1,7 @@
 'use client'
 
 import { PermissionsSkeleton } from '@/components/ui/ensSkeletons'
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
 
 import { type Address, hexToString, zeroAddress } from 'viem'
 import { useQuery } from '@tanstack/react-query'
@@ -32,7 +33,7 @@ import Link from 'next/link'
 export type EditorRoleAssignment = RoleAssignment & { roleId?: string; roleIds?: string[] }
 
 const Account = ({ address, resolvePrimaryName = false }: { address: Address; resolvePrimaryName?: boolean }) => {
-  const { data: account } = useQuery({
+  const { data: account, isLoading } = useQuery({
     queryKey: accountQueryKey(address),
     queryFn: () => fetchAccount(address),
     enabled: resolvePrimaryName,
@@ -57,7 +58,11 @@ const Account = ({ address, resolvePrimaryName = false }: { address: Address; re
         href={`/profile/${address}`}
         title={primaryName ? `${primaryName} (${address})` : address}
       >
-        {primaryName || `${address.slice(0, 6)}…${address.slice(-4)}`}
+        {resolvePrimaryName && isLoading ? (
+          <SkeletonText label={`Loading account ${address}…`} className='w-28' />
+        ) : (
+          primaryName || `${address.slice(0, 6)}…${address.slice(-4)}`
+        )}
       </Link>
       <CopyButton value={address} />
     </div>
@@ -67,36 +72,49 @@ const Account = ({ address, resolvePrimaryName = false }: { address: Address; re
 const PermissionCheckbox = ({
   change,
   initial,
+  rootRoles,
+  onMove,
   editor,
   disabled,
 }: {
   change: RoleChange
   initial: boolean
+  rootRoles: bigint
+  onMove?: (next: boolean) => void
   editor: RoleDraftEditor
   disabled: boolean
 }) => {
   const baseline = editor.initial(change, initial)
-  const authority = useV2RoleAuthority({ ...change, action: baseline ? 'revoke' : 'grant' })
+  const authority = useV2RoleAuthority({ ...change, action: baseline ? 'revoke' : 'grant' }, rootRoles)
   const checked = editor.checked(change, initial)
   const changed = checked !== baseline
+  const canMove = !!onMove && !authority.allowed && !authority.validationError && !authority.loading && !authority.error
   return (
     <input
       type='checkbox'
       aria-label={`${change.roleId} ${change.admin ? 'Admin' : 'User'} for ${change.account}`}
       checked={checked}
-      disabled={disabled || editor.walletChanged || (!changed && !authority.allowed)}
+      disabled={disabled || editor.walletChanged || (!changed && !authority.allowed && !canMove)}
       title={
         changed
           ? 'Unsaved change'
           : authority.validationError ||
             authority.error ||
-            (!authority.allowed ? 'Requires the corresponding Admin permission' : undefined)
+            (!authority.allowed
+              ? onMove
+                ? 'Move the name to your resolver to change this permission'
+                : 'Requires the corresponding Admin permission'
+              : undefined)
       }
       className={cn(
         'accent-primary h-5 w-5 cursor-pointer rounded-sm disabled:cursor-not-allowed disabled:opacity-40',
         changed && 'ring-primary ring-offset-background ring-1 ring-offset-2'
       )}
-      onChange={(event) => editor.toggle(change, baseline, event.target.checked)}
+      onChange={(event) =>
+        !changed && canMove && onMove
+          ? onMove(event.target.checked)
+          : editor.toggle(change, baseline, event.target.checked)
+      }
     />
   )
 }
@@ -106,8 +124,10 @@ interface RoleSectionProps {
   data?: V2RolesData
   resolverSection?: RoleSectionData
   editor?: RoleDraftEditor
+  onMove?: (change: RoleChange, assignment: RoleAssignment, next: boolean) => void
   extraAssignments?: EditorRoleAssignment[]
   disabled?: boolean
+  loading?: boolean
   collapsible?: boolean
   showHeader?: boolean
   children?: React.ReactNode
@@ -118,8 +138,10 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
   data,
   resolverSection,
   editor,
+  onMove,
   extraAssignments = [],
   disabled = false,
+  loading = false,
   collapsible = false,
   showHeader = true,
   children,
@@ -129,8 +151,16 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
   const definitions = roleDefinitions(kind)
   const assignments = new Map<string, EditorRoleAssignment>()
 
-  for (const assignment of section.assignments)
-    assignments.set(`${assignment.resource}:${assignment.account.toLowerCase()}`, assignment)
+  const owner = data?.binding.data?.owner
+  if (kind === 'name' && owner && snapshot) {
+    const bitmap = section.assignments
+      .filter((row) => row.account.toLowerCase() === owner.toLowerCase())
+      .reduce((roles, row) => roles | row.bitmap, BigInt(0))
+    assignments.set(owner.toLowerCase(), { account: owner, resource: snapshot.resource, bitmap })
+  } else {
+    for (const assignment of section.assignments)
+      assignments.set(`${assignment.resource}:${assignment.account.toLowerCase()}`, assignment)
+  }
 
   for (const assignment of extraAssignments) {
     const key = `${assignment.resource}:${assignment.account.toLowerCase()}`
@@ -144,12 +174,12 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
 
   const visible = [...assignments.values()].filter(
     (assignment) =>
-      (!!editor && !(kind === 'name' && assignment.resource === BigInt(0))) ||
+      kind === 'name' ||
+      !!editor ||
       definitions.some(
         (role) => hasRole(assignment.bitmap, role.bit) || hasRole(assignment.bitmap, adminRole(role.bit))
       )
   )
-  const inherited = visible.filter((assignment) => assignment.resource === BigInt(0))
 
   const createChange = (
     role: RoleDefinition,
@@ -192,7 +222,16 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
 
     if (editor && !(kind === 'name' && assignment.resource === BigInt(0))) {
       const change = createChange(role, assignment, admin, initial)
-      return <PermissionCheckbox change={change} initial={initial} editor={editor} disabled={disabled} />
+      return (
+        <PermissionCheckbox
+          change={change}
+          initial={initial}
+          rootRoles={snapshot!.viewerRootRoles}
+          onMove={onMove && ((next) => onMove(change, assignment, next))}
+          editor={editor}
+          disabled={disabled}
+        />
+      )
     }
 
     return (
@@ -268,7 +307,7 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
         <details
           key={key}
           className='group/account border-tertiary overflow-hidden rounded-md border'
-          open={kind === 'name'}
+          open={extraAssignments.some((row) => row.account.toLowerCase() === assignment.account.toLowerCase())}
         >
           <summary className='bg-secondary border-tertiary flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 group-open/account:border-b [&::-webkit-details-marker]:hidden'>
             {header}
@@ -287,26 +326,30 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
   }
 
   return (
-    <section
-      className='flex min-w-0 flex-col gap-3'
-      aria-label={kind === 'name' ? 'Name permissions' : 'Resolver permissions'}
-    >
+    <section className='flex min-w-0 flex-col gap-2' aria-label={kind === 'name' ? 'Owner' : 'Managers'}>
       {showHeader && (
         <div className='flex flex-col gap-2'>
-          <h3 className='text-xl font-bold'>{kind === 'name' ? 'Name permissions' : 'Resolver permissions'}</h3>
-          <p className='text-neutral text-lg'>
-            {kind === 'name'
-              ? 'Manage who can update this name. Admin permissions control access; User permissions allow the action.'
-              : 'These permissions apply to every configuration and name using this resolver.'}
-          </p>
+          <h3 className='text-xl font-bold'>{kind === 'name' ? 'Owner' : 'Managers'}</h3>
+          {kind === 'resolver' && (
+            <p className='text-neutral text-lg'>
+              Choose which records each manager can edit. These permissions apply to every name using this resolver.
+            </p>
+          )}
         </div>
       )}
-      {kind === 'name' && !data?.binding.data?.registered ? (
+      {kind === 'name' && data?.binding.data?.registered === false ? (
         <p className='text-neutral text-lg'>This name has no active V2 registration.</p>
-      ) : kind === 'resolver' && data?.binding.data?.resolver === zeroAddress ? (
+      ) : kind === 'resolver' &&
+        !loading &&
+        data?.binding.data?.resolver === zeroAddress &&
+        section.snapshot.isPending &&
+        !section.snapshot.isFetching ? (
         <p className='text-neutral text-lg'>No resolver is assigned.</p>
-      ) : section.snapshot.isPending ? (
-        <PermissionsSkeleton expanded={kind === 'name'} />
+      ) : loading || section.snapshot.isPending ? (
+        <PermissionsSkeleton
+          label={kind === 'name' ? 'Loading owner…' : 'Loading managers…'}
+          accounts={kind === 'name' ? 1 : undefined}
+        />
       ) : section.snapshot.isError ? (
         <div className='flex flex-col gap-3'>
           <p role='alert' className='text-lg text-red-400'>
@@ -319,20 +362,11 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
           <>
             {showHeader && (
               <div className='text-neutral flex items-center gap-2 text-lg'>
-                <span>{kind === 'name' ? 'Registry' : 'Resolver'}</span>
+                <span>{kind === 'name' ? 'Registry' : section.undeployed ? 'New resolver' : 'Resolver'}</span>
                 <Account address={snapshot.contract} />
               </div>
             )}
-            {accountCards(visible.filter((assignment) => kind !== 'name' || assignment.resource !== BigInt(0)))}
-            {kind === 'name' && inherited.length > 0 && (
-              <details className='text-lg' open={false}>
-                <summary className='text-neutral cursor-pointer py-1'>
-                  Inherited registry permissions ({inherited.length})
-                </summary>
-                <div className='mt-3 flex flex-col gap-3'>{accountCards(inherited)}</div>
-              </details>
-            )}
-            {children}
+            {accountCards(visible)}
             {section.history.isError ? (
               <div className='flex flex-col gap-2'>
                 <p className='text-neutral text-lg'>
@@ -343,10 +377,14 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
                 </SecondaryButton>
               </div>
             ) : !section.history.data ? (
-              <PermissionsSkeleton label='Loading other accounts…' accounts={1} />
+              <PermissionsSkeleton
+                label={kind === 'resolver' ? 'Loading managers…' : 'Loading other accounts…'}
+                accounts={1}
+              />
             ) : (
               visible.length === 0 && <p className='text-neutral text-lg'>No assigned permissions.</p>
             )}
+            {children}
           </>
         )
       )}
@@ -355,8 +393,6 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
 }
 
 const RolesPanel = ({ data }: { data: V2RolesData }) => {
-  if (data.binding.isPending) return <PermissionsSkeleton expanded />
-
   if (data.binding.isError)
     return (
       <div className='flex flex-col gap-3'>
@@ -369,7 +405,7 @@ const RolesPanel = ({ data }: { data: V2RolesData }) => {
 
   return (
     <div className='flex flex-col gap-6'>
-      <RoleSection kind='name' data={data} />
+      <RoleSection kind='name' data={data} collapsible />
       <RoleSection kind='resolver' data={data} />
     </div>
   )

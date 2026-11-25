@@ -15,25 +15,27 @@ import {
   type V2RoleEditor,
   type V2RoleTransaction,
 } from '@/hooks/records/useV2Roles'
-import { type RoleKind, readRoleAccess, RESOLVER_ROLE_DEFINITIONS } from '@/utils/records/v2Roles'
+import {
+  readRoleAccess,
+  RESOLVER_ROLE_DEFINITIONS,
+  type RoleChange,
+  type RoleAssignment,
+} from '@/utils/records/v2Roles'
 import { resolverRoleAccess } from '@/utils/records/resolverData'
 import { createV2RecordsClient } from '@/utils/records/client'
 import { recordPermission, validateRecordField } from '@/utils/records/v2Records'
-import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
 import { useDebounce } from '@/hooks/useDebounce'
 import { accountQueryKey } from '@/utils/queryKeys'
 import InputWithResolution from '../components/inputWithResolution'
 import { RoleSection, type EditorRoleAssignment } from './rolesPanel'
 
 export const AddRoleAccount = ({
-  kind,
   section,
   viewer,
   onAdd,
   disabled,
   showNameImage = false,
 }: {
-  kind: RoleKind
   section: RoleSectionData
   viewer?: Address
   onAdd: (assignment: EditorRoleAssignment) => void
@@ -75,15 +77,20 @@ export const AddRoleAccount = ({
   const client = useMemo(createV2RecordsClient, [])
   const snapshot = section.snapshot.data
   const definition = RESOLVER_ROLE_DEFINITIONS.find((role) => role.id === scope)
+
   const add = async () => {
     if (!snapshot || loading || disabled || isResolving) return
+
     setLoading(true)
     setError(null)
+
     try {
       if (!targetAddress) throw new Error('Enter a valid address or an ENS name that resolves to a non-zero address.')
+
       let resource = snapshot.resource
       let argument: Hex | undefined
-      if (kind === 'resolver' && definition?.field) {
+
+      if (definition?.field) {
         const field = validateRecordField({ kind: definition.field, key })
         resource = recordPermission(field).resource
         argument =
@@ -93,26 +100,16 @@ export const AddRoleAccount = ({
               ? (field.key as Hex)
               : encodeAbiParameters([{ type: 'uint256' }], [BigInt(field.key)])
       }
+
       const target = targetAddress as Address
-      let { roles: bitmap } = snapshot.permissions
-        ? resolverRoleAccess(snapshot.permissions, resource, target)
-        : await readRoleAccess(client, snapshot.contract, resource, target)
-      if (kind === 'name' && snapshot.owner && target.toLowerCase() !== snapshot.owner.toLowerCase()) {
-        const operator = await client.readContract({
-          address: snapshot.contract,
-          abi: REGISTRY_V2_ABI,
-          functionName: 'isApprovedForAll',
-          args: [snapshot.owner, target],
-        })
-        if (operator) {
-          if (!section.history.data)
-            throw new Error('Load the account history before editing an approved operator’s direct permissions.')
-          bitmap =
-            section.history.data.find(
-              (row) => row.resource === resource && row.account.toLowerCase() === target.toLowerCase()
-            )?.bitmap ?? BigInt(0)
-        }
-      }
+      const bitmap = section.undeployed
+        ? (snapshot.initialAssignments.find(
+            (row) => row.resource === resource && row.account.toLowerCase() === target.toLowerCase()
+          )?.bitmap ?? BigInt(0))
+        : snapshot.permissions
+          ? resolverRoleAccess(snapshot.permissions, resource, target).roles
+          : (await readRoleAccess(client, snapshot.contract, resource, target)).roles
+
       onAdd({ account: target, resource, bitmap, argument, roleId: definition?.id })
       setAccount('')
       setKey('')
@@ -123,13 +120,16 @@ export const AddRoleAccount = ({
       setLoading(false)
     }
   }
+
   if (!viewer) return null
+
   if (!open)
     return (
       <SecondaryButton disabled={disabled} className='w-full' onClick={() => setOpen(true)}>
-        Add account
+        Add Manager
       </SecondaryButton>
     )
+
   return (
     <div className='flex flex-col gap-3'>
       <div className='flex flex-col'>
@@ -152,24 +152,23 @@ export const AddRoleAccount = ({
           showNameImage={showNameImage}
         />
       </div>
-      {kind === 'resolver' && (
-        <Dropdown
-          label='Scope'
-          value={scope}
-          disabled={disabled || loading}
-          options={[
-            { value: 'root', label: 'All records' },
-            ...RESOLVER_ROLE_DEFINITIONS.filter((role) => role.argument).map((role) => ({
-              value: role.id,
-              label: role.argument!,
-            })),
-          ]}
-          onSelect={(value) => {
-            setScope(String(value))
-            setKey('')
-          }}
-        />
-      )}
+      <Dropdown
+        label='Scope'
+        value={scope}
+        dropdownPosition='top'
+        disabled={disabled || loading}
+        options={[
+          { value: 'root', label: 'All records' },
+          ...RESOLVER_ROLE_DEFINITIONS.filter((role) => role.argument).map((role) => ({
+            value: role.id,
+            label: role.argument!,
+          })),
+        ]}
+        onSelect={(value) => {
+          setScope(String(value))
+          setKey('')
+        }}
+      />
       {definition?.argument && (
         <Input
           label={definition.argument}
@@ -194,13 +193,14 @@ export const AddRoleAccount = ({
           {error || accountError}
         </p>
       )}
+      {loading && <PermissionsSkeleton label='Loading manager…' accounts={1} />}
       <div className='flex gap-2'>
         <SecondaryButton
           className='w-full'
           disabled={disabled || loading || isResolving || !targetAddress}
           onClick={add}
         >
-          {loading ? 'Loading…' : 'Add account'}
+          {loading ? 'Loading…' : 'Add Manager'}
         </SecondaryButton>
         <SecondaryButton className='w-full' disabled={disabled || loading} onClick={() => setOpen(false)}>
           Cancel
@@ -210,10 +210,20 @@ export const AddRoleAccount = ({
   )
 }
 
-const RolesEditor = ({ editor, transaction }: { editor: V2RoleEditor; transaction: V2RoleTransaction }) => {
+const RolesEditor = ({
+  editor,
+  transaction,
+  loadingManagers,
+  onMove,
+}: {
+  editor: V2RoleEditor
+  transaction: V2RoleTransaction
+  loadingManagers: boolean
+  onMove?: (change: RoleChange, assignment: RoleAssignment, next: boolean) => void
+}) => {
   const { data } = editor
   const disabled = transaction.busy || !!transaction.pending
-  if (data.binding.isPending) return <PermissionsSkeleton expanded />
+
   if (data.binding.isError)
     return (
       <div className='flex flex-col gap-3'>
@@ -223,42 +233,32 @@ const RolesEditor = ({ editor, transaction }: { editor: V2RoleEditor; transactio
         <SecondaryButton onClick={() => data.binding.refetch()}>Retry</SecondaryButton>
       </div>
     )
+
+  const key = `${data.address}:${data.resolverRoles.snapshot.data?.contract.toLowerCase()}`
   return (
     <div className='flex flex-col gap-6'>
-      {(['name', 'resolver'] as const).map((kind) => {
-        const snapshot = (kind === 'name' ? data.nameRoles : data.resolverRoles).snapshot.data
-        const key = `${data.address}:${kind}:${snapshot?.contract}:${snapshot?.resource}`
-        return (
-          <RoleSection
-            key={kind}
-            kind={kind}
-            data={data}
-            editor={kind === 'name' ? editor : undefined}
-            extraAssignments={kind === 'name' ? editor.accounts[key] : undefined}
-            disabled={disabled}
-            collapsible
-          >
-            {kind === 'name' ? (
-              <AddRoleAccount
-                key={key}
-                kind={kind}
-                section={data.nameRoles}
-                viewer={data.address}
-                disabled={disabled}
-                onAdd={(assignment) => editor.addAccount(key, assignment)}
-              />
-            ) : (
-              <div className='bg-secondary border-tertiary p-md rounded-md border'>
-                <p className='text-neutral text-lg'>Resolver permissions are read-only in this modal.</p>
-              </div>
-            )}
-          </RoleSection>
-        )
-      })}
+      <RoleSection kind='name' data={data} collapsible />
+      <RoleSection
+        kind='resolver'
+        data={data}
+        loading={loadingManagers}
+        editor={data.canManage ? editor : undefined}
+        onMove={onMove}
+        extraAssignments={editor.accounts[key]}
+        disabled={disabled}
+        collapsible
+      >
+        <AddRoleAccount
+          key={key}
+          section={data.resolverRoles}
+          viewer={data.canManage ? data.address : undefined}
+          disabled={disabled}
+          onAdd={(assignment) => editor.addAccount(key, assignment)}
+        />
+      </RoleSection>
       {editor.changes.some((change) => change.admin && change.action === 'revoke') && (
         <p className='text-grace text-lg'>
-          Removing Admin permissions can remove control permanently. Name admin permissions cannot be restored after
-          registration.
+          Removing the last Admin for a permission can permanently prevent further changes to that permission.
         </p>
       )}
       {editor.walletChanged && (

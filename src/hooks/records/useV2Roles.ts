@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { BaseError, type Address, type Hex, zeroAddress } from 'viem'
+import type { ResolverMoveTarget } from '@/utils/records/moveRecords'
 import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
 import { createV2RecordsClient } from '@/utils/records/client'
@@ -19,6 +20,9 @@ import {
   type RoleChange,
   type RoleKind,
   type RoleAssignment,
+  type RoleSnapshot,
+  FULL_RESOLVER_CONTROL,
+  RESOLVER_ROLE_DEFINITIONS,
 } from '@/utils/records/v2Roles'
 import {
   buildRoleTransactions,
@@ -40,13 +44,30 @@ export const roleErrorText = (error: unknown) =>
       ? error.message
       : 'Could not load permissions.'
 
-export const useRoleSection = (kind: RoleKind, contract?: Address, resource = BigInt(0), enabled = true) => {
+export const useRoleSection = (
+  kind: RoleKind,
+  contract?: Address,
+  resource = BigInt(0),
+  enabled = true,
+  undeployed = false
+) => {
   const { address } = useAccount()
   const queries = useQueryClient()
   const client = useMemo(createV2RecordsClient, [])
   const snapshot = useQuery({
-    queryKey: ['v2-roles', 'snapshot', activeChain.id, kind, contract, resource.toString(), address],
-    queryFn: async ({ signal }) => {
+    queryKey: ['v2-roles', 'snapshot', activeChain.id, kind, contract, resource.toString(), address, undeployed],
+    queryFn: async ({ signal }): Promise<RoleSnapshot> => {
+      if (undeployed && address) {
+        return {
+          contract: contract!,
+          kind,
+          resource,
+          blockNumber: BigInt(0),
+          viewerRoles: FULL_RESOLVER_CONTROL,
+          viewerRootRoles: FULL_RESOLVER_CONTROL,
+          initialAssignments: [{ account: address, resource: BigInt(0), bitmap: FULL_RESOLVER_CONTROL }],
+        }
+      }
       if (kind === 'resolver') {
         try {
           return resolverRoleSnapshot(await queries.fetchQuery(resolverQueryOptions(contract!)), resource, address)
@@ -73,7 +94,7 @@ export const useRoleSection = (kind: RoleKind, contract?: Address, resource = Bi
       snapshot.data?.blockNumber.toString(),
     ],
     queryFn: ({ signal }) =>
-      snapshot.data!.permissions
+      kind === 'name' || undeployed || snapshot.data!.permissions
         ? Promise.resolve(snapshot.data!.initialAssignments)
         : readRoleHistory(client, snapshot.data!, signal),
     meta: { ensApi: !!snapshot.data?.permissions },
@@ -82,10 +103,10 @@ export const useRoleSection = (kind: RoleKind, contract?: Address, resource = Bi
     refetchOnWindowFocus: false,
     retry: false,
   })
-  return { snapshot, history, assignments: history.data ?? snapshot.data?.initialAssignments ?? [] }
+  return { snapshot, history, undeployed, assignments: history.data ?? snapshot.data?.initialAssignments ?? [] }
 }
 
-export const useV2Roles = (name: string, enabled = true) => {
+export const useV2Roles = (name: string, enabled = true, managerResolver?: ResolverMoveTarget) => {
   const { address } = useAccount()
   const queries = useQueryClient()
   const client = useMemo(createV2RecordsClient, [])
@@ -103,25 +124,36 @@ export const useV2Roles = (name: string, enabled = true) => {
     binding.data?.resource,
     enabled && !!binding.data?.registered
   )
-  const resolverRoles = useRoleSection('resolver', binding.data?.resolver, BigInt(0), enabled)
-  return { binding, nameRoles, resolverRoles, address }
+  const resolverRoles = useRoleSection(
+    'resolver',
+    managerResolver?.address ?? binding.data?.resolver,
+    BigInt(0),
+    enabled,
+    managerResolver?.version !== undefined
+  )
+  const managerRoles = resolverRoles.assignments
+    .filter((row) => row.account.toLowerCase() === address?.toLowerCase())
+    .reduce((bits, row) => bits | row.bitmap, resolverRoles.snapshot.data?.viewerRootRoles ?? BigInt(0))
+  const canManage =
+    (!!address && !!binding.data?.canSetResolver && binding.data.owner?.toLowerCase() === address.toLowerCase()) ||
+    RESOLVER_ROLE_DEFINITIONS.some((role) => hasRole(managerRoles, adminRole(role.bit)))
+  return { binding, nameRoles, resolverRoles, address, canManage }
 }
 
 export type V2RolesData = ReturnType<typeof useV2Roles>
 
-export const useV2RoleAuthority = (change?: RoleChange) => {
+export const useV2RoleAuthority = (change: RoleChange, rootRoles: bigint) => {
   const { address } = useAccount()
   const queries = useQueryClient()
   const client = useMemo(createV2RecordsClient, [])
   let details: ReturnType<typeof roleChangeDetails> | undefined
   let validationError: string | undefined
-  if (change) {
-    try {
-      details = roleChangeDetails(change)
-    } catch (error) {
-      validationError = roleErrorText(error)
-    }
+  try {
+    details = roleChangeDetails(change)
+  } catch (error) {
+    validationError = roleErrorText(error)
   }
+  const rootAllowed = !!details && hasRole(rootRoles, adminRole(details.role.bit))
   const access = useQuery({
     queryKey: [
       'v2-roles',
@@ -131,28 +163,20 @@ export const useV2RoleAuthority = (change?: RoleChange) => {
       change?.contract,
       details?.resource.toString(),
       address,
-      change?.account.toLowerCase(),
     ],
     queryFn: async ({ signal }) => {
       if (change!.kind === 'resolver') {
         try {
           const resolver = await queries.fetchQuery(resolverQueryOptions(change!.contract))
-          return {
-            ...resolverRoleAccess(resolver, details!.resource, address!),
-            target: resolverRoleAccess(resolver, details!.resource, change!.account as Address),
-          }
+          return resolverRoleAccess(resolver, details!.resource, address!)
         } catch {
           signal.throwIfAborted()
         }
       }
 
-      const [viewer, target] = await Promise.all([
-        readRoleAccess(client, change!.contract, details!.resource, address!),
-        readRoleAccess(client, change!.contract, details!.resource, change!.account as Address),
-      ])
-      return { ...viewer, target }
+      return readRoleAccess(client, change.contract, details!.resource, address!)
     },
-    enabled: !!address && !!details,
+    enabled: !!address && !!details && !rootAllowed,
     meta: { ensApi: change?.kind === 'resolver' },
     staleTime: 10_000,
     refetchOnWindowFocus: false,
@@ -162,17 +186,31 @@ export const useV2RoleAuthority = (change?: RoleChange) => {
   return {
     validationError,
     error: access.error ? roleErrorText(access.error) : undefined,
-    loading: !!details && !!address && access.isPending,
-    allowed: !!details && !!access.data && hasRole(access.data.effective, adminRole(details.role.bit)),
-    targetHasRole: details && access.data ? hasRole(access.data.target.effective, details.bitmap) : undefined,
+    loading: !rootAllowed && !!details && !!address && access.isPending,
+    allowed: rootAllowed || (!!details && !!access.data && hasRole(access.data.effective, adminRole(details.role.bit))),
     retry: access.refetch,
   }
 }
 
-export const useV2RoleEditor = (name: string, enabled: boolean) => {
-  const data = useV2Roles(name, enabled)
+export const useV2RoleEditor = (name: string, enabled: boolean, managerResolver?: ResolverMoveTarget) => {
+  const data = useV2Roles(name, enabled, managerResolver)
   const editor = useRoleDraftEditor(data.address)
-  return { ...editor, data }
+  // Carry only the edits the owner selected. Other accounts on the source resolver keep their own roles there.
+  const moveDrafts = (destination: Address, change: RoleChange, assignment: RoleAssignment, next: boolean) => {
+    const sourceKey = `${data.address}:${change.contract.toLowerCase()}`
+    const destinationKey = `${data.address}:${destination.toLowerCase()}`
+    const changes: RoleChange[] = [...editor.changes, { ...change, action: next ? 'grant' : 'revoke' }]
+    const rows = [...data.resolverRoles.assignments, ...(editor.accounts[sourceKey] ?? []), assignment]
+    for (const item of changes) {
+      const { resource } = roleChangeDetails(item)
+      const row = rows.find(
+        (row) => row.resource === resource && row.account.toLowerCase() === item.account.toLowerCase()
+      )
+      if (row) editor.addAccount(destinationKey, { ...row, bitmap: BigInt(0), roleId: item.roleId })
+    }
+    editor.replaceChanges(changes.map((item) => ({ ...item, contract: destination })))
+  }
+  return { ...editor, data, moveDrafts }
 }
 
 export const useRoleDraftEditor = (address?: Address) => {
@@ -214,6 +252,15 @@ export const useRoleDraftEditor = (address?: Address) => {
         ],
       })),
     changes,
+    replaceChanges: (changes: RoleChange[]) => {
+      draftWallet.current = address
+      // The destination snapshot supplies the baseline, including roles it already grants.
+      setDrafts(
+        Object.fromEntries(
+          changes.map((change) => [roleChangeKey(change), { change, current: change.action === 'grant' }])
+        )
+      )
+    },
     initial,
     checked,
     toggle,

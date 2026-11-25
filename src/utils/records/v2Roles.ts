@@ -37,8 +37,6 @@ export const NAME_ROLES: RoleDefinition[] = [
   { id: 'transfer', label: 'Can Transfer', bit: bit(28), adminOnly: true },
   { id: 'resolver', label: 'Set Resolver', bit: bit(24) },
   { id: 'subregistry', label: 'Set Subregistry', bit: bit(20) },
-  { id: 'renew', label: 'Renew', bit: bit(16) },
-  { id: 'unregister', label: 'Unregister', bit: bit(12) },
 ]
 
 export const RESOLVER_ROLE_DEFINITIONS: RoleDefinition[] = [

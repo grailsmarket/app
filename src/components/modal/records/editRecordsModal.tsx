@@ -11,6 +11,7 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import MigrationModal from '@/components/modal/migration/migrationModal'
 import V1EditRecordsModal from './v1/editRecordsModal'
 import V2EditRecordsModal from './v2/editRecordsModal'
+import { SettingsTransactionProvider } from '@/context/settingsTransaction'
 
 interface EditRecordsModalProps {
   name: string
@@ -77,7 +78,11 @@ const EditRecordsModal = ({
   }
 
   if (resolvedVersion === 2) {
-    return <V2EditRecordsModal key={name} name={name} defaultTab={defaultTab} onClose={onClose} />
+    return (
+      <SettingsTransactionProvider key={name}>
+        <V2EditRecordsModal name={name} defaultTab={defaultTab} onClose={onClose} />
+      </SettingsTransactionProvider>
+    )
   }
 
   return (

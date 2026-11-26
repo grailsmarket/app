@@ -19,7 +19,7 @@ const WinterSnow = () => {
     sync()
     window.addEventListener('resize', sync)
     return () => {
-      window.addEventListener('resize', sync)
+      window.removeEventListener('resize', sync)
     }
   }, [pathname])
 

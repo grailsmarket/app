@@ -12,6 +12,9 @@ import { cn } from '@/utils/tailwind'
 import Searchbar from '../ui/searchbar'
 import logoMobile from 'public/logo.svg'
 import logo from 'public/logo-w-text.svg'
+import logoMobileWinter from 'public/logo-winter.svg'
+import logoWinter from 'public/logo-w-text-winter.svg'
+import SnowBorder from '../winter-snow/SnowBorder'
 import Notifications from './notifications'
 import Chats from './chats'
 import { useNavbar } from '@/context/navbar'
@@ -44,9 +47,15 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const queryClient = useQueryClient()
   const isTouchDevice = useIsTouchDevice()
   const hasPrefetchedRef = useRef(false)
+  const [showWinterTheme, setShowWinterTheme] = useState(false)
+
+  useEffect(() => {
+    setShowWinterTheme(new Date().getMonth() === 11)
+  }, [])
 
   const prefetchDropdownData = useCallback(() => {
     if (isTouchDevice || hasPrefetchedRef.current) return
+
     hasPrefetchedRef.current = true
     const isAuthenticated = authStatus === 'authenticated'
     void queryClient.prefetchQuery(categoriesDropdownQueryOptions())
@@ -106,6 +115,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
     } else {
       document.body.style.overflow = ''
     }
+
     return () => {
       document.body.style.overflow = ''
     }
@@ -135,18 +145,18 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             aria-label='Grails Market home'
           >
             <Image
-              src={logoMobile}
+              src={showWinterTheme ? logoMobileWinter : logoMobile}
               alt='Grails Market'
               width={32}
               height={32}
-              className='block h-7 w-auto md:h-9 xl:hidden'
+              className='block h-8 w-auto md:h-9 xl:hidden'
             />
             <Image
-              src={logo}
+              src={showWinterTheme ? logoWinter : logo}
               alt='Grails Market'
               width={130}
               height={40}
-              className='hidden h-[39px] w-[124px] xl:block'
+              className='hidden h-11 w-32 xl:block'
               priority
             />
           </Link>
@@ -162,6 +172,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
               setDropdownOption(null)
             }}
           />
+          {showWinterTheme && <SnowBorder />}
         </div>
         <div
           className='flex min-w-0 items-center justify-end gap-3 md:gap-4'

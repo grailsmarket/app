@@ -47,7 +47,11 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const queryClient = useQueryClient()
   const isTouchDevice = useIsTouchDevice()
   const hasPrefetchedRef = useRef(false)
-  const showWinterTheme = new Date().getMonth() === 11
+  const [showWinterTheme, setShowWinterTheme] = useState(false)
+
+  useEffect(() => {
+    setShowWinterTheme(new Date().getMonth() === 11)
+  }, [])
 
   const prefetchDropdownData = useCallback(() => {
     if (isTouchDevice || hasPrefetchedRef.current) return

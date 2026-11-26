@@ -51,7 +51,7 @@ export const snowThemeProfile = (pathname: string) => {
       return pathname.includes('.eth')
     }
 
-    return path.includes(pathname)
+    return pathname === path || (path !== '/' && pathname.startsWith(`${path}/`))
   })
   const isDecember = new Date().getMonth() === 11
 

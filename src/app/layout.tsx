@@ -7,6 +7,7 @@ import { Production } from './production'
 import SuspendedPostHogPageView from '@/components/posthog/posthog-pageview'
 import PostHogGroupSync from '@/components/posthog/posthog-group-sync'
 import ServiceWorkerRegistration from '@/components/pwa/service-worker-registration'
+import WinterSnow from '@/components/winter-snow'
 import { metadataThemeColor, sharedMetadata } from '@/lib/metadata'
 import 'ethereum-identity-kit/css'
 import '@rainbow-me/rainbowkit/styles.css'
@@ -41,7 +42,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en' className='dark'>
-      <body className={`${inter.variable} ${sedanSC.variable} antialiased`}>
+      <body className={`${inter.variable} ${sedanSC.variable} isolate antialiased`}>
+        <WinterSnow />
         <Providers>{children}</Providers>
         <ServiceWorkerRegistration />
         <PostHogGroupSync />

@@ -13,10 +13,9 @@ import { beautifyName } from '@/lib/ens'
 import RecordForm from './recordForm'
 import Input from '@/components/ui/input'
 import { Cross, ShortArrow } from 'ethereum-identity-kit'
-import { useV2RoleEditor, useV2RoleTransaction } from '@/hooks/records/useV2Roles'
+import { roleErrorText, useV2RoleEditor, useV2RoleTransaction } from '@/hooks/records/useV2Roles'
 import RolesEditor from './rolesEditor'
 import DiscardChangesModal from '../components/discardChangesModal'
-import { buildRoleTransactions } from '@/utils/records/v2RoleDrafts'
 import { TxScreenPanel, plural, shortAddress } from '../components/txScreen'
 import { getRolesScreen, getV2EditorScreen } from '../components/recordsTxScreens'
 import { useConfigurationPreferences } from '@/hooks/settings/useResolverPreferences'
@@ -35,15 +34,19 @@ const V2EditRecordsModal = ({
 }) => {
   const [tab, setTab] = useState<string>(defaultTab)
   const [rolesOpened, setRolesOpened] = useState(defaultTab === 'roles')
-  const [discardAction, setDiscardAction] = useState<'close' | 'resolver' | null>(null)
+  const [discardAction, setDiscardAction] = useState<'close' | 'resolver' | 'managers' | null>(null)
   const [configExpanded, setConfigExpanded] = useState(false)
   // What the running save changes, captured on click: the drafts are cleared once it succeeds.
   const [recordsRun, setRecordsRun] = useState<{ meta?: string; message?: string }>({})
   const [roleChangeCount, setRoleChangeCount] = useState(0)
 
-  const editor = useV2EditRecords(name, tab !== 'roles', () => setTab('records'))
+  const editor = useV2EditRecords(name, tab, () => setTab('records'))
   const preferences = useConfigurationPreferences(editor.binding?.resolver, editor.resolverExists && tab === 'records')
-  const roles = useV2RoleEditor(name, tab === 'roles')
+  const roles = useV2RoleEditor(
+    name,
+    tab === 'roles' && !editor.managerTargetLoading && !editor.managerTargetError,
+    editor.managerResolver
+  )
   const roleTransaction = useV2RoleTransaction(name, roles.onConfirmed)
   const contentRef = useRef<HTMLDivElement>(null)
   const busy = editor.isBusy || roleTransaction.busy
@@ -75,7 +78,7 @@ const V2EditRecordsModal = ({
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !event.defaultPrevented && !discardAction) {
+      if (event.key === 'Escape' && !event.defaultPrevented && !discardAction && !editor.moveOpen) {
         event.preventDefault()
         close()
       }
@@ -84,12 +87,14 @@ const V2EditRecordsModal = ({
     return () => document.removeEventListener('keydown', onKey)
   })
 
-  let roleTransactionCount = 0
-  try {
-    if (roles.data.address) roleTransactionCount = buildRoleTransactions(roles.changes, roles.data.address).length
-  } catch {
-    /* Validation is reported before saving. */
-  }
+  const managerAddress = editor.managerResolver?.address ?? editor.binding?.resolver
+  const managerTargetChanged = roles.changes.some(
+    (change) => change.contract.toLowerCase() !== managerAddress?.toLowerCase()
+  )
+
+  useEffect(() => {
+    if (editor.managerMoveRequired && !editor.firstResolver && !roles.hasChanges) editor.resetManagerResolver()
+  }, [editor.managerMoveRequired, editor.firstResolver, editor.resetManagerResolver, roles.hasChanges])
 
   const changeResolver = () => {
     if (hasRecordChanges || roles.hasChanges) setDiscardAction('resolver')
@@ -97,7 +102,8 @@ const V2EditRecordsModal = ({
   }
 
   const catalog = editor.catalog
-  const showResolverSettings = tab === 'resolver' || (tab === 'records' && !editor.resolverExists)
+  const showRecords = tab === 'records' && (editor.resolverExists || editor.firstResolver)
+  const showResolverSettings = tab === 'resolver' || (tab === 'records' && !showRecords)
   // IDs are sequential onchain; discovering the list does not require indexed events.
   const count = catalog?.recordCount ?? BigInt(0)
   const ids = Array.from({ length: Number(count > BigInt(1000) ? BigInt(1000) : count) }, (_, index) => `${index + 1}`)
@@ -137,6 +143,11 @@ const V2EditRecordsModal = ({
   }
 
   const saveRoles = () => {
+    if (editor.managerMoveRequired && !roleTransaction.pending) {
+      if (hasRecordChanges || editor.hasResolverChanges) setDiscardAction('managers')
+      else void editor.saveManagers(roles.changes, roles.onConfirmed)
+      return
+    }
     setRoleChangeCount(roles.changes.length)
     void roleTransaction.submit(roles.changes)
   }
@@ -251,7 +262,28 @@ const V2EditRecordsModal = ({
               >
                 {rolesOpened && (
                   <div className={tab === 'roles' ? '' : 'hidden'}>
-                    <RolesEditor editor={roles} transaction={roleTransaction} />
+                    {editor.managerTargetError ? (
+                      <div className='flex flex-col gap-2'>
+                        <p role='alert'>{roleErrorText(editor.managerTargetError)}</p>
+                        <SecondaryButton onClick={() => editor.retryManagerTarget()}>
+                          Retry loading your resolver
+                        </SecondaryButton>
+                      </div>
+                    ) : (
+                      <RolesEditor
+                        editor={roles}
+                        transaction={roleTransaction}
+                        loadingManagers={editor.managerTargetLoading}
+                        onMove={
+                          editor.ownerCanMove && !editor.managerMoveRequired && !managerTargetChanged
+                            ? (change, assignment, next) =>
+                                editor.chooseManagerResolver((target) =>
+                                  roles.moveDrafts(target, change, assignment, next)
+                                )
+                            : undefined
+                        }
+                      />
+                    )}
                   </div>
                 )}
                 {editor.binding && showResolverSettings && (
@@ -353,7 +385,7 @@ const V2EditRecordsModal = ({
                         </div>
                       </div>
                     )}
-                    <div className='border-tertiary rounded-md border p-3'>
+                    <div hidden={editor.firstResolver} className='border-tertiary rounded-md border p-3'>
                       <button
                         type='button'
                         aria-expanded={configExpanded}
@@ -441,6 +473,7 @@ const V2EditRecordsModal = ({
                         </div>
                       )}
                       {editor.mode !== 'shared' &&
+                        editor.canSave &&
                         !shownRecordsReadOnly &&
                         !editor.records.some((row) => row.value) && (
                           <p className='text-grace mt-2 text-sm'>
@@ -489,9 +522,21 @@ const V2EditRecordsModal = ({
                 )}
               </div>
               <div className='border-tertiary flex shrink-0 flex-col gap-2 border-t p-4 sm:px-6'>
-                {tab === 'records' && editor.resolverExists && (
+                {showRecords && (
                   <>
-                    {editor.mode === 'shared' &&
+                    {editor.moveRequired ? (
+                      <p
+                        className='bg-secondary border-tertiary text-neutral text-md rounded-md border p-3 font-medium'
+                        role='status'
+                      >
+                        {editor.firstResolver
+                          ? 'This name needs a resolver.'
+                          : 'Your wallet cannot edit these records on the current resolver.'}{' '}
+                        Grails will save your records on a resolver you own, then move <b>{name}</b> to it. If you need
+                        a new resolver, your wallet will ask you to confirm its deployment.
+                      </p>
+                    ) : (
+                      editor.mode === 'shared' &&
                       !editor.isLoading &&
                       !editor.loadError &&
                       (editor.configurationNameCount ?? 0) > 1 && (
@@ -501,25 +546,55 @@ const V2EditRecordsModal = ({
                         >
                           Updating these records affects all names using this configuration.
                         </p>
-                      )}
+                      )
+                    )}
                     <PrimaryButton className='w-full' onClick={saveRecords} disabled={!editor.canSave}>
-                      {editor.mode === 'shared' ? 'Save changes' : 'Create configuration'}
+                      {editor.moveRequired
+                        ? 'Save and move name'
+                        : editor.mode === 'shared'
+                          ? 'Save changes'
+                          : 'Create configuration'}
                     </PrimaryButton>
                   </>
                 )}
                 {tab === 'roles' && (
                   <>
-                    {roleTransactionCount > 1 && (
-                      <p className='text-neutral text-center text-lg'>
-                        {roleTransactionCount} transactions will save your permission changes.
+                    {editor.managerMoveRequired && (
+                      <p
+                        className='bg-secondary border-tertiary text-neutral text-md rounded-md border p-3'
+                        role='status'
+                      >
+                        Your wallet needs another resolver for these manager permissions. Saving will copy {name}’s
+                        records to{' '}
+                        {editor.managerResolver?.version !== undefined
+                          ? 'a new resolver deployed by your wallet'
+                          : 'your resolver'}
+                        . Grails will move the name there, then apply your selected roles.
+                      </p>
+                    )}
+                    {managerTargetChanged && !roles.walletChanged && (
+                      <p role='alert' className='text-red-400'>
+                        The resolver changed. Reset your manager edits to continue.
                       </p>
                     )}
                     <PrimaryButton
                       className='w-full'
                       onClick={saveRoles}
-                      disabled={busy || roles.walletChanged || (!roles.hasChanges && !roleTransaction.pending)}
+                      disabled={
+                        busy ||
+                        roles.walletChanged ||
+                        (!roleTransaction.pending &&
+                          (!roles.hasChanges ||
+                            managerTargetChanged ||
+                            editor.managerTargetLoading ||
+                            !!editor.managerTargetError))
+                      }
                     >
-                      {roleTransaction.pending ? 'Check transaction' : 'Save changes'}
+                      {roleTransaction.pending
+                        ? 'Check transaction'
+                        : editor.managerMoveRequired
+                          ? 'Save managers and move name'
+                          : 'Save changes'}
                     </PrimaryButton>
                   </>
                 )}
@@ -546,13 +621,19 @@ const V2EditRecordsModal = ({
       </div>
       {discardAction && (
         <DiscardChangesModal
-          changingResolver={discardAction === 'resolver'}
+          changingResolver={discardAction !== 'close'}
+          description={
+            discardAction === 'managers'
+              ? 'Saving managers will move this name and discard unsaved edits in the Records and Resolver tabs.'
+              : undefined
+          }
           pendingTransaction={!!editor.pending || !!roleTransaction.pending}
           onCancel={() => setDiscardAction(null)}
           onDiscard={() => {
             const action = discardAction
             setDiscardAction(null)
             if (action === 'close') onClose()
+            else if (action === 'managers') void editor.saveManagers(roles.changes, roles.onConfirmed)
             else {
               roles.reset()
               editor.discardChanges()

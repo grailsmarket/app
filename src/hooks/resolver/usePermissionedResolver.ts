@@ -54,7 +54,7 @@ export const usePermissionedResolver = () => {
     })
   }
 
-  const getResolverData = (version: bigint, owner = address) => {
+  const getResolverData = (version: bigint, owner = address, records: Hex[] = []) => {
     if (!owner) throw new Error('No wallet detected. Connect your wallet!')
 
     const resolverSalt = BigInt(
@@ -69,7 +69,7 @@ export const usePermissionedResolver = () => {
     const resolverInitData = encodeFunctionData({
       abi: PERMISSIONED_RESOLVER_ABI,
       functionName: 'initialize',
-      args: [[{ account: owner, roleBitmap: ALL_ROLES }], []],
+      args: [[{ account: owner, roleBitmap: ALL_ROLES }], records],
     })
 
     return {

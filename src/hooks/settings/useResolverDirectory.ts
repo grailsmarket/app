@@ -211,11 +211,43 @@ export const useResolverDirectory = (includeDeployments = true, enabled = true) 
       { address: resolver, nameCount: null, roles: [], isDefault: false, ...(deployed ? { deployedBy: address } : {}) },
     ])
 
+  // Indexed creation blocks let the editor verify wallet deployments without scanning factory history.
+  const getOwnedResolvers = async (): Promise<Address[]> => {
+    const sameWallet = !preferences.account || preferences.account.toLowerCase() === address?.toLowerCase()
+    const indexed =
+      (sameWallet && !resolverData.isError ? resolverData.data : undefined) ?? (await resolverQuery.refetch()).data
+
+    if (!indexed || indexed.some((item) => item.createdBlock === undefined)) {
+      const { data } = await owned.refetch({ throwOnError: true })
+      return (data ?? []).map((item) => item.address)
+    }
+
+    const deployments = await Promise.all(
+      indexed.map((item) => {
+        const block = BigInt(item.createdBlock!)
+        return client.getLogs({
+          address: config.ensV2VerifiableFactory,
+          event: deploymentEvent,
+          args: { sender: address!, proxyAddress: item.address },
+          fromBlock: block,
+          toBlock: block,
+          strict: true,
+        })
+      })
+    )
+
+    return deployments
+      .flat()
+      .filter((log) => log.args.implementation.toLowerCase() === config.ensV2PermissionedResolverImpl.toLowerCase())
+      .map((log) => log.args.proxyAddress)
+  }
+
   return {
     resolvers: [...entries.values()].sort((a, b) => Number(b.isDefault) - Number(a.isDefault)),
     preferences,
     preferred,
     remember,
+    getOwnedResolvers,
     resolverData,
     owned,
     delegated,

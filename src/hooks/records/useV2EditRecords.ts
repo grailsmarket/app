@@ -21,7 +21,7 @@ import {
   loadResolverState,
 } from '@/utils/records/loadResolver'
 import { buildRecordCalls, dnsEncodeName, recordKey, uint256, validateRecordField } from '@/utils/records/v2Records'
-import type { V2Record, V2RecordField, V2RecordMode } from '@/types/records'
+import type { V2Record, V2RecordField, V2RecordMode, V2ResolverCatalog } from '@/types/records'
 import type { EditStep } from './useEditRecords'
 import { useAppDispatch } from '@/state/hooks'
 import { markImageForRefresh } from '@/state/reducers/imageRefresh'
@@ -29,6 +29,24 @@ import { config } from '@/lib/config'
 import { createV2RecordsClient } from '@/utils/records/client'
 import { newResolverVersion } from '@/utils/records/resolverDeployment'
 import { readConfigurationNames } from '@/utils/settings/configurations'
+import { DEFAULT_V2_FIELDS } from '@/constants/ens/records'
+import { findMoveTarget, moveRecordSteps, type ResolverMoveTarget } from '@/utils/records/moveRecords'
+import { hasRole, readRoleAccess, roleChangeDetails, type RoleChange } from '@/utils/records/v2Roles'
+import { buildRoleTransactions } from '@/utils/records/v2RoleDrafts'
+import { useSettingsTransaction } from '@/hooks/settings/useSettingsTransaction'
+
+const noResolver: V2ResolverCatalog = {
+  blockNumber: BigInt(0),
+  recordCount: BigInt(0),
+  defaultRecordId: BigInt(0),
+  linkedRecordId: BigInt(0),
+  canLink: false,
+  historyComplete: true,
+  fields: new Map(),
+  names: new Map(),
+  interfaces: new Map(),
+}
+const blankRecords = DEFAULT_V2_FIELDS.map((field) => ({ ...field, initialValue: '', value: '', editable: false }))
 
 type PendingWrite = { hash: Hex; kind: 'records' | 'resolver' | 'deploy'; sender: Address }
 
@@ -44,10 +62,16 @@ const errorDetailsText = (error: unknown) =>
 // While `confirming`: still checking before any prompt, or the wallet prompt is open.
 export type V2EditPhase = 'checking' | 'wallet' | null
 
-export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolverChanged: () => void) => {
+export const useV2EditRecords = (name: string, tab: string, onResolverChanged: () => void) => {
+  const recordsEnabled = tab !== 'roles'
   const { address } = useAccount()
   const getWalletClient = useGetWalletClient()
-  const { deployResolver, getDeployedResolver } = usePermissionedResolver()
+  const { deployResolver, getDeployedResolver, getResolverData, isUserResolverDeployed } = usePermissionedResolver()
+  const move = useSettingsTransaction({
+    title: 'Save records and move name',
+    successTitle: 'Records saved',
+    successMessage: `${name} now uses your resolver.`,
+  })
   const directory = useResolverDirectory(false)
   const client = useMemo(createV2RecordsClient, [])
   const queryClient = useQueryClient()
@@ -77,6 +101,42 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
 
   const resolver = binding.data?.resolver
   const resolverExists = !!resolver && resolver !== zeroAddress
+  const ownerCanMove =
+    !!address && !!binding.data?.canSetResolver && binding.data.owner?.toLowerCase() === address.toLowerCase()
+  const firstResolver = ownerCanMove && resolver === zeroAddress
+  const getMoveTarget = async (account: Address) =>
+    findMoveTarget(
+      client,
+      account,
+      resolver!,
+      await isUserResolverDeployed(0, account),
+      directory.getOwnedResolvers,
+      getResolverData
+    )
+
+  const [managerPlan, setManagerPlan] = useState<{
+    source: string
+    target: ResolverMoveTarget
+  } | null>(null)
+  const managerSource = `${address}:${name}:${resolver}`
+  const managerMoveRequired = ownerCanMove && (firstResolver || managerPlan?.source === managerSource)
+  const managerTarget = useQuery({
+    queryKey: ['v2-roles', 'manager-target', activeChain.id, resolver, address],
+    queryFn: () => getMoveTarget(address!),
+    enabled: tab === 'roles' && firstResolver,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    retry: false,
+  })
+  const managerResolver = firstResolver ? managerTarget.data : managerMoveRequired ? managerPlan?.target : undefined
+  const chooseManagerResolver = async (onSelected: (address: Address) => void) => {
+    if (!ownerCanMove) return
+    const result = await managerTarget.refetch()
+    if (result.isSuccess) {
+      onSelected(result.data.address)
+      setManagerPlan({ source: managerSource, target: result.data })
+    }
+  }
   const snapshot = useQuery({
     queryKey: ['v2-records', 'state', activeChain.id, resolver, name, address],
     queryFn: ({ signal }) => loadResolverState(queryClient, client, resolver!, name, address, signal),
@@ -95,7 +155,7 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
     retry: false,
   })
 
-  const catalog = { data: history.data ?? snapshot.data }
+  const catalog = { data: firstResolver ? noResolver : (history.data ?? snapshot.data) }
   const mode =
     selectedMode ??
     (catalog.data?.linkedRecordId === BigInt(0) && catalog.data.defaultRecordId === BigInt(0) ? 'new' : 'shared')
@@ -179,7 +239,7 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
     refetchOnWindowFocus: false,
     retry: false,
   })
-  const recordData = recordQuery.data
+  const recordData = firstResolver ? blankRecords : recordQuery.data
   const hasCompleteRecords = !!recordData && !!catalog.data?.historyComplete
   const discoveryError = history.error
   const viewKey = `${address}:${name}:${resolver}:${selected}:${mode}`
@@ -203,6 +263,10 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
     }
 
   const records = [...rows.values()]
+  const canEditByMoving =
+    ownerCanMove && selectedId === catalog.data?.linkedRecordId && (selectedMode === null || mode === 'shared')
+  const moveRequired = canEditByMoving && records.some((row) => !row.editable && row.value !== row.initialValue)
+  const formRecords = canEditByMoving ? records.map((row) => ({ ...row, editable: true })) : records
 
   const isLoading =
     binding.isPending ||
@@ -225,11 +289,12 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
 
   if (catalog.data && recordData && !validationError && (hasChanges || canCreateEmpty)) {
     try {
-      if (mode === 'copy' && !hasCompleteRecords) {
+      if ((mode === 'copy' || moveRequired) && !hasCompleteRecords) {
         throw new Error('Load all additional records before copying this configuration.')
       }
 
       if (
+        !moveRequired &&
         !catalog.data.canLink &&
         (mode !== 'shared' ? catalog.data.linkedRecordId !== BigInt(0) : selectedId !== catalog.data.linkedRecordId)
       ) {
@@ -237,10 +302,10 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
       }
 
       calls = buildRecordCalls({
-        records,
-        mode,
+        records: moveRequired ? formRecords : records,
+        mode: moveRequired ? 'new' : mode,
         selectedId,
-        linkedId: catalog.data.linkedRecordId,
+        linkedId: moveRequired ? BigInt(0) : catalog.data.linkedRecordId,
         dnsName: dnsEncodeName(name),
       })
     } catch (error) {
@@ -253,7 +318,7 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
 
   const updateRecord = (key: string, value: string) => {
     const row = rows.get(key)
-    if (!row?.editable) return
+    if (!row || (!row.editable && !canEditByMoving)) return
     setDraft((previous) => ({
       key: viewKey,
       rows: [
@@ -284,15 +349,17 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
       if (records.some((row) => recordKey(row) === recordKey(valid))) throw new Error('That record is already shown.')
 
       setIsAdding(true)
-      const rows = await loadConfiguration({
-        client,
-        resolver,
-        catalog: catalog.data,
-        name,
-        selectedId,
-        account: address,
-        extraFields: [valid],
-      })
+      const rows = firstResolver
+        ? [{ ...valid, value: '', initialValue: '', editable: false }]
+        : await loadConfiguration({
+            client,
+            resolver,
+            catalog: catalog.data,
+            name,
+            selectedId,
+            account: address,
+            extraFields: [valid],
+          })
 
       if (activeView.current !== key) return false
 
@@ -337,15 +404,19 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
     await queryClient.invalidateQueries({ queryKey: ['v2-records'] })
   }
 
+  const recordsSaved = () => {
+    discardChanges()
+    setMode('shared')
+    dispatch(markImageForRefresh(name))
+    void invalidateNameMetadataCache(name).catch(() => {})
+  }
+
   const completed = async (kind: PendingWrite['kind']) => {
     track(null)
-    void invalidateNameMetadataCache(name).catch(() => {})
+    if (kind !== 'records') void invalidateNameMetadataCache(name).catch(() => {})
 
     if (kind === 'records') {
-      setDraft(null)
-      setSelection(null)
-      setMode('shared')
-      dispatch(markImageForRefresh(name))
+      recordsSaved()
       setStep('success')
     } else if (kind === 'resolver') {
       setResolverInput(null)
@@ -415,7 +486,7 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
     return wallet
   }
 
-  const save = () =>
+  const saveInPlace = () =>
     run(async () => {
       setOperation('records')
       if (!canSave || !catalog.data || !binding.data || !resolver)
@@ -455,6 +526,105 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
       track({ hash, kind: 'records', sender: wallet.account.address })
       await confirmPending()
     })
+
+  const moveSteps = (
+    getRecords: () => Promise<{ catalog: V2ResolverCatalog; setters: Hex[] }>,
+    getTarget = getMoveTarget
+  ) =>
+    moveRecordSteps({
+      client,
+      name,
+      binding: binding.data!,
+      getRecords,
+      getTarget,
+      getResolverData,
+      onSaved: () => {
+        setResolverInput(null)
+        recordsSaved()
+      },
+    })
+
+  const save = () => {
+    if (!canSave || !binding.data || !catalog.data) return
+    if (!moveRequired) return saveInPlace()
+    return move.run(moveSteps(async () => ({ catalog: catalog.data!, setters: calls })))
+  }
+
+  const copyCurrentRecords = async () => {
+    let catalog = noResolver
+    let records = blankRecords
+    if (resolverExists) {
+      catalog = await loadResolverState(queryClient, client, resolver!, name, address)
+      if (!catalog.historyComplete)
+        catalog = await loadResolverCatalog(queryClient, client, resolver!, catalog, address)
+      records = await loadConfiguration({
+        client,
+        resolver: resolver!,
+        name,
+        catalog,
+        selectedId: catalog.linkedRecordId,
+        account: address,
+      })
+    }
+    const setters = buildRecordCalls({
+      records: records.map((row) => ({ ...row, editable: true })),
+      mode: 'new',
+      selectedId: catalog.linkedRecordId,
+      linkedId: BigInt(0),
+      dnsName: dnsEncodeName(name),
+    })
+    return { catalog, setters }
+  }
+
+  const saveManagers = (changes: RoleChange[], onConfirmed: (changes: RoleChange[]) => void) => {
+    if (!address || !binding.data || !managerResolver || !managerMoveRequired || !changes.length) return
+    const target = managerResolver
+    if (
+      changes.some(
+        (change) => change.kind !== 'resolver' || change.contract.toLowerCase() !== target.address.toLowerCase()
+      )
+    )
+      return
+    return move.run(
+      [
+        ...moveSteps(copyCurrentRecords, async () => target),
+        {
+          label: 'Save manager permissions',
+          prepare: async (account) => {
+            const current = await readNameResolver(client, name, config.ensV2Registry, account)
+            if (
+              current.owner?.toLowerCase() !== account.toLowerCase() ||
+              current.resolver.toLowerCase() !== target.address.toLowerCase() ||
+              current.tokenId !== binding.data!.tokenId ||
+              current.registry.toLowerCase() !== binding.data!.registry.toLowerCase()
+            )
+              throw new Error('The name’s owner or resolver changed. Reopen the editor before saving managers.')
+
+            const needed = await Promise.all(
+              changes.map(async (change) => {
+                const { resource, bitmap } = roleChangeDetails(change)
+                const access = await readRoleAccess(client, target.address, resource, change.account as Address)
+                return hasRole(access.roles, bitmap) !== (change.action === 'grant')
+              })
+            )
+            const [batch] = buildRoleTransactions(
+              changes.filter((_, index) => needed[index]),
+              account
+            )
+            if (batch) return { to: batch.contract, data: batch.data }
+            onConfirmed(changes)
+            return null
+          },
+          confirmed: () => onConfirmed(changes),
+        },
+      ],
+      {
+        title: 'Move name and save managers',
+        successTitle: 'Managers saved',
+        successMessage: `${name} now uses your resolver and its manager permissions.`,
+      }
+    )
+  }
 
   const effectiveResolverInput = resolverInput ?? (resolverExists ? resolver! : '')
   const initialResolverInput = resolverExists ? resolver! : ''
@@ -508,7 +678,19 @@ export const useV2EditRecords = (name: string, recordsEnabled: boolean, onResolv
     })
 
   return {
-    records,
+    records: formRecords,
+    moveRequired,
+    moveOpen: move.phase !== 'idle',
+    firstResolver,
+    managerResolver,
+    managerMoveRequired,
+    managerTargetLoading: (firstResolver && managerTarget.isPending) || managerTarget.isFetching,
+    chooseManagerResolver,
+    resetManagerResolver: () => setManagerPlan(null),
+    ownerCanMove,
+    managerTargetError: ownerCanMove ? managerTarget.error : null,
+    retryManagerTarget: managerTarget.refetch,
+    saveManagers,
     updateRecord,
     addRecord,
     isAdding,

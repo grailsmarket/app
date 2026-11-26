@@ -3,7 +3,7 @@ import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
 import { encodeRoleChange, roleChangeDetails, type RoleChange } from './v2Roles'
 
-export type RoleDraft = { change: RoleChange; initial: boolean; current: boolean }
+export type RoleDraft = { change: RoleChange; initial?: boolean; current: boolean }
 export type RoleDrafts = Record<string, RoleDraft>
 export type RoleTransactionBatch = { contract: Address; data: Hex; changes: RoleChange[] }
 
